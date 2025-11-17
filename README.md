@@ -36,7 +36,7 @@
 ## 🚀 使用方式
 
 ### 線上瀏覽
-訪問部署的網站：[https://your-project.vercel.app](https://your-project.vercel.app)
+訪問部署的網站：[https://20251111sysmanagement-c3bb0dlfw-cole-chengs-projects.vercel.app](https://20251111sysmanagement-c3bb0dlfw-cole-chengs-projects.vercel.app)
 
 ### 本地使用
 1. 下載專案文件
