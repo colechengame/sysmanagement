@@ -313,6 +313,159 @@
             </div>
         </div>
 
+        <!-- 次早預約補發機制 -->
+        <div class="section">
+            <h2>🔄 次早預約補發機制</h2>
+
+            <div class="logic">
+                <strong>核心概念：</strong>當取消某預約的簡訊時，如果該客戶在同一天（或同一群組）還有其他預約，系統需要自動為「次早的預約」補發簡訊
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ 重要原則：</strong>
+                <ul style="margin-top: 10px;">
+                    <li>一個客戶在同一天（或同一群組範圍內）只能收到一封簡訊</li>
+                    <li>取消最早預約的簡訊時，必須檢查是否有次早預約</li>
+                    <li>次早預約需重新經過三道關卡檢查</li>
+                    <li>補發機制由後端自動觸發，前端負責顯示通知</li>
+                </ul>
+            </div>
+
+            <h3>觸發條件</h3>
+            <div class="code-block">
+<span class="comment">// 次早預約補發的觸發條件</span>
+<span class="operator">IF</span> (取消的是該客戶當天最早預約的簡訊) {
+    <span class="function">findNextEarliestAppointment</span>(同一天 <span class="operator">AND</span> 同一範圍);
+
+    <span class="operator">IF</span> (找到次早預約) {
+        <span class="comment">// 重新進行三道關卡檢查</span>
+        <span class="function">checkBlacklist</span>(次早預約);
+        <span class="function">checkPriority</span>(次早預約);
+
+        <span class="operator">IF</span> (通過檢查) {
+            <span class="function">autoSendSMS</span>(次早預約);
+            <span class="function">notifyUser</span>(<span class="string">'已為次早預約補發簡訊'</span>);
+        }
+    }
+}
+            </div>
+
+            <h3>判斷範圍邏輯</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>預約門市</th>
+                        <th>搜尋範圍</th>
+                        <th>範例</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>群組門市（如：忠孝岩盤浴）</td>
+                        <td>同一天 + 同一群組內所有門市</td>
+                        <td>忠孝岩盤浴、忠孝光澤</td>
+                    </tr>
+                    <tr>
+                        <td>獨立門市（如：台北醫美）</td>
+                        <td>同一天 + 同一門市</td>
+                        <td>僅台北醫美</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>完整流程示意</h3>
+            <div class="flow-chart">
+                <div class="flow-step" data-step="1">
+                    <strong>用戶取消簡訊</strong><br>
+                    <span class="comment">例如：取消 10:00 預約的簡訊</span>
+                </div>
+
+                <div class="flow-step" data-step="2" style="background: #3c3c00; border-left-color: #f0ad4e;">
+                    <strong>後端檢查是否有次早預約</strong><br>
+                    <span class="comment">查詢同一天、同一範圍內的其他預約</span><br>
+                    <span style="color: #f0ad4e;">找到 14:00 預約（次早）</span>
+                </div>
+
+                <div class="flow-step" data-step="3" style="background: #3c0000; border-left-color: #d9534f;">
+                    <strong>第一關：黑名單檢查</strong><br>
+                    <span class="comment">檢查客戶是否在黑名單中</span><br>
+                    <span class="success">✓ 通過</span>
+                </div>
+
+                <div class="flow-step" data-step="4">
+                    <strong>第二關：優先級檢查</strong><br>
+                    <span class="comment">14:00 預約現在是最早預約嗎？</span><br>
+                    <span class="success">✓ 是最早預約</span>
+                </div>
+
+                <div class="flow-step" data-step="5" style="background: #003c00; border-left-color: #5cb85c;">
+                    <strong>自動補發簡訊</strong><br>
+                    <span class="comment">系統自動為 14:00 預約排程簡訊</span><br>
+                    <span style="color: #5cb85c;">✅ 補發成功</span>
+                </div>
+
+                <div class="flow-step" data-step="6" style="background: #e3f2fd; border-left-color: #2196f3;">
+                    <strong>前端顯示通知</strong><br>
+                    <span class="comment">通知用戶補發結果</span><br>
+                    <span style="color: #2196f3;">💬 "系統已為 14:00 預約補發簡訊"</span>
+                </div>
+            </div>
+
+            <h3>前端實作範例</h3>
+            <div class="code-block">
+<span class="comment">// API返回格式範例</span>
+Response from POST /api/sms/cancel:
+{
+    success: <span class="operator">true</span>,
+    message: <span class="string">"簡訊已取消"</span>,
+    nextEarliestAppointment: {
+        appointmentId: <span class="string">"67890"</span>,
+        time: <span class="string">"14:00"</span>,
+        smsResent: <span class="operator">true</span>,
+        reason: <span class="string">"次早預約補發成功"</span>
+    }
+}
+
+<span class="comment">// 前端處理邏輯</span>
+<span class="function">async function</span> <span class="function">handleCancelResponse</span>(response) {
+    <span class="operator">if</span> (response.success) {
+        <span class="function">showSuccess</span>(<span class="string">'簡訊已取消'</span>);
+
+        <span class="comment">// 檢查是否有次早預約補發</span>
+        <span class="operator">if</span> (response.nextEarliestAppointment?.smsResent) {
+            <span class="operator">const</span> { time, reason } = response.nextEarliestAppointment;
+            <span class="function">showInfo</span>({
+                title: <span class="string">'次早預約已補發簡訊'</span>,
+                message: <span class="string">`系統已為 ${time} 的預約自動發送簡訊`</span>,
+                detail: reason,
+                icon: <span class="string">'🔄'</span>
+            });
+        }
+    }
+}
+            </div>
+
+            <div class="success" style="margin-top: 15px;">
+                <strong>💡 前端職責：</strong>
+                <ul style="margin-top: 8px;">
+                    <li>調用取消簡訊API</li>
+                    <li>接收並解析後端返回的補發資訊</li>
+                    <li>顯示友善的補發通知給用戶</li>
+                    <li>更新預約列表中的簡訊狀態</li>
+                </ul>
+            </div>
+
+            <div class="warning">
+                <strong>🔧 後端職責：</strong>
+                <ul style="margin-top: 8px;">
+                    <li>查詢次早預約（同一天、同一範圍）</li>
+                    <li>對次早預約執行三道關卡檢查</li>
+                    <li>自動觸發簡訊補發</li>
+                    <li>返回補發結果給前端</li>
+                </ul>
+            </div>
+        </div>
+
         <!-- 客戶資格檢查詳細邏輯 -->
         <div class="section">
             <h2>🔐 客戶資格檢查邏輯</h2>
@@ -643,41 +796,125 @@
 }
             </div>
 
-            <h3>場景 2️⃣：取消簡訊</h3>
+            <h3>場景 2️⃣：取消簡訊（含次早預約補發機制）</h3>
             <div class="code-block">
-<span class="comment">// 取消已排程的簡訊</span>
-<span class="function">async function</span> <span class="function">onCancelSMS</span>(appointmentId) {
-    <span class="comment">// 檢查是否可以取消（例如：距離發送時間是否超過30分鐘）</span>
-    <span class="operator">const</span> canCancel = <span class="operator">await</span> <span class="function">checkCancelEligibility</span>(appointmentId);
+<span class="comment">// 取消已排程的簡訊（含次早預約補發處理）</span>
+<span class="function">async function</span> <span class="function">onCancelSMS</span>(appointmentId, customerId) {
+    <span class="keyword">try</span> {
+        <span class="comment">// 1. 檢查是否可以取消（距離發送時間是否超過30分鐘）</span>
+        <span class="operator">const</span> canCancel = <span class="operator">await</span> <span class="function">checkCancelEligibility</span>(appointmentId);
 
-    <span class="operator">if</span> (!canCancel.allowed) {
-        <span class="function">showError</span>({
-            title: <span class="string">'無法取消簡訊'</span>,
-            message: canCancel.reason <span class="comment">// 例如：'距離發送時間不足30分鐘'</span>
+        <span class="operator">if</span> (!canCancel.allowed) {
+            <span class="function">showError</span>({
+                title: <span class="string">'無法取消簡訊'</span>,
+                message: canCancel.reason,
+                detail: <span class="string">'例如：距離發送時間不足30分鐘'</span>
+            });
+            <span class="operator">return</span> { success: <span class="operator">false</span> };
+        }
+
+        <span class="comment">// 2. 顯示取消確認對話框</span>
+        <span class="operator">const</span> confirmed = <span class="operator">await</span> <span class="function">showConfirmDialog</span>({
+            title: <span class="string">'確認取消簡訊'</span>,
+            message: <span class="string">'確定要取消此簡訊發送嗎？'</span>,
+            detail: <span class="string">'如果該客戶有其他預約，系統將自動為次早預約補發簡訊'</span>,
+            type: <span class="string">'warning'</span>,
+            confirmText: <span class="string">'確認取消'</span>,
+            cancelText: <span class="string">'保留簡訊'</span>
         });
-        <span class="operator">return</span>;
+
+        <span class="operator">if</span> (!confirmed) {
+            <span class="operator">return</span> { success: <span class="operator">false</span>, message: <span class="string">'用戶取消操作'</span> };
+        }
+
+        <span class="comment">// 3. 調用後端取消API（後端會自動處理次早預約補發）</span>
+        <span class="operator">const</span> cancelResult = <span class="operator">await</span> <span class="function">fetch</span>(<span class="string">'/api/sms/cancel'</span>, {
+            method: <span class="string">'POST'</span>,
+            headers: { <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span> },
+            body: JSON.stringify({
+                appointmentId,
+                customerId
+            })
+        });
+
+        <span class="operator">const</span> result = <span class="operator">await</span> cancelResult.json();
+
+        <span class="operator">if</span> (!result.success) {
+            <span class="function">showError</span>({
+                title: <span class="string">'取消失敗'</span>,
+                message: result.message
+            });
+            <span class="operator">return</span> result;
+        }
+
+        <span class="comment">// 4. 顯示取消成功訊息</span>
+        <span class="function">showSuccess</span>(<span class="string">'簡訊已成功取消'</span>);
+
+        <span class="comment">// 5. 檢查並顯示次早預約補發通知</span>
+        <span class="operator">if</span> (result.nextEarliestAppointment) {
+            <span class="operator">const</span> next = result.nextEarliestAppointment;
+
+            <span class="operator">if</span> (next.smsResent) {
+                <span class="comment">// 補發成功</span>
+                <span class="function">showInfo</span>({
+                    title: <span class="string">'🔄 次早預約已補發簡訊'</span>,
+                    message: <span class="string">`系統已自動為 ${next.time} 的預約發送簡訊`</span>,
+                    detail: next.reason,
+                    duration: <span class="number">5000</span> <span class="comment">// 顯示5秒</span>
+                });
+
+                <span class="comment">// 更新UI中的預約狀態</span>
+                <span class="function">updateAppointmentSMSStatus</span>(next.appointmentId, <span class="string">'scheduled'</span>);
+            } <span class="operator">else</span> {
+                <span class="comment">// 有次早預約但未通過檢查</span>
+                <span class="function">showWarning</span>({
+                    title: <span class="string">'次早預約未補發'</span>,
+                    message: <span class="string">`次早預約（${next.time}）未通過檢查`</span>,
+                    detail: next.reason,
+                    icon: <span class="string">'⚠️'</span>
+                });
+            }
+        } <span class="operator">else</span> {
+            <span class="comment">// 沒有次早預約</span>
+            <span class="function">showInfo</span>({
+                message: <span class="string">'該客戶當天無其他預約'</span>,
+                duration: <span class="number">3000</span>
+            });
+        }
+
+        <span class="operator">return</span> result;
+
+    } <span class="keyword">catch</span> (error) {
+        console.error(<span class="string">'取消簡訊失敗:'</span>, error);
+        <span class="function">showError</span>({
+            title: <span class="string">'系統錯誤'</span>,
+            message: <span class="string">'取消簡訊時發生錯誤，請稍後再試'</span>
+        });
+        <span class="operator">return</span> { success: <span class="operator">false</span>, message: error.message };
     }
+}
 
-    <span class="comment">// 顯示取消確認對話框</span>
-    <span class="operator">const</span> confirmed = <span class="operator">await</span> <span class="function">showConfirmDialog</span>({
-        title: <span class="string">'確認取消簡訊'</span>,
-        message: <span class="string">'確定要取消此簡訊發送嗎？'</span>,
-        type: <span class="string">'warning'</span>,
-        confirmText: <span class="string">'確認取消'</span>,
-        cancelText: <span class="string">'保留簡訊'</span>
-    });
-
-    <span class="operator">if</span> (confirmed) {
-        <span class="operator">await</span> <span class="function">cancelSMS</span>(appointmentId);
-        <span class="function">showSuccess</span>(<span class="string">'簡訊已取消'</span>);
-
-        <span class="comment">// 檢查是否需要為次早預約補發簡訊</span>
-        <span class="operator">const</span> nextEarliest = <span class="operator">await</span> <span class="function">checkNextEarliestAppointment</span>(appointmentId);
-        <span class="operator">if</span> (nextEarliest.needsSMS) {
-            <span class="function">showInfo</span>(<span class="string">`系統將為次早預約（${nextEarliest.time}）發送簡訊`</span>);
+<span class="comment">// 更新預約列表中的簡訊狀態</span>
+<span class="function">function</span> <span class="function">updateAppointmentSMSStatus</span>(appointmentId, status) {
+    <span class="operator">const</span> row = document.querySelector(<span class="string">`[data-appointment-id="${appointmentId}"]`</span>);
+    <span class="operator">if</span> (row) {
+        <span class="operator">const</span> statusCell = row.querySelector(<span class="string">'.sms-status'</span>);
+        <span class="operator">if</span> (statusCell) {
+            statusCell.textContent = status === <span class="string">'scheduled'</span> ? <span class="string">'已排程'</span> : status;
+            statusCell.className = <span class="string">`sms-status status-${status}`</span>;
         }
     }
 }
+            </div>
+
+            <div class="success" style="margin-top: 15px;">
+                <strong>✨ 次早預約補發流程：</strong>
+                <ol style="margin-top: 8px;">
+                    <li>後端收到取消請求後，自動查詢次早預約</li>
+                    <li>對次早預約執行三道關卡檢查（黑名單 → 優先級 → 自動發送）</li>
+                    <li>後端返回補發結果（包含 smsResent、time、reason）</li>
+                    <li>前端根據結果顯示對應通知並更新UI狀態</li>
+                </ol>
             </div>
 
             <h3>場景 3️⃣：重新發送簡訊</h3>
@@ -840,29 +1077,118 @@ Response:
 {
     eligible: <span class="operator">true</span>/<span class="operator">false</span>,
     reason: <span class="string">"通過所有檢查"</span> | <span class="string">"包含黑名單關鍵字: 拒"</span>,
-    checkpoint: <span class="string">"priority"</span> | <span class="string">"customer"</span> | <span class="string">"user"</span>
+    checkpoint: <span class="string">"blacklist"</span> | <span class="string">"priority"</span> | <span class="string">"user"</span>,
+    smsContent: <span class="string">"親愛的王小姐，提醒您明天下午2點在羅東光澤的預約..."</span>
 }
 
-<span class="comment">// 2. 獲取同範圍預約列表</span>
-GET /api/appointments/same-range?date=<span class="number">2025</span>-<span class="number">11</span>-<span class="number">18</span>&store=羅東光澤
+<span class="comment">// 2. 取消簡訊（含次早預約補發）</span>
+POST /api/sms/cancel
+{
+    appointmentId: <span class="string">"12345"</span>,
+    customerId: <span class="string">"67890"</span>
+}
 
 Response:
 {
-    appointments: [...],
+    success: <span class="operator">true</span>,
+    message: <span class="string">"簡訊已取消"</span>,
+    nextEarliestAppointment: {
+        appointmentId: <span class="string">"12346"</span>,
+        time: <span class="string">"14:00"</span>,
+        storeName: <span class="string">"羅東光澤"</span>,
+        smsResent: <span class="operator">true</span>,
+        reason: <span class="string">"次早預約補發成功"</span> | <span class="string">"客戶在黑名單中"</span>
+    } | <span class="operator">null</span> <span class="comment">// 無次早預約時為 null</span>
+}
+
+<span class="comment">// 3. 發送簡訊</span>
+POST /api/sms/send
+{
+    appointmentId: <span class="string">"12345"</span>
+}
+
+Response:
+{
+    success: <span class="operator">true</span>,
+    message: <span class="string">"簡訊已排程發送"</span>,
+    scheduledTime: <span class="string">"2025-11-17 18:00:00"</span>
+}
+
+<span class="comment">// 4. 重新發送簡訊</span>
+POST /api/sms/resend
+{
+    appointmentId: <span class="string">"12345"</span>,
+    customerId: <span class="string">"67890"</span>
+}
+
+Response:
+{
+    success: <span class="operator">true</span>,
+    message: <span class="string">"簡訊已重新排程"</span>,
+    scheduledTime: <span class="string">"2025-11-17 18:00:00"</span>
+}
+
+<span class="comment">// 5. 檢查取消資格</span>
+POST /api/sms/check-cancel-eligibility
+{
+    appointmentId: <span class="string">"12345"</span>
+}
+
+Response:
+{
+    allowed: <span class="operator">true</span>/<span class="operator">false</span>,
+    reason: <span class="string">"可以取消"</span> | <span class="string">"距離發送時間不足30分鐘"</span>,
+    remainingMinutes: <span class="number">45</span> <span class="comment">// 距離發送時間的分鐘數</span>
+}
+
+<span class="comment">// 6. 獲取同範圍預約列表</span>
+GET /api/appointments/same-range?date=<span class="number">2025</span>-<span class="number">11</span>-<span class="number">18</span>&store=羅東光澤&customerId=<span class="number">67890</span>
+
+Response:
+{
+    appointments: [
+        {
+            appointmentId: <span class="string">"12345"</span>,
+            time: <span class="string">"10:00"</span>,
+            storeName: <span class="string">"羅東光澤"</span>,
+            smsStatus: <span class="string">"scheduled"</span> | <span class="string">"sent"</span> | <span class="string">"cancelled"</span>
+        },
+        {
+            appointmentId: <span class="string">"12346"</span>,
+            time: <span class="string">"14:00"</span>,
+            storeName: <span class="string">"羅東岩盤浴"</span>,
+            smsStatus: <span class="string">"skipped"</span>
+        }
+    ],
     earliestTime: <span class="string">"10:00"</span>,
     storeGroup: <span class="string">"group2"</span> | <span class="operator">null</span>
 }
+            </div>
+
+            <div class="warning" style="margin-top: 20px;">
+                <strong>📝 API設計重點：</strong>
+                <ul style="margin-top: 10px;">
+                    <li><strong>次早預約補發：</strong>在取消API的返回中包含補發資訊，前端無需額外請求</li>
+                    <li><strong>錯誤訊息：</strong>清楚返回失敗原因（reason欄位），方便前端顯示給用戶</li>
+                    <li><strong>檢查點標記：</strong>使用checkpoint標記失敗的關卡（blacklist/priority/user）</li>
+                    <li><strong>狀態同步：</strong>返回最新的簡訊狀態，前端可直接更新UI</li>
+                </ul>
             </div>
         </div>
 
         <div class="section" style="background: #667eea; color: white; border-left: none;">
             <h2 style="color: white; border-bottom-color: rgba(255,255,255,0.3);">📋 Quick Reference</h2>
             <ul>
+                <li><strong>檢查層級：</strong>3道關卡（黑名單 → 優先級 → 用戶確認）</li>
                 <li><strong>優先順序：</strong>白名單 > 黑名單 > 特殊規則 > 通過</li>
                 <li><strong>門市群組：</strong>5個群組，11個門市，優先判斷</li>
                 <li><strong>獨立門市：</strong>16個門市，採用同一門市規則</li>
-                <li><strong>檢查層級：</strong>3道關卡（優先級 → 資格 → 確認）</li>
+                <li><strong>次早補發：</strong>取消最早預約簡訊時，自動檢查並補發次早預約</li>
+                <li><strong>補發範圍：</strong>群組門市 → 同群組內；獨立門市 → 同門市</li>
+                <li><strong>補發檢查：</strong>次早預約需重新經過三道關卡檢查</li>
                 <li><strong>開關控制：</strong>promote過濾預設關閉</li>
+                <li><strong>前端職責：</strong>API調用 + UI互動 + 狀態更新</li>
+                <li><strong>後端職責：</strong>複雜邏輯判斷 + 次早補發處理</li>
             </ul>
         </div>
     </div>
