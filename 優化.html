@@ -641,9 +641,160 @@
             </div>
         </div>
 
-        <!-- 第3張：完整門市群組設定 -->
+        <!-- 第3張：資料庫欄位設計 -->
         <div class="slide">
             <span class="slide-number">3</span>
+            <h1>💾 資料庫欄位設計說明</h1>
+
+            <div class="highlight-box">
+                <h3>🎯 核心欄位架構</h3>
+                <p style="font-size: 16px; line-height: 1.8;">
+                    為了實現簡訊發送優化，系統需要以下關鍵欄位來記錄和判斷預約簡訊狀態
+                </p>
+            </div>
+
+            <h2>資料表欄位定義</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">欄位名稱</th>
+                        <th style="width: 15%;">資料類型</th>
+                        <th style="width: 35%;">說明</th>
+                        <th style="width: 30%;">範例值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>RecordNo</strong></td>
+                        <td>VARCHAR</td>
+                        <td>會員編號，用於識別同一會員的所有預約</td>
+                        <td>BC002183</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CompanyId</strong></td>
+                        <td>VARCHAR</td>
+                        <td>門市名稱，記錄預約的門市位置</td>
+                        <td>板橋光澤醫美、板橋岩盤浴、忠孝光澤</td>
+                    </tr>
+                    <tr style="background: #f8f9ff;">
+                        <td><strong>SYSGroup</strong></td>
+                        <td>INT</td>
+                        <td>門市群組編號<br>
+                        • 0 = 獨立門市（採用同門市規則）<br>
+                        • 1-5 = 群組編號（採用群組規則）</td>
+                        <td>0（獨立門市）<br>1（群組1-忠孝區域）<br>3（群組3-板橋區域）</td>
+                    </tr>
+                    <tr>
+                        <td><strong>AppointmentId</strong></td>
+                        <td>VARCHAR</td>
+                        <td>預約時間，格式：YYYY-MM-DD(星期)HH:MM</td>
+                        <td>A1=2025-12-05(五)14:30<br>A2=2025-12-05(五)16:00<br>B1=2025-12-05(五)18:30</td>
+                    </tr>
+                    <tr style="background: #f8f9ff;">
+                        <td><strong>SysSend</strong></td>
+                        <td>DATETIME</td>
+                        <td>簡訊預定發送時間<br>
+                        • NULL = 不發送<br>
+                        • 有值 = 排程發送時間</td>
+                        <td>2025-12-05(四)18:00<br>或 NULL</td>
+                    </tr>
+                    <tr style="background: #f8f9ff;">
+                        <td><strong>SysSendStatus</strong></td>
+                        <td>INT</td>
+                        <td>簡訊發送狀態<br>
+                        • 0 = 不發送（跳過）<br>
+                        • 1 = 排程中/已發送</td>
+                        <td>0 或 1</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2 style="margin-top: 30px;">實際資料範例說明</h2>
+
+            <div class="scenario-card">
+                <h3 style="border-bottom: 2px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">
+                    範例情境：會員 BC002183 在同一天有多個預約
+                </h3>
+
+                <div style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0; border: 2px solid #28a745;">
+                    <h4 style="color: #28a745; margin-bottom: 10px;">✓ 預約 1（最早預約 - 會發送簡訊）</h4>
+                    <table style="margin: 0; font-size: 13px;">
+                        <tbody>
+                            <tr><td style="width: 30%; border: none;"><strong>RecordNo:</strong></td><td style="border: none;">BC002183</td></tr>
+                            <tr><td style="border: none;"><strong>CompanyId:</strong></td><td style="border: none;">板橋光澤醫美</td></tr>
+                            <tr><td style="border: none;"><strong>SYSGroup:</strong></td><td style="border: none;">1（群組1）</td></tr>
+                            <tr><td style="border: none;"><strong>AppointmentId:</strong></td><td style="border: none;">A1=2025-12-05(五)14:30</td></tr>
+                            <tr style="background: #d4edda;"><td style="border: none;"><strong>SysSend:</strong></td><td style="border: none;">2025-12-05(四)18:00</td></tr>
+                            <tr style="background: #d4edda;"><td style="border: none;"><strong>SysSendStatus:</strong></td><td style="border: none;">1（會發送）</td></tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 10px; color: #28a745; font-size: 13px;">
+                        ✓ 因為是 SYSGroup=1 中最早的預約，所以會發送簡訊
+                    </p>
+                    <div style="margin-top: 10px;">
+                        <span class="button" style="background: white; color: black; border: 2px solid #333;">不發送</span>
+                        <span class="button button-primary">發送</span>
+                    </div>
+                </div>
+
+                <div style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0; border: 2px solid #dc3545;">
+                    <h4 style="color: #dc3545; margin-bottom: 10px;">✗ 預約 2（次早預約 - 不發送）</h4>
+                    <table style="margin: 0; font-size: 13px;">
+                        <tbody>
+                            <tr><td style="width: 30%; border: none;"><strong>RecordNo:</strong></td><td style="border: none;">BC002183</td></tr>
+                            <tr><td style="border: none;"><strong>CompanyId:</strong></td><td style="border: none;">板橋岩盤浴</td></tr>
+                            <tr><td style="border: none;"><strong>SYSGroup:</strong></td><td style="border: none;">1（群組1）</td></tr>
+                            <tr><td style="border: none;"><strong>AppointmentId:</strong></td><td style="border: none;">A2=2025-12-05(五)16:00</td></tr>
+                            <tr style="background: #f8d7da;"><td style="border: none;"><strong>SysSend:</strong></td><td style="border: none;">NULL</td></tr>
+                            <tr style="background: #f8d7da;"><td style="border: none;"><strong>SysSendStatus:</strong></td><td style="border: none;">0（不發送）</td></tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 10px; color: #dc3545; font-size: 13px;">
+                        ✗ 同屬 SYSGroup=1，但不是最早預約，因此跳過發送
+                    </p>
+                    <div style="margin-top: 10px;">
+                        <span class="button" style="background: white; color: black; border: 2px solid #333;">取消發送</span>
+                        <span class="button button-primary">發送</span>
+                    </div>
+                </div>
+
+                <div style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0; border: 2px solid #28a745;">
+                    <h4 style="color: #28a745; margin-bottom: 10px;">✓ 預約 3（獨立門市 - 會發送）</h4>
+                    <table style="margin: 0; font-size: 13px;">
+                        <tbody>
+                            <tr><td style="width: 30%; border: none;"><strong>RecordNo:</strong></td><td style="border: none;">BC002183</td></tr>
+                            <tr><td style="border: none;"><strong>CompanyId:</strong></td><td style="border: none;">忠孝光澤</td></tr>
+                            <tr><td style="border: none;"><strong>SYSGroup:</strong></td><td style="border: none;">0（獨立門市）</td></tr>
+                            <tr><td style="border: none;"><strong>AppointmentId:</strong></td><td style="border: none;">B1=2025-12-05(五)18:30</td></tr>
+                            <tr style="background: #d4edda;"><td style="border: none;"><strong>SysSend:</strong></td><td style="border: none;">2025-12-05(四)18:00</td></tr>
+                            <tr style="background: #d4edda;"><td style="border: none;"><strong>SysSendStatus:</strong></td><td style="border: none;">1（會發送）</td></tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 10px; color: #28a745; font-size: 13px;">
+                        ✓ SYSGroup=0（獨立門市），採用同門市規則，此為該門市當天最早預約
+                    </p>
+                    <div style="margin-top: 10px;">
+                        <span class="button" style="background: white; color: black; border: 2px solid #333;">取消發送</span>
+                        <span class="button button-primary">發送</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>💡 欄位設計重點說明</h3>
+                <ul style="margin-top: 10px; line-height: 2;">
+                    <li><strong>SYSGroup 的作用：</strong>決定採用「群組規則」還是「同門市規則」</li>
+                    <li><strong>SysSend 與 SysSendStatus 配合：</strong>SysSend 為 NULL 且 SysSendStatus = 0 表示不發送</li>
+                    <li><strong>同一會員（RecordNo）同一天的預約：</strong>根據 SYSGroup 判斷只保留最早一筆發送</li>
+                    <li><strong>跨群組獨立：</strong>不同 SYSGroup 的預約互不影響，各自判斷</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 第4張：完整門市群組設定 -->
+        <div class="slide">
+            <span class="slide-number">4</span>
             <h1>🏢 完整門市清單與群組規劃</h1>
             
             <p style="color: #666; margin-bottom: 25px; font-size: 15px;">
@@ -742,9 +893,9 @@
             </div>
         </div>
 
-        <!-- 第3張：模擬情境 - 群組內 -->
+        <!-- 第5張：模擬情境 - 群組內 -->
         <div class="slide">
-            <span class="slide-number">3</span>
+            <span class="slide-number">5</span>
             <h1>🎬 模擬情境：門市群組規則</h1>
 
             <div class="scenario-card">
@@ -864,9 +1015,9 @@
             </div>
         </div>
 
-        <!-- 第5張：獨立門市規則 -->
+        <!-- 第6張：獨立門市規則 -->
         <div class="slide">
-            <span class="slide-number">5</span>
+            <span class="slide-number">6</span>
             <h1>🎬 模擬情境：獨立門市規則</h1>
 
             <div class="scenario-card">
@@ -984,9 +1135,9 @@
             </div>
         </div>
 
-        <!-- 第6張：複雜混合情境 -->
+        <!-- 第7張：複雜混合情境 -->
         <div class="slide">
-            <span class="slide-number">6</span>
+            <span class="slide-number">7</span>
             <h1>🎬 複雜情境：跨群組混合預約</h1>
 
             <div class="scenario-card">
@@ -1064,9 +1215,246 @@
             </div>
         </div>
 
-        <!-- 第7張：次早預約補發機制 -->
+        <!-- 第7.5張：四大情境邏輯與 UI 設計 -->
         <div class="slide">
-            <span class="slide-number">7</span>
+            <span class="slide-number">7.5</span>
+            <h1>🎯 四大情境邏輯與 UI 設計規範</h1>
+
+            <div class="highlight-box">
+                <h3>📋 情境分類說明</h3>
+                <p style="font-size: 16px; line-height: 1.8;">
+                    根據預約新增、取消、修改等操作，系統需要判斷並顯示對應的提示訊息和按鈕樣式
+                </p>
+            </div>
+
+            <h2>UI 設計規範總覽</h2>
+            <div class="group-container">
+                <div class="group-title">按鈕配色與特效規則</div>
+                <table style="font-size: 14px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">按鈕類型</th>
+                            <th style="width: 35%;">視覺樣式</th>
+                            <th style="width: 40%;">使用情境</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: #f0fff4;">
+                            <td><strong>發送/確認發送</strong></td>
+                            <td><span style="background: #28a745; color: white; padding: 8px 16px; border-radius: 6px; font-weight: bold;">綠色底白色字</span></td>
+                            <td>建議發送簡訊的正面操作</td>
+                        </tr>
+                        <tr>
+                            <td><strong>不發送</strong></td>
+                            <td><span style="background: white; color: black; padding: 8px 16px; border-radius: 6px; font-weight: bold; border: 2px solid #333;">白色底黑色字</span></td>
+                            <td>初始預約建立時的取消選項</td>
+                        </tr>
+                        <tr>
+                            <td><strong>取消發送</strong></td>
+                            <td><span style="background: white; color: black; padding: 8px 16px; border-radius: 6px; font-weight: bold; border: 2px solid #333;">白色底黑色字</span></td>
+                            <td>一般情況下的取消發送</td>
+                        </tr>
+                        <tr style="background: #fff3cd;">
+                            <td><strong>取消發送（警示）</strong></td>
+                            <td>
+                                <span style="background: #dc3545; color: #ffc107; padding: 8px 16px; border-radius: 6px; font-weight: bold; animation: pulse 1.5s infinite;">紅底黃字帶特效</span>
+                                <style>
+                                    @keyframes pulse {
+                                        0%, 100% { opacity: 1; transform: scale(1); }
+                                        50% { opacity: 0.8; transform: scale(1.05); }
+                                    }
+                                </style>
+                            </td>
+                            <td>黑名單或次早預約時的警示取消</td>
+                        </tr>
+                        <tr>
+                            <td><strong>確認發送（中性）</strong></td>
+                            <td><span style="background: white; color: black; padding: 8px 16px; border-radius: 6px; font-weight: bold; border: 2px solid #333;">白色底黑色字</span></td>
+                            <td>與警示取消配對的確認選項</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 style="margin-top: 30px;">情境 A：會員新增更早預約</h2>
+            <div class="scenario-card" style="border-color: #2196f3;">
+                <h3 style="color: #2196f3;">📌 觸發條件</h3>
+                <p style="line-height: 1.8; margin: 10px 0;">
+                    當新增的預約時間早於當前 SYSGroup（或同門市）內所有現有預約時觸發
+                </p>
+
+                <h3 style="color: #2196f3; margin-top: 20px;">💬 提示訊息</h3>
+                <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ff9800;">
+                    <p style="font-size: 15px; line-height: 2; font-weight: bold; color: #f57c00;">
+                        您新增的預約（10:30）將成為最早預約
+                    </p>
+                    <p style="font-size: 14px; line-height: 2; margin-top: 10px;">
+                        {發送}後將會自動取消以下簡訊寄送：<br>
+                        原最早預約（14:30）已有簡訊排程：<br>
+                        狀態：排程中<br>
+                        預計發送：12/04(四)18:00
+                    </p>
+                </div>
+
+                <h3 style="color: #2196f3; margin-top: 20px;">🎨 按鈕樣式</h3>
+                <div style="text-align: center; padding: 20px; background: #f8f9ff; border-radius: 8px;">
+                    <button class="button" style="background: white; color: black; border: 2px solid #333; margin: 5px;">取消發送</button>
+                    <button class="button button-primary" style="margin: 5px;">確認發送</button>
+                </div>
+                <p style="margin-top: 10px; color: #666; font-size: 13px;">
+                    • 左側：白色底黑色字「取消發送」<br>
+                    • 右側：綠色底白色字「確認發送」
+                </p>
+
+                <h3 style="color: #2196f3; margin-top: 20px;">📊 範例資料</h3>
+                <table style="font-size: 13px; margin-top: 10px;">
+                    <tbody>
+                        <tr><td style="width: 30%; border: none;"><strong>新增預約：</strong></td><td style="border: none;">2025-12-05(五)10:30</td></tr>
+                        <tr><td style="border: none;"><strong>原最早預約：</strong></td><td style="border: none;">2025-12-05(五)14:30</td></tr>
+                        <tr><td style="border: none;"><strong>簡訊發送時間：</strong></td><td style="border: none;">2025-12-04(四)18:00</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 style="margin-top: 30px;">情境 B：會員取消最早預約（次早補位）</h2>
+            <div class="scenario-card" style="border-color: #f57c00;">
+                <h3 style="color: #f57c00;">📌 觸發條件</h3>
+                <p style="line-height: 1.8; margin: 10px 0;">
+                    當取消的預約是當天 SYSGroup（或同門市）內的最早預約，且存在次早預約時觸發
+                </p>
+
+                <h3 style="color: #f57c00; margin-top: 20px;">💬 提示訊息</h3>
+                <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ff9800;">
+                    <p style="font-size: 15px; line-height: 2; font-weight: bold; color: #f57c00;">
+                        您新增的是次早預約時間（16:00）
+                    </p>
+                    <p style="font-size: 14px; line-height: 2; margin-top: 10px;">
+                        {發送}後將會自動取消以下簡訊寄送：<br>
+                        原最早預約（14:30）已有簡訊排程：<br>
+                        狀態：排程中<br>
+                        預計發送：12/04(四)18:00
+                    </p>
+                </div>
+
+                <h3 style="color: #f57c00; margin-top: 20px;">🎨 按鈕樣式</h3>
+                <div style="text-align: center; padding: 20px; background: #f8f9ff; border-radius: 8px;">
+                    <button class="button" style="background: white; color: black; border: 2px solid #333; margin: 5px;">取消不發送</button>
+                    <button class="button button-primary" style="margin: 5px;">確認發送</button>
+                </div>
+                <p style="margin-top: 10px; color: #666; font-size: 13px;">
+                    • 左側：白色底黑色字「取消不發送」<br>
+                    • 右側：綠色底白色字「確認發送」
+                </p>
+
+                <h3 style="color: #f57c00; margin-top: 20px;">📊 範例資料</h3>
+                <table style="font-size: 13px; margin-top: 10px;">
+                    <tbody>
+                        <tr><td style="width: 30%; border: none;"><strong>取消預約：</strong></td><td style="border: none;">2025-12-05(五)14:30（最早）</td></tr>
+                        <tr><td style="border: none;"><strong>次早預約補位：</strong></td><td style="border: none;">2025-12-05(五)16:00</td></tr>
+                        <tr><td style="border: none;"><strong>簡訊發送時間：</strong></td><td style="border: none;">2025-12-04(四)18:00</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 style="margin-top: 30px;">情境 C：遇到 Type 黑名單時</h2>
+            <div class="scenario-card" style="border-color: #dc3545;">
+                <h3 style="color: #dc3545;">📌 觸發條件</h3>
+                <p style="line-height: 1.8; margin: 10px 0;">
+                    會員的 Mark 欄位包含黑名單關鍵字（拒、無、沒、員工、醫師等），且不符合白名單條件時觸發
+                </p>
+
+                <div style="background: #f8d7da; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #dc3545;">
+                    <h4 style="color: #721c24; margin-bottom: 10px;">⚠️ 可合併多情境</h4>
+                    <p style="line-height: 1.8; font-size: 14px;">
+                        此情境會與其他情境合併顯示：<br>
+                        1️⃣ 新建預約後，準備發送提醒簡訊時<br>
+                        2️⃣ 修改預約（時間/門市）後，準備重新發送時<br>
+                        3️⃣ 取消最早預約，準備為次早預約補發時<br>
+                        4️⃣ 新增更早預約，準備為新最早發送時<br>
+                        5️⃣ 新增次早預約，準備保留或覆蓋既有最早發送時
+                    </p>
+                </div>
+
+                <h3 style="color: #dc3545; margin-top: 20px;">💬 提示訊息</h3>
+                <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #dc3545;">
+                    <p style="font-size: 15px; line-height: 2; font-weight: bold; color: #dc3545;">
+                        此會員註記為不收簡訊的黑名單請確認是否{取消發送簡訊}
+                    </p>
+                    <p style="font-size: 14px; line-height: 1.8; margin-top: 10px; color: #666;">
+                        -----其餘情境往下增加-----
+                    </p>
+                </div>
+
+                <h3 style="color: #dc3545; margin-top: 20px;">🎨 按鈕樣式（特殊警示）</h3>
+                <div style="text-align: center; padding: 20px; background: #f8f9ff; border-radius: 8px;">
+                    <button class="button" style="background: #dc3545; color: #ffc107; margin: 5px; animation: pulse 1.5s infinite; font-weight: bold;">取消發送</button>
+                    <button class="button" style="background: white; color: black; border: 2px solid #333; margin: 5px;">確認發送</button>
+                </div>
+                <p style="margin-top: 10px; color: #666; font-size: 13px;">
+                    • 左側：<strong style="color: #dc3545;">紅底黃字帶特效「取消發送」</strong>（閃爍提醒）<br>
+                    • 右側：白色底黑色字「確認發送」
+                </p>
+
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <strong>⚠️ 設計意圖：</strong>紅底黃字的閃爍特效用於強烈警示操作人員，這是黑名單會員，建議不要發送簡訊
+                </div>
+            </div>
+
+            <h2 style="margin-top: 30px;">情境 D：新增次早預約時</h2>
+            <div class="scenario-card" style="border-color: #764ba2;">
+                <h3 style="color: #764ba2;">📌 觸發條件</h3>
+                <p style="line-height: 1.8; margin: 10px 0;">
+                    當新增的預約晚於當前 SYSGroup（或同門市）內的最早預約時觸發
+                </p>
+
+                <h3 style="color: #764ba2; margin-top: 20px;">💬 提示訊息</h3>
+                <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #764ba2;">
+                    <p style="font-size: 15px; line-height: 2; font-weight: bold; color: #764ba2;">
+                        您新增的是次早預約時間（16:00）
+                    </p>
+                    <p style="font-size: 14px; line-height: 2; margin-top: 10px;">
+                        {取消不發送}後將保留最早以下簡訊寄送：<br>
+                        原最早預約（14:30）已有簡訊排程：<br>
+                        狀態：排程中<br>
+                        預計發送：12/04(四)18:00
+                    </p>
+                </div>
+
+                <h3 style="color: #764ba2; margin-top: 20px;">🎨 按鈕樣式</h3>
+                <div style="text-align: center; padding: 20px; background: #f8f9ff; border-radius: 8px;">
+                    <button class="button" style="background: #dc3545; color: #ffc107; margin: 5px; animation: pulse 1.5s infinite; font-weight: bold;">取消發送</button>
+                    <button class="button" style="background: white; color: black; border: 2px solid #333; margin: 5px;">確認發送</button>
+                </div>
+                <p style="margin-top: 10px; color: #666; font-size: 13px;">
+                    • 左側：<strong style="color: #dc3545;">紅底黃字帶特效「取消發送」</strong><br>
+                    • 右側：白色底黑色字「確認發送」
+                </p>
+
+                <h3 style="color: #764ba2; margin-top: 20px;">📊 範例資料</h3>
+                <table style="font-size: 13px; margin-top: 10px;">
+                    <tbody>
+                        <tr><td style="width: 30%; border: none;"><strong>新增預約：</strong></td><td style="border: none;">2025-12-05(五)16:00（次早）</td></tr>
+                        <tr><td style="border: none;"><strong>原最早預約：</strong></td><td style="border: none;">2025-12-05(五)14:30</td></tr>
+                        <tr><td style="border: none;"><strong>建議動作：</strong></td><td style="border: none;">取消發送，保留原有簡訊</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="info-box" style="margin-top: 30px;">
+                <h3>💡 UI 設計重點總結</h3>
+                <ul style="margin-top: 10px; line-height: 2;">
+                    <li><strong>綠色底白色字：</strong>正面建議操作（發送/確認發送）</li>
+                    <li><strong>白色底黑色字：</strong>中性或取消操作（不發送/取消發送/確認發送）</li>
+                    <li><strong>紅底黃字帶特效：</strong>強烈警示（黑名單、次早預約的取消發送）</li>
+                    <li><strong>情境 C 可合併：</strong>黑名單提示會置於最上方，其他情境提示置於下方</li>
+                    <li><strong>一致性原則：</strong>相同情境在不同頁面使用相同的配色和文案</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 第8張：次早預約補發機制 -->
+        <div class="slide">
+            <span class="slide-number">8</span>
             <h1>🔄 次早預約補發機制（✨ 新增）</h1>
 
             <div class="info-box">
@@ -1270,9 +1658,9 @@
             </div>
         </div>
 
-        <!-- 第8張：補發情境模擬 -->
+        <!-- 第9張：補發情境模擬 -->
         <div class="slide">
-            <span class="slide-number">8</span>
+            <span class="slide-number">9</span>
             <h1>🎬 補發情境：完整流程模擬</h1>
 
             <div class="scenario-card">
@@ -1427,9 +1815,9 @@
             </div>
         </div>
 
-        <!-- 第9張：已確認的決策 -->
+        <!-- 第10張：已確認的決策 -->
         <div class="slide">
-            <span class="slide-number">9</span>
+            <span class="slide-number">10</span>
             <h1>✅ 已確認的決策事項</h1>
 
             <div style="background: #d4edda; border: 4px solid #28a745; border-radius: 12px; padding: 30px; margin: 20px 0;">
@@ -1514,9 +1902,9 @@
             </div>
         </div>
 
-        <!-- 第10張：實施時程 -->
+        <!-- 第11張：實施時程 -->
         <div class="slide">
-            <span class="slide-number">10</span>
+            <span class="slide-number">11</span>
             <h1>📅 實施時程與監控指標</h1>
 
             <h2>開發時程規劃</h2>
@@ -1659,9 +2047,9 @@
             </div>
         </div>
 
-        <!-- 第11張：決策總結 -->
+        <!-- 第12張：決策總結 -->
         <div class="slide">
-            <span class="slide-number">11</span>
+            <span class="slide-number">12</span>
             <h1>✅ 決策總結與行動項目</h1>
 
             <div style="background: #d4edda; border: 4px solid #28a745; border-radius: 12px; padding: 30px; margin: 20px 0;">
