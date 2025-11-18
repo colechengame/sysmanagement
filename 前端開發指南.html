@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡訊發送優化 - 前端開發指南</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .section {
+            background: #252526;
+            border-left: 4px solid #667eea;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .section h2 {
+            color: #4ec9b0;
+            font-size: 20px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #404040;
+            padding-bottom: 10px;
+        }
+
+        .section h3 {
+            color: #dcdcaa;
+            font-size: 16px;
+            margin: 20px 0 10px 0;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+
+        .logic {
+            background: #2d2d30;
+            border-left: 3px solid #4ec9b0;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 2px;
+        }
+
+        .logic strong {
+            color: #569cd6;
+        }
+
+        .warning {
+            background: #3c3000;
+            border-left: 3px solid #f0ad4e;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 2px;
+            color: #f0ad4e;
+        }
+
+        .success {
+            background: #003c00;
+            border-left: 3px solid #5cb85c;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 2px;
+            color: #5cb85c;
+        }
+
+        .error {
+            background: #3c0000;
+            border-left: 3px solid #d9534f;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 2px;
+            color: #d9534f;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+
+        th {
+            background: #404040;
+            color: #4ec9b0;
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #505050;
+        }
+
+        td {
+            padding: 10px;
+            border: 1px solid #404040;
+            background: #2d2d30;
+        }
+
+        .keyword {
+            background: #1e1e1e;
+            color: #ce9178;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+        }
+
+        .function {
+            color: #dcdcaa;
+        }
+
+        .string {
+            color: #ce9178;
+        }
+
+        .number {
+            color: #b5cea8;
+        }
+
+        .comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+
+        .operator {
+            color: #569cd6;
+        }
+
+        ul {
+            margin: 10px 0 10px 25px;
+        }
+
+        ul li {
+            margin-bottom: 8px;
+        }
+
+        .flow-chart {
+            background: #2d2d30;
+            border: 1px solid #404040;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .flow-step {
+            background: #1e1e1e;
+            border-left: 4px solid #569cd6;
+            padding: 10px 15px;
+            margin: 10px 0;
+            position: relative;
+            padding-left: 50px;
+        }
+
+        .flow-step::before {
+            content: attr(data-step);
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #569cd6;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .config-group {
+            background: #2d2d30;
+            border: 1px solid #569cd6;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .config-title {
+            color: #569cd6;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #404040;
+            padding-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ 簡訊發送優化 - 前端開發指南</h1>
+            <p>技術實作重點 | 專注核心邏輯 | 快速上手</p>
+        </div>
+
+        <!-- 核心需求 -->
+        <div class="section">
+            <h2>🎯 核心需求</h2>
+            <div class="logic">
+                <strong>目標：</strong>避免同一天多個預約重複發送簡訊，降低成本並改善顧客體驗
+            </div>
+            <div class="warning">
+                <strong>⚠️ 重要：</strong>每個預約對應一封簡訊的設計不變，僅透過「跳過發送」來達到優化
+            </div>
+        </div>
+
+        <!-- 發送判斷邏輯 -->
+        <div class="section">
+            <h2>🔍 發送判斷邏輯（兩層規則）</h2>
+
+            <h3>規則一：消耗區域門市群組（優先判斷）</h3>
+            <div class="code-block">
+<span class="comment">// 判斷邏輯</span>
+<span class="operator">IF</span> (預約門市 <span class="operator">IN</span> 門市群組) {
+    <span class="function">checkGroupAppointments</span>(同一天 <span class="operator">AND</span> 同一群組內的所有預約);
+    <span class="operator">IF</span> (當前預約是最早的) {
+        <span class="operator">return</span> <span class="string">"可發送"</span>;
+    } <span class="operator">ELSE</span> {
+        <span class="operator">return</span> <span class="string">"跳過發送"</span>;
+    }
+}
+            </div>
+
+            <h3>規則二：單一門市規則（次要判斷）</h3>
+            <div class="code-block">
+<span class="comment">// 判斷邏輯</span>
+<span class="operator">IF</span> (預約門市 <span class="operator">NOT IN</span> 任何門市群組) {
+    <span class="function">checkStoreAppointments</span>(同一天 <span class="operator">AND</span> 同一門市的所有預約);
+    <span class="operator">IF</span> (當前預約是最早的) {
+        <span class="operator">return</span> <span class="string">"可發送"</span>;
+    } <span class="operator">ELSE</span> {
+        <span class="operator">return</span> <span class="string">"跳過發送"</span>;
+    }
+}
+            </div>
+        </div>
+
+        <!-- 三道關卡檢查 -->
+        <div class="section">
+            <h2>🛡️ 簡訊發送前置檢查流程</h2>
+            <div class="warning">
+                <strong>觸發時機：</strong>所有簡訊發送前都會執行（新建預約、修改預約、取消最早預約補發、新增更早預約）
+            </div>
+
+            <div class="flow-chart">
+                <div class="flow-step" data-step="1">
+                    <strong>預約時間優先級檢查</strong><br>
+                    <span class="comment">是否為當天在該範圍內的最早預約？</span><br>
+                    <span class="error">❌ 不是最早 → 跳過發送</span><br>
+                    <span class="success">✓ 是最早 → 繼續到第二關</span>
+                </div>
+
+                <div class="flow-step" data-step="2">
+                    <strong>客戶資格檢查</strong><br>
+                    <span class="comment">檢查客戶的 Type 和相關欄位設定</span><br>
+                    <span class="error">❌ 不符合資格 → 顯示提示並結束</span><br>
+                    <span class="success">✓ 通過檢查 → 繼續到第三關</span>
+                </div>
+
+                <div class="flow-step" data-step="3">
+                    <strong>用戶最終確認</strong><br>
+                    <span class="comment">進入「發出簡訊內容」介面，由用戶決定是否發送</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 客戶資格檢查詳細邏輯 -->
+        <div class="section">
+            <h2>🔐 客戶資格檢查邏輯</h2>
+
+            <h3>Type: 標註 - 黑白名單規則（預設啟用）</h3>
+
+            <div class="success">
+                <strong>⭐ 白名單（最高優先級）</strong><br>
+                Mark 欄位包含關鍵字：<span class="keyword">天使</span> 或 <span class="keyword">好友</span> → 強制通過，可發送簡訊<br>
+                <span class="comment">💡 即使同時包含黑名單關鍵字，白名單優先</span>
+            </div>
+
+            <div class="error">
+                <strong>🚫 黑名單（若無白名單才生效）</strong><br>
+                Mark 欄位包含以下任一關鍵字 → 不發送簡訊
+            </div>
+
+            <div class="code-block">
+<span class="comment">// 基本黑名單關鍵字</span>
+<span class="operator">const</span> BLACKLIST = [
+    <span class="string">'無'</span>, <span class="string">'拒'</span>, <span class="string">'沒'</span>, <span class="string">'員工'</span>, <span class="string">'醫師'</span>, <span class="string">'離職'</span>,
+    <span class="string">'暫停'</span>, <span class="string">'誤'</span>, <span class="string">'簡訊'</span>, <span class="string">'澳門'</span>, <span class="string">'香港'</span>, <span class="string">'大陸'</span>,
+    <span class="string">'空號'</span>, <span class="string">'非本人'</span>, <span class="string">'過世'</span>, <span class="string">'往生'</span>, <span class="string">'SPY'</span>,
+    <span class="string">'孕'</span>, <span class="string">'客訴'</span>, <span class="string">'歿'</span>, <span class="string">'間諜'</span>
+];
+            </div>
+
+            <div class="warning">
+                <strong>⚙️ 特殊處理規則</strong>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>關鍵字</th>
+                        <th>規則</th>
+                        <th>程式邏輯</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="keyword">勿</span></td>
+                        <td>包含「勿」但不包含「勿久等」→ 不發送</td>
+                        <td><code>mark.includes('勿') && !mark.includes('勿久等')</code></td>
+                    </tr>
+                    <tr>
+                        <td><span class="keyword">不</span></td>
+                        <td>包含「不」但不包含「推/call/摳/電/聯」→ 不發送</td>
+                        <td><code>mark.includes('不') && !['推','call','摳','電','聯'].some(k => mark.includes(k))</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="code-block">
+<span class="comment">// 完整檢查邏輯範例</span>
+<span class="function">function</span> <span class="function">checkCustomerEligibility</span>(customer) {
+    <span class="operator">const</span> mark = customer.mark || <span class="string">''</span>;
+
+    <span class="comment">// 1. 白名單優先</span>
+    <span class="operator">if</span> (mark.includes(<span class="string">'天使'</span>) || mark.includes(<span class="string">'好友'</span>)) {
+        <span class="operator">return</span> { eligible: <span class="operator">true</span>, reason: <span class="string">'白名單通過'</span> };
+    }
+
+    <span class="comment">// 2. 檢查基本黑名單</span>
+    <span class="operator">for</span> (<span class="operator">const</span> keyword <span class="operator">of</span> BLACKLIST) {
+        <span class="operator">if</span> (mark.includes(keyword)) {
+            <span class="operator">return</span> { eligible: <span class="operator">false</span>, reason: <span class="string">`包含黑名單關鍵字: ${keyword}`</span> };
+        }
+    }
+
+    <span class="comment">// 3. 特殊規則：勿</span>
+    <span class="operator">if</span> (mark.includes(<span class="string">'勿'</span>) && !mark.includes(<span class="string">'勿久等'</span>)) {
+        <span class="operator">return</span> { eligible: <span class="operator">false</span>, reason: <span class="string">'包含「勿」但非「勿久等」'</span> };
+    }
+
+    <span class="comment">// 4. 特殊規則：不</span>
+    <span class="operator">if</span> (mark.includes(<span class="string">'不'</span>)) {
+        <span class="operator">const</span> exceptions = [<span class="string">'推'</span>, <span class="string">'call'</span>, <span class="string">'摳'</span>, <span class="string">'電'</span>, <span class="string">'聯'</span>];
+        <span class="operator">const</span> hasException = exceptions.some(k => mark.includes(k));
+        <span class="operator">if</span> (!hasException) {
+            <span class="operator">return</span> { eligible: <span class="operator">false</span>, reason: <span class="string">'包含「不」但無例外關鍵字'</span> };
+        }
+    }
+
+    <span class="operator">return</span> { eligible: <span class="operator">true</span>, reason: <span class="string">'通過所有檢查'</span> };
+}
+            </div>
+
+            <h3>Type: 接受電訪/銷（前端開關控制，預設關閉）</h3>
+
+            <div class="code-block">
+<span class="comment">// 開關控制邏輯</span>
+<span class="operator">const</span> promoteFilterEnabled = <span class="operator">false</span>; <span class="comment">// 預設關閉</span>
+
+<span class="function">function</span> <span class="function">checkPromoteStatus</span>(customer) {
+    <span class="operator">if</span> (!promoteFilterEnabled) {
+        <span class="operator">return</span> { eligible: <span class="operator">true</span>, reason: <span class="string">'promote過濾已關閉'</span> };
+    }
+
+    <span class="comment">// 開關打開時的檢查</span>
+    <span class="operator">const</span> blockedValues = [<span class="number">0</span>, <span class="number">10</span>, <span class="number">20</span>];
+    <span class="operator">if</span> (blockedValues.includes(customer.promote)) {
+        <span class="operator">return</span> {
+            eligible: <span class="operator">false</span>,
+            reason: <span class="string">`promote值為 ${customer.promote}，拒絕狀態`</span>
+        };
+    }
+
+    <span class="operator">return</span> { eligible: <span class="operator">true</span>, reason: <span class="string">'promote狀態通過'</span> };
+}
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>promote值</th>
+                        <th>開關關閉</th>
+                        <th>開關打開</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="number">0</span>（拒絕）</td>
+                        <td><span class="success">✓ 發送</span></td>
+                        <td><span class="error">✗ 不發送</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="number">10</span>（勿Call勿約）</td>
+                        <td><span class="success">✓ 發送</span></td>
+                        <td><span class="error">✗ 不發送</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="number">20</span>（勿call可line）</td>
+                        <td><span class="success">✓ 發送</span></td>
+                        <td><span class="error">✗ 不發送</span></td>
+                    </tr>
+                    <tr>
+                        <td>其他值或NULL</td>
+                        <td><span class="success">✓ 發送</span></td>
+                        <td><span class="success">✓ 發送</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 門市群組配置 -->
+        <div class="section">
+            <h2>🏢 門市群組配置</h2>
+
+            <div class="warning">
+                <strong>總計：</strong>27個門市 = 11個群組門市（5個群組）+ 16個獨立門市
+            </div>
+
+            <div class="code-block">
+<span class="comment">// 門市群組設定</span>
+<span class="operator">const</span> STORE_GROUPS = {
+    <span class="string">'group1'</span>: [<span class="string">'忠孝岩盤浴'</span>, <span class="string">'忠孝光澤'</span>],
+    <span class="string">'group2'</span>: [<span class="string">'羅東岩盤浴'</span>, <span class="string">'羅東光澤'</span>],
+    <span class="string">'group3'</span>: [<span class="string">'板橋醫美'</span>, <span class="string">'板橋岩盤浴'</span>],
+    <span class="string">'group4'</span>: [<span class="string">'中壢彤顏健保'</span>, <span class="string">'中壢彤顏醫美'</span>, <span class="string">'中壢岩盤浴'</span>],
+    <span class="string">'group5'</span>: [<span class="string">'台中光澤診所'</span>, <span class="string">'台中岩盤浴'</span>]
+};
+
+<span class="comment">// 查找門市所屬群組</span>
+<span class="function">function</span> <span class="function">findStoreGroup</span>(storeName) {
+    <span class="operator">for</span> (<span class="operator">const</span> [groupId, stores] <span class="operator">of</span> Object.entries(STORE_GROUPS)) {
+        <span class="operator">if</span> (stores.includes(storeName)) {
+            <span class="operator">return</span> { groupId, stores };
+        }
+    }
+    <span class="operator">return</span> <span class="operator">null</span>; <span class="comment">// 獨立門市</span>
+}
+            </div>
+
+            <div class="config-group">
+                <div class="config-title">群組 1 - 忠孝區域（2門市）</div>
+                忠孝岩盤浴、忠孝光澤
+            </div>
+
+            <div class="config-group">
+                <div class="config-title">群組 2 - 羅東區域（2門市）</div>
+                羅東岩盤浴、羅東光澤
+            </div>
+
+            <div class="config-group">
+                <div class="config-title">群組 3 - 板橋區域（2門市）</div>
+                板橋醫美、板橋岩盤浴<br>
+                <span class="warning">⚠️ 板橋光澤健保已移除，改為獨立門市</span>
+            </div>
+
+            <div class="config-group">
+                <div class="config-title">群組 4 - 中壢彤顏區域（3門市）</div>
+                中壢彤顏健保、中壢彤顏醫美、中壢岩盤浴
+            </div>
+
+            <div class="config-group">
+                <div class="config-title">群組 5 - 台中區域（2門市）</div>
+                台中光澤診所、台中岩盤浴
+            </div>
+        </div>
+
+        <!-- 完整實作範例 -->
+        <div class="section">
+            <h2>💻 完整實作範例</h2>
+
+            <div class="code-block">
+<span class="comment">// 簡訊發送前完整檢查流程</span>
+<span class="function">async function</span> <span class="function">checkAndSendSMS</span>(appointment, customer) {
+    <span class="comment">// ===== 第一關：預約時間優先級檢查 =====</span>
+    <span class="operator">const</span> isEarliest = <span class="operator">await</span> <span class="function">checkIfEarliestAppointment</span>(appointment);
+    <span class="operator">if</span> (!isEarliest) {
+        <span class="operator">return</span> {
+            success: <span class="operator">false</span>,
+            message: <span class="string">'此預約不是最早的，跳過發送'</span>
+        };
+    }
+
+    <span class="comment">// ===== 第二關：客戶資格檢查 =====</span>
+    <span class="comment">// 2.1 檢查標註（黑白名單）</span>
+    <span class="operator">const</span> markCheck = <span class="function">checkCustomerEligibility</span>(customer);
+    <span class="operator">if</span> (!markCheck.eligible) {
+        <span class="operator">return</span> {
+            success: <span class="operator">false</span>,
+            message: <span class="string">`客戶資格不符: ${markCheck.reason}`</span>
+        };
+    }
+
+    <span class="comment">// 2.2 檢查promote狀態（若開關打開）</span>
+    <span class="operator">const</span> promoteCheck = <span class="function">checkPromoteStatus</span>(customer);
+    <span class="operator">if</span> (!promoteCheck.eligible) {
+        <span class="operator">return</span> {
+            success: <span class="operator">false</span>,
+            message: <span class="string">`promote狀態不符: ${promoteCheck.reason}`</span>
+        };
+    }
+
+    <span class="comment">// ===== 第三關：顯示發送確認介面 =====</span>
+    <span class="operator">const</span> userConfirmed = <span class="operator">await</span> <span class="function">showSMSConfirmDialog</span>(appointment);
+    <span class="operator">if</span> (!userConfirmed) {
+        <span class="operator">return</span> {
+            success: <span class="operator">false</span>,
+            message: <span class="string">'用戶取消發送'</span>
+        };
+    }
+
+    <span class="comment">// 執行發送</span>
+    <span class="operator">return</span> <span class="operator">await</span> <span class="function">sendSMS</span>(appointment);
+}
+
+<span class="comment">// 檢查是否為最早預約</span>
+<span class="function">async function</span> <span class="function">checkIfEarliestAppointment</span>(appointment) {
+    <span class="operator">const</span> appointmentDate = appointment.date;
+    <span class="operator">const</span> appointmentStore = appointment.store;
+
+    <span class="comment">// 查找門市群組</span>
+    <span class="operator">const</span> storeGroup = <span class="function">findStoreGroup</span>(appointmentStore);
+
+    <span class="operator">let</span> sameRangeAppointments;
+    <span class="operator">if</span> (storeGroup) {
+        <span class="comment">// 規則一：查找同一天、同一群組內的所有預約</span>
+        sameRangeAppointments = <span class="operator">await</span> <span class="function">getAppointments</span>({
+            date: appointmentDate,
+            stores: storeGroup.stores
+        });
+    } <span class="operator">else</span> {
+        <span class="comment">// 規則二：查找同一天、同一門市的所有預約</span>
+        sameRangeAppointments = <span class="operator">await</span> <span class="function">getAppointments</span>({
+            date: appointmentDate,
+            store: appointmentStore
+        });
+    }
+
+    <span class="comment">// 找出最早的預約</span>
+    <span class="operator">const</span> earliestTime = Math.min(...sameRangeAppointments.map(a => a.time));
+    <span class="operator">return</span> appointment.time === earliestTime;
+}
+            </div>
+        </div>
+
+        <!-- 測試案例 -->
+        <div class="section">
+            <h2>🧪 測試案例</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Mark/Promote</th>
+                        <th>判斷邏輯</th>
+                        <th>結果</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>標註</td>
+                        <td>天使會員</td>
+                        <td>白名單優先</td>
+                        <td><span class="success">✓ 發送</span></td>
+                    </tr>
+                    <tr>
+                        <td>標註</td>
+                        <td>好友但拒絕推銷</td>
+                        <td>白名單優先，忽略「拒」</td>
+                        <td><span class="success">✓ 發送</span></td>
+                    </tr>
+                    <tr>
+                        <td>標註</td>
+                        <td>拒絕推銷</td>
+                        <td>包含黑名單「拒」</td>
+                        <td><span class="error">✗ 不發送</span></td>
+                    </tr>
+                    <tr>
+                        <td>標註</td>
+                        <td>勿打擾</td>
+                        <td>包含「勿」且無「勿久等」</td>
+                        <td><span class="error">✗ 不發送</span></td>
+                    </tr>
+                    <tr>
+                        <td>標註</td>
+                        <td>勿久等請提早聯繫</td>
+                        <td>包含「勿久等」例外</td>
+                        <td><span class="success">✓ 發送</span></td>
+                    </tr>
+                    <tr>
+                        <td>標註</td>
+                        <td>不想接電話</td>
+                        <td>包含「不」但無例外字</td>
+                        <td><span class="error">✗ 不發送</span></td>
+                    </tr>
+                    <tr>
+                        <td>標註</td>
+                        <td>不推</td>
+                        <td>包含「不」但有「推」</td>
+                        <td><span class="success">✓ 發送</span></td>
+                    </tr>
+                    <tr>
+                        <td>接受電訪/銷</td>
+                        <td>promote = 0（開關關閉）</td>
+                        <td>不檢查此項</td>
+                        <td><span class="success">✓ 發送</span></td>
+                    </tr>
+                    <tr>
+                        <td>接受電訪/銷</td>
+                        <td>promote = 0（開關打開）</td>
+                        <td>拒絕狀態</td>
+                        <td><span class="error">✗ 不發送</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 實作重點提醒 -->
+        <div class="section">
+            <h2>⚡ 實作重點提醒</h2>
+
+            <ul>
+                <li><strong>檢查時機：</strong>在進入「發出簡訊內容」介面<strong>之前</strong>執行</li>
+                <li><strong>白名單優先：</strong>天使/好友會員豁免所有黑名單規則</li>
+                <li><strong>關鍵字比對：</strong>採用部分匹配（<code>includes</code>）</li>
+                <li><strong>開關預設：</strong>「接受電訪/銷」過濾預設關閉</li>
+                <li><strong>錯誤提示：</strong>不符合資格時顯示明確提示訊息</li>
+                <li><strong>日誌記錄：</strong>記錄因資格檢查而未發送的案例</li>
+                <li><strong>效能考量：</strong>群組查詢建議使用索引優化</li>
+            </ul>
+        </div>
+
+        <!-- API建議 -->
+        <div class="section">
+            <h2>🔌 API建議</h2>
+
+            <div class="code-block">
+<span class="comment">// 建議API端點</span>
+
+<span class="comment">// 1. 檢查簡訊發送資格</span>
+POST /api/sms/check-eligibility
+{
+    appointmentId: <span class="string">"12345"</span>,
+    customerId: <span class="string">"67890"</span>
+}
+
+Response:
+{
+    eligible: <span class="operator">true</span>/<span class="operator">false</span>,
+    reason: <span class="string">"通過所有檢查"</span> | <span class="string">"包含黑名單關鍵字: 拒"</span>,
+    checkpoint: <span class="string">"priority"</span> | <span class="string">"customer"</span> | <span class="string">"user"</span>
+}
+
+<span class="comment">// 2. 獲取同範圍預約列表</span>
+GET /api/appointments/same-range?date=<span class="number">2025</span>-<span class="number">11</span>-<span class="number">18</span>&store=羅東光澤
+
+Response:
+{
+    appointments: [...],
+    earliestTime: <span class="string">"10:00"</span>,
+    storeGroup: <span class="string">"group2"</span> | <span class="operator">null</span>
+}
+            </div>
+        </div>
+
+        <div class="section" style="background: #667eea; color: white; border-left: none;">
+            <h2 style="color: white; border-bottom-color: rgba(255,255,255,0.3);">📋 Quick Reference</h2>
+            <ul>
+                <li><strong>優先順序：</strong>白名單 > 黑名單 > 特殊規則 > 通過</li>
+                <li><strong>門市群組：</strong>5個群組，11個門市，優先判斷</li>
+                <li><strong>獨立門市：</strong>16個門市，採用同一門市規則</li>
+                <li><strong>檢查層級：</strong>3道關卡（優先級 → 資格 → 確認）</li>
+                <li><strong>開關控制：</strong>promote過濾預設關閉</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
