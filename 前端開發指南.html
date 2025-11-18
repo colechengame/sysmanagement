@@ -239,6 +239,9 @@
             <div class="warning">
                 <strong>⚠️ 重要：</strong>每個預約對應一封簡訊的設計不變，僅透過「跳過發送」來達到優化
             </div>
+            <div class="success">
+                <strong>✅ 前後端分工：</strong>消耗區域判斷與黑名單檢查由後端處理，前端僅需調用API並處理返回結果（true/false）
+            </div>
         </div>
 
         <!-- 發送判斷邏輯 -->
@@ -274,30 +277,39 @@
 
         <!-- 三道關卡檢查 -->
         <div class="section">
-            <h2>🛡️ 簡訊發送前置檢查流程</h2>
+            <h2>🛡️ 簡訊發送前置檢查流程（三道關卡）</h2>
             <div class="warning">
-                <strong>觸發時機：</strong>所有簡訊發送前都會執行（新建預約、修改預約、取消最早預約補發、新增更早預約）
+                <strong>⭐ 前端核心工作：</strong>三個主要場景的判斷跳窗互動
+                <ul style="margin-top: 10px;">
+                    <li>1️⃣ 新增預約 → 檢查是否需要發送簡訊</li>
+                    <li>2️⃣ 取消簡訊 → 檢查是否可以取消</li>
+                    <li>3️⃣ 重新發送 → 檢查是否可以重新發送</li>
+                </ul>
             </div>
 
             <div class="flow-chart">
-                <div class="flow-step" data-step="1">
-                    <strong>預約時間優先級檢查</strong><br>
-                    <span class="comment">是否為當天在該範圍內的最早預約？</span><br>
-                    <span class="error">❌ 不是最早 → 跳過發送</span><br>
-                    <span class="success">✓ 是最早 → 繼續到第二關</span>
+                <div class="flow-step" data-step="1" style="background: #3c0000; border-left-color: #d9534f;">
+                    <strong style="color: #d9534f;">第一關：客戶黑名單檢查（優先）</strong><br>
+                    <span class="comment" style="color: #999;">檢查客戶的 Mark 欄位和 promote 狀態</span><br>
+                    <span class="error">❌ 在黑名單中 → 顯示提示並結束</span><br>
+                    <span class="success">✓ 通過檢查 → 繼續到第二關</span>
                 </div>
 
                 <div class="flow-step" data-step="2">
-                    <strong>客戶資格檢查</strong><br>
-                    <span class="comment">檢查客戶的 Type 和相關欄位設定</span><br>
-                    <span class="error">❌ 不符合資格 → 顯示提示並結束</span><br>
-                    <span class="success">✓ 通過檢查 → 繼續到第三關</span>
+                    <strong>第二關：預約時間優先級檢查</strong><br>
+                    <span class="comment">是否為當天在該範圍內的最早預約？</span><br>
+                    <span class="error">❌ 不是最早 → 跳過發送</span><br>
+                    <span class="success">✓ 是最早 → 繼續到第三關</span>
                 </div>
 
-                <div class="flow-step" data-step="3">
-                    <strong>用戶最終確認</strong><br>
-                    <span class="comment">進入「發出簡訊內容」介面，由用戶決定是否發送</span>
+                <div class="flow-step" data-step="3" style="background: #e3f2fd; border-left-color: #2196f3;">
+                    <strong>第三關：用戶最終確認（前端互動）</strong><br>
+                    <span class="comment">顯示確認對話框，由用戶決定是否發送</span>
                 </div>
+            </div>
+
+            <div class="success" style="margin-top: 20px;">
+                <strong>✅ 調整原因：</strong>黑名單檢查放第一關可提早攔截不符合資格的客戶，節省後續查詢成本
             </div>
         </div>
 
@@ -504,79 +516,210 @@
 
         <!-- 完整實作範例 -->
         <div class="section">
-            <h2>💻 完整實作範例</h2>
+            <h2>💻 前端實作範例（調用後端API）</h2>
+
+            <div class="success">
+                <strong>⚡ 簡化設計：</strong>前端不需實作複雜判斷邏輯，只需調用後端API並處理返回結果
+            </div>
 
             <div class="code-block">
-<span class="comment">// 簡訊發送前完整檢查流程</span>
-<span class="function">async function</span> <span class="function">checkAndSendSMS</span>(appointment, customer) {
-    <span class="comment">// ===== 第一關：預約時間優先級檢查 =====</span>
-    <span class="operator">const</span> isEarliest = <span class="operator">await</span> <span class="function">checkIfEarliestAppointment</span>(appointment);
-    <span class="operator">if</span> (!isEarliest) {
+<span class="comment">// 簡訊發送前檢查流程（前端實作）</span>
+<span class="function">async function</span> <span class="function">checkAndSendSMS</span>(appointmentId, customerId) {
+    <span class="keyword">try</span> {
+        <span class="comment">// 調用後端API進行完整檢查</span>
+        <span class="operator">const</span> checkResult = <span class="operator">await</span> <span class="function">fetch</span>(<span class="string">'/api/sms/check-eligibility'</span>, {
+            method: <span class="string">'POST'</span>,
+            headers: { <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span> },
+            body: JSON.stringify({
+                appointmentId,
+                customerId
+            })
+        });
+
+        <span class="operator">const</span> result = <span class="operator">await</span> checkResult.json();
+
+        <span class="comment">// 處理後端返回結果</span>
+        <span class="operator">if</span> (!result.eligible) {
+            <span class="comment">// 顯示錯誤提示</span>
+            <span class="function">showErrorMessage</span>(result.reason);
+            <span class="operator">return</span> {
+                success: <span class="operator">false</span>,
+                message: result.reason,
+                checkpoint: result.checkpoint
+            };
+        }
+
+        <span class="comment">// ===== 通過檢查：顯示發送確認介面 =====</span>
+        <span class="operator">const</span> userConfirmed = <span class="operator">await</span> <span class="function">showSMSConfirmDialog</span>(result.smsContent);
+        <span class="operator">if</span> (!userConfirmed) {
+            <span class="operator">return</span> {
+                success: <span class="operator">false</span>,
+                message: <span class="string">'用戶取消發送'</span>
+            };
+        }
+
+        <span class="comment">// 執行發送</span>
+        <span class="operator">const</span> sendResult = <span class="operator">await</span> <span class="function">sendSMS</span>(appointmentId);
+        <span class="operator">return</span> sendResult;
+
+    } <span class="keyword">catch</span> (error) {
+        console.error(<span class="string">'簡訊發送檢查失敗:'</span>, error);
+        <span class="function">showErrorMessage</span>(<span class="string">'系統錯誤，請稍後再試'</span>);
         <span class="operator">return</span> {
             success: <span class="operator">false</span>,
-            message: <span class="string">'此預約不是最早的，跳過發送'</span>
+            message: error.message
         };
     }
-
-    <span class="comment">// ===== 第二關：客戶資格檢查 =====</span>
-    <span class="comment">// 2.1 檢查標註（黑白名單）</span>
-    <span class="operator">const</span> markCheck = <span class="function">checkCustomerEligibility</span>(customer);
-    <span class="operator">if</span> (!markCheck.eligible) {
-        <span class="operator">return</span> {
-            success: <span class="operator">false</span>,
-            message: <span class="string">`客戶資格不符: ${markCheck.reason}`</span>
-        };
-    }
-
-    <span class="comment">// 2.2 檢查promote狀態（若開關打開）</span>
-    <span class="operator">const</span> promoteCheck = <span class="function">checkPromoteStatus</span>(customer);
-    <span class="operator">if</span> (!promoteCheck.eligible) {
-        <span class="operator">return</span> {
-            success: <span class="operator">false</span>,
-            message: <span class="string">`promote狀態不符: ${promoteCheck.reason}`</span>
-        };
-    }
-
-    <span class="comment">// ===== 第三關：顯示發送確認介面 =====</span>
-    <span class="operator">const</span> userConfirmed = <span class="operator">await</span> <span class="function">showSMSConfirmDialog</span>(appointment);
-    <span class="operator">if</span> (!userConfirmed) {
-        <span class="operator">return</span> {
-            success: <span class="operator">false</span>,
-            message: <span class="string">'用戶取消發送'</span>
-        };
-    }
-
-    <span class="comment">// 執行發送</span>
-    <span class="operator">return</span> <span class="operator">await</span> <span class="function">sendSMS</span>(appointment);
 }
 
-<span class="comment">// 檢查是否為最早預約</span>
-<span class="function">async function</span> <span class="function">checkIfEarliestAppointment</span>(appointment) {
-    <span class="operator">const</span> appointmentDate = appointment.date;
-    <span class="operator">const</span> appointmentStore = appointment.store;
-
-    <span class="comment">// 查找門市群組</span>
-    <span class="operator">const</span> storeGroup = <span class="function">findStoreGroup</span>(appointmentStore);
-
-    <span class="operator">let</span> sameRangeAppointments;
-    <span class="operator">if</span> (storeGroup) {
-        <span class="comment">// 規則一：查找同一天、同一群組內的所有預約</span>
-        sameRangeAppointments = <span class="operator">await</span> <span class="function">getAppointments</span>({
-            date: appointmentDate,
-            stores: storeGroup.stores
+<span class="comment">// 顯示確認對話框</span>
+<span class="function">async function</span> <span class="function">showSMSConfirmDialog</span>(smsContent) {
+    <span class="operator">return</span> <span class="operator">new</span> Promise((resolve) => {
+        <span class="comment">// 顯示確認對話框UI</span>
+        <span class="operator">const</span> dialog = <span class="function">createDialog</span>({
+            title: <span class="string">'確認發送簡訊'</span>,
+            content: smsContent,
+            buttons: [
+                {
+                    text: <span class="string">'確認發送'</span>,
+                    onClick: () => resolve(<span class="operator">true</span>)
+                },
+                {
+                    text: <span class="string">'取消'</span>,
+                    onClick: () => resolve(<span class="operator">false</span>)
+                }
+            ]
         });
-    } <span class="operator">else</span> {
-        <span class="comment">// 規則二：查找同一天、同一門市的所有預約</span>
-        sameRangeAppointments = <span class="operator">await</span> <span class="function">getAppointments</span>({
-            date: appointmentDate,
-            store: appointmentStore
+        dialog.show();
+    });
+}
+
+<span class="comment">// 實際發送簡訊</span>
+<span class="function">async function</span> <span class="function">sendSMS</span>(appointmentId) {
+    <span class="operator">const</span> response = <span class="operator">await</span> <span class="function">fetch</span>(<span class="string">'/api/sms/send'</span>, {
+        method: <span class="string">'POST'</span>,
+        headers: { <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span> },
+        body: JSON.stringify({ appointmentId })
+    });
+
+    <span class="operator">return</span> <span class="operator">await</span> response.json();
+}
+            </div>
+        </div>
+
+        <!-- 三大場景互動實作 -->
+        <div class="section">
+            <h2>🎬 三大場景互動實作</h2>
+
+            <h3>場景 1️⃣：新增預約時的簡訊發送</h3>
+            <div class="code-block">
+<span class="comment">// 新增預約後的簡訊發送流程</span>
+<span class="function">async function</span> <span class="function">onAppointmentCreated</span>(appointmentId, customerId) {
+    <span class="comment">// 調用檢查API</span>
+    <span class="operator">const</span> result = <span class="operator">await</span> <span class="function">checkSMSEligibility</span>(appointmentId, customerId);
+
+    <span class="operator">if</span> (!result.eligible) {
+        <span class="comment">// 顯示不符合資格的提示</span>
+        <span class="function">showWarning</span>({
+            title: <span class="string">'無法發送簡訊'</span>,
+            message: result.reason,
+            type: result.checkpoint <span class="comment">// 'blacklist' or 'priority'</span>
         });
+        <span class="operator">return</span>;
     }
 
-    <span class="comment">// 找出最早的預約</span>
-    <span class="operator">const</span> earliestTime = Math.min(...sameRangeAppointments.map(a => a.time));
-    <span class="operator">return</span> appointment.time === earliestTime;
+    <span class="comment">// 通過檢查，顯示確認對話框</span>
+    <span class="operator">const</span> confirmed = <span class="operator">await</span> <span class="function">showConfirmDialog</span>({
+        title: <span class="string">'確認發送簡訊'</span>,
+        content: result.smsContent,
+        confirmText: <span class="string">'發送'</span>,
+        cancelText: <span class="string">'跳過'</span>
+    });
+
+    <span class="operator">if</span> (confirmed) {
+        <span class="operator">await</span> <span class="function">sendSMS</span>(appointmentId);
+        <span class="function">showSuccess</span>(<span class="string">'簡訊已排程發送'</span>);
+    }
 }
+            </div>
+
+            <h3>場景 2️⃣：取消簡訊</h3>
+            <div class="code-block">
+<span class="comment">// 取消已排程的簡訊</span>
+<span class="function">async function</span> <span class="function">onCancelSMS</span>(appointmentId) {
+    <span class="comment">// 檢查是否可以取消（例如：距離發送時間是否超過30分鐘）</span>
+    <span class="operator">const</span> canCancel = <span class="operator">await</span> <span class="function">checkCancelEligibility</span>(appointmentId);
+
+    <span class="operator">if</span> (!canCancel.allowed) {
+        <span class="function">showError</span>({
+            title: <span class="string">'無法取消簡訊'</span>,
+            message: canCancel.reason <span class="comment">// 例如：'距離發送時間不足30分鐘'</span>
+        });
+        <span class="operator">return</span>;
+    }
+
+    <span class="comment">// 顯示取消確認對話框</span>
+    <span class="operator">const</span> confirmed = <span class="operator">await</span> <span class="function">showConfirmDialog</span>({
+        title: <span class="string">'確認取消簡訊'</span>,
+        message: <span class="string">'確定要取消此簡訊發送嗎？'</span>,
+        type: <span class="string">'warning'</span>,
+        confirmText: <span class="string">'確認取消'</span>,
+        cancelText: <span class="string">'保留簡訊'</span>
+    });
+
+    <span class="operator">if</span> (confirmed) {
+        <span class="operator">await</span> <span class="function">cancelSMS</span>(appointmentId);
+        <span class="function">showSuccess</span>(<span class="string">'簡訊已取消'</span>);
+
+        <span class="comment">// 檢查是否需要為次早預約補發簡訊</span>
+        <span class="operator">const</span> nextEarliest = <span class="operator">await</span> <span class="function">checkNextEarliestAppointment</span>(appointmentId);
+        <span class="operator">if</span> (nextEarliest.needsSMS) {
+            <span class="function">showInfo</span>(<span class="string">`系統將為次早預約（${nextEarliest.time}）發送簡訊`</span>);
+        }
+    }
+}
+            </div>
+
+            <h3>場景 3️⃣：重新發送簡訊</h3>
+            <div class="code-block">
+<span class="comment">// 重新發送已取消或失敗的簡訊</span>
+<span class="function">async function</span> <span class="function">onResendSMS</span>(appointmentId, customerId) {
+    <span class="comment">// 重新檢查發送資格（黑名單可能已更新）</span>
+    <span class="operator">const</span> result = <span class="operator">await</span> <span class="function">checkSMSEligibility</span>(appointmentId, customerId);
+
+    <span class="operator">if</span> (!result.eligible) {
+        <span class="function">showWarning</span>({
+            title: <span class="string">'無法重新發送'</span>,
+            message: result.reason,
+            type: result.checkpoint
+        });
+        <span class="operator">return</span>;
+    }
+
+    <span class="comment">// 顯示重新發送確認對話框</span>
+    <span class="operator">const</span> confirmed = <span class="operator">await</span> <span class="function">showConfirmDialog</span>({
+        title: <span class="string">'確認重新發送簡訊'</span>,
+        content: result.smsContent,
+        message: <span class="string">'系統將重新計算發送時間並排程'</span>,
+        confirmText: <span class="string">'重新發送'</span>,
+        cancelText: <span class="string">'取消'</span>
+    });
+
+    <span class="operator">if</span> (confirmed) {
+        <span class="operator">await</span> <span class="function">resendSMS</span>(appointmentId);
+        <span class="function">showSuccess</span>(<span class="string">'簡訊已重新排程發送'</span>);
+    }
+}
+            </div>
+
+            <div class="warning" style="margin-top: 20px;">
+                <strong>💡 對話框設計建議：</strong>
+                <ul style="margin-top: 10px;">
+                    <li>明確顯示原因：當檢查不通過時，清楚告知用戶原因</li>
+                    <li>提供預覽：顯示簡訊內容讓用戶確認</li>
+                    <li>區分類型：不同場景使用不同的對話框樣式（info/warning/error）</li>
+                    <li>操作可逆：提供明確的確認和取消選項</li>
+                </ul>
             </div>
         </div>
 
@@ -654,16 +797,28 @@
 
         <!-- 實作重點提醒 -->
         <div class="section">
-            <h2>⚡ 實作重點提醒</h2>
+            <h2>⚡ 前端實作重點</h2>
 
+            <div class="success">
+                <strong>🎯 前端職責：</strong>
+            </div>
             <ul>
-                <li><strong>檢查時機：</strong>在進入「發出簡訊內容」介面<strong>之前</strong>執行</li>
-                <li><strong>白名單優先：</strong>天使/好友會員豁免所有黑名單規則</li>
-                <li><strong>關鍵字比對：</strong>採用部分匹配（<code>includes</code>）</li>
-                <li><strong>開關預設：</strong>「接受電訪/銷」過濾預設關閉</li>
-                <li><strong>錯誤提示：</strong>不符合資格時顯示明確提示訊息</li>
-                <li><strong>日誌記錄：</strong>記錄因資格檢查而未發送的案例</li>
-                <li><strong>效能考量：</strong>群組查詢建議使用索引優化</li>
+                <li><strong>API調用：</strong>調用後端檢查API，傳入 appointmentId 和 customerId</li>
+                <li><strong>結果處理：</strong>根據後端返回的 eligible（true/false）決定是否繼續</li>
+                <li><strong>錯誤提示：</strong>當 eligible = false 時，顯示後端返回的 reason</li>
+                <li><strong>確認介面：</strong>通過檢查後，顯示簡訊內容確認對話框</li>
+                <li><strong>執行發送：</strong>用戶確認後，調用發送API</li>
+                <li><strong>錯誤處理：</strong>妥善處理API調用失敗的情況</li>
+            </ul>
+
+            <div class="warning">
+                <strong>🔧 後端職責：</strong>
+            </div>
+            <ul>
+                <li><strong>門市群組判斷：</strong>判斷預約是否為最早（消耗區域 or 同一門市）</li>
+                <li><strong>黑白名單檢查：</strong>檢查客戶的 Mark 欄位（白名單、黑名單、特殊規則）</li>
+                <li><strong>Promote檢查：</strong>根據開關設定檢查 promote 狀態</li>
+                <li><strong>返回結果：</strong>返回 { eligible: boolean, reason: string, checkpoint: string }</li>
             </ul>
         </div>
 
