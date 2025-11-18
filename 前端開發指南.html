@@ -244,6 +244,185 @@
             </div>
         </div>
 
+        <!-- 前端核心情境總覽 -->
+        <div class="section">
+            <h2>📱 前端必須知道的核心情境（完整版）</h2>
+
+            <div class="warning" style="background: #2d2d30; border-left-color: #667eea; color: #dcdcaa;">
+                <strong>💡 前端工作重點：</strong>判斷跳窗互動 + API調用 + 結果處理
+            </div>
+
+            <h3>情境 1️⃣：新增預約 → 自動發送簡訊</h3>
+            <div class="config-group">
+                <div class="config-title">觸發時機</div>
+                櫃台人員在系統中新增一筆預約後，系統自動觸發簡訊發送檢查
+            </div>
+            <div class="logic">
+                <strong>前端流程：</strong><br>
+                1️⃣ 調用 <span class="keyword">POST /api/sms/check-eligibility</span> 檢查發送資格<br>
+                2️⃣ 判斷返回結果：<br>
+                　　❌ <span class="error">不符合資格</span> → 顯示原因（如：客戶在黑名單、不是最早預約）<br>
+                　　✅ <span class="success">符合資格</span> → 顯示確認對話框讓用戶決定是否發送<br>
+                3️⃣ 用戶確認後，調用 <span class="keyword">POST /api/sms/send</span> 發送簡訊<br>
+                4️⃣ 顯示發送成功訊息
+            </div>
+            <div class="success">
+                <strong>關鍵點：</strong>即使不是最早預約，也要顯示提示訊息（如：「此客戶今天已有更早的預約，已為該預約發送簡訊」）
+            </div>
+
+            <h3>情境 2️⃣：取消簡訊（不取消預約）→ 次早預約補發</h3>
+            <div class="config-group">
+                <div class="config-title">觸發時機</div>
+                櫃台人員發現客戶來電表示不需要簡訊提醒，或發送時間錯誤需要取消
+            </div>
+            <div class="logic">
+                <strong>前端流程：</strong><br>
+                1️⃣ 調用 <span class="keyword">POST /api/sms/check-cancel-eligibility</span> 檢查是否可取消<br>
+                　　❌ <span class="error">距離發送時間 &lt; 30分鐘</span> → 顯示錯誤「已鎖定無法取消」<br>
+                　　✅ <span class="success">可以取消</span> → 顯示確認對話框<br>
+                2️⃣ 用戶確認後，調用 <span class="keyword">POST /api/sms/cancel</span> 取消簡訊<br>
+                3️⃣ <strong style="color: #f0ad4e;">處理次早預約補發結果</strong>：<br>
+                　　<span style="color: #5cb85c;">✓ 有次早預約且補發成功</span> → 顯示「已為 14:00 預約補發簡訊」<br>
+                　　<span style="color: #f0ad4e;">⚠ 有次早預約但未通過檢查</span> → 顯示「次早預約未通過黑名單檢查」<br>
+                　　<span style="color: #999;">ℹ 無次早預約</span> → 顯示「該客戶當天無其他預約」
+            </div>
+            <div class="error">
+                <strong>⭐ 重點：</strong>後端會自動處理次早預約補發，前端只需接收結果並顯示通知！
+            </div>
+
+            <h3>情境 3️⃣：取消預約 → 同時取消簡訊 + 次早補發</h3>
+            <div class="config-group">
+                <div class="config-title">觸發時機</div>
+                客戶臨時取消預約，需要取消預約並同時取消簡訊
+            </div>
+            <div class="logic">
+                <strong>前端流程：</strong><br>
+                1️⃣ 顯示取消預約確認對話框（包含「是否同時取消簡訊」選項）<br>
+                2️⃣ 如果用戶選擇取消簡訊，執行<strong>情境2️⃣</strong>的流程<br>
+                3️⃣ 同樣需要處理次早預約補發通知
+            </div>
+
+            <h3>情境 4️⃣：修改預約時間 → 調整簡訊發送時間</h3>
+            <div class="config-group">
+                <div class="config-title">觸發時機</div>
+                客戶更改預約時間（例如從 10:00 改到 14:00）
+            </div>
+            <div class="logic">
+                <strong>前端流程：</strong><br>
+                1️⃣ 偵測預約時間變更<br>
+                2️⃣ 檢查該預約是否已有排程簡訊<br>
+                　　<span class="success">✓ 有簡訊</span> → 調用 <span class="keyword">POST /api/sms/update-schedule</span> 更新發送時間<br>
+                　　<span style="color: #999;">✗ 無簡訊</span> → 不處理<br>
+                3️⃣ <strong style="color: #f0ad4e;">重要：</strong>如果修改後的時間不再是「最早預約」，需要重新檢查：<br>
+                　　- 取消此預約的簡訊<br>
+                　　- 為原本的次早預約補發簡訊
+            </div>
+            <div class="warning">
+                <strong>建議：</strong>修改預約時間時，自動調用檢查API，讓後端判斷是否需要調整簡訊
+            </div>
+
+            <h3>情境 5️⃣：重新發送簡訊（已取消/失敗的簡訊）</h3>
+            <div class="config-group">
+                <div class="config-title">觸發時機</div>
+                櫃台人員發現之前取消的簡訊需要重新發送，或發送失敗需要重試
+            </div>
+            <div class="logic">
+                <strong>前端流程：</strong><br>
+                1️⃣ 調用 <span class="keyword">POST /api/sms/check-eligibility</span> 重新檢查資格<br>
+                　　（黑名單可能已更新，優先級可能已改變）<br>
+                2️⃣ 判斷結果並顯示確認對話框<br>
+                3️⃣ 用戶確認後，調用 <span class="keyword">POST /api/sms/resend</span> 重新發送
+            </div>
+            <div class="success">
+                <strong>關鍵點：</strong>重新發送前必須重新檢查，因為客戶狀態可能已改變
+            </div>
+
+            <h3>情境 6️⃣：黑名單客戶建立預約</h3>
+            <div class="config-group">
+                <div class="config-title">觸發時機</div>
+                為 Mark 欄位包含黑名單關鍵字的客戶建立預約
+            </div>
+            <div class="logic">
+                <strong>前端流程：</strong><br>
+                1️⃣ 新增預約後自動檢查簡訊發送資格<br>
+                2️⃣ 後端返回 <span class="error">{ eligible: false, checkpoint: "blacklist", reason: "包含黑名單關鍵字: 拒" }</span><br>
+                3️⃣ 前端顯示提示：<span class="warning">「此客戶在黑名單中，不會發送簡訊」</span><br>
+                4️⃣ 不顯示發送確認對話框，直接跳過
+            </div>
+            <div class="error">
+                <strong>例外：</strong>白名單優先！如果 Mark 包含「天使」或「好友」，即使同時包含黑名單關鍵字也會發送
+            </div>
+
+            <h3>情境 7️⃣：同一天多個預約（同一客戶）</h3>
+            <div class="config-group">
+                <div class="config-title">觸發時機</div>
+                客戶在同一天預約多個療程（例如：10:00 臉部、14:00 身體）
+            </div>
+            <div class="logic">
+                <strong>前端流程：</strong><br>
+                1️⃣ 新增第一個預約（10:00）→ 檢查通過 → 發送簡訊 ✅<br>
+                2️⃣ 新增第二個預約（14:00）→ 檢查返回：<br>
+                　　<span class="warning">{ eligible: false, checkpoint: "priority", reason: "客戶今天已有更早預約(10:00)，已為該預約發送簡訊" }</span><br>
+                3️⃣ 前端顯示資訊提示，不發送簡訊<br>
+                <br>
+                <strong style="color: #f0ad4e;">特殊情況：如果後來取消 10:00 的簡訊</strong><br>
+                4️⃣ 系統自動為 14:00 預約補發簡訊<br>
+                5️⃣ 前端顯示：<span class="success">「已為 14:00 預約補發簡訊」</span>
+            </div>
+
+            <h3>情境 8️⃣：跨群組/跨門市預約</h3>
+            <div class="config-group">
+                <div class="config-title">觸發時機</div>
+                客戶同一天在不同門市/群組都有預約
+            </div>
+            <div class="logic">
+                <strong>範例 A：同一群組內</strong><br>
+                客戶在「羅東岩盤浴」10:00 預約，「羅東光澤」14:00 預約<br>
+                → 兩者屬於同一群組（group2），只發送 10:00 的簡訊<br>
+                <br>
+                <strong>範例 B：不同群組</strong><br>
+                客戶在「羅東光澤」10:00 預約，「台中光澤」14:00 預約<br>
+                → 兩者屬於不同群組（group2 vs group5），<span class="success">兩個預約都發送簡訊</span><br>
+                <br>
+                <strong>範例 C：群組 + 獨立門市</strong><br>
+                客戶在「羅東光澤」10:00 預約，「台北醫美」14:00 預約<br>
+                → 不同範圍，<span class="success">兩個預約都發送簡訊</span>
+            </div>
+            <div class="success">
+                <strong>前端不需判斷：</strong>後端會自動處理群組邏輯，前端只需顯示結果
+            </div>
+
+            <h3>情境 9️⃣：發送時間鎖定（30分鐘規則）</h3>
+            <div class="config-group">
+                <div class="config-title">觸發時機</div>
+                距離簡訊發送時間不足 30 分鐘時，無法取消
+            </div>
+            <div class="logic">
+                <strong>範例：</strong><br>
+                簡訊排程發送時間：今天 18:00<br>
+                現在時間：17:35<br>
+                <br>
+                用戶嘗試取消簡訊：<br>
+                → 後端返回：<span class="error">{ allowed: false, reason: "距離發送時間不足30分鐘，已鎖定", remainingMinutes: 25 }</span><br>
+                → 前端顯示錯誤提示：<span class="error">「簡訊將在 25 分鐘後發送，已鎖定無法取消」</span>
+            </div>
+            <div class="warning">
+                <strong>UI建議：</strong>在簡訊列表中，距離發送時間 &lt; 30分鐘的簡訊，取消按鈕應該顯示為灰色（disabled）
+            </div>
+
+            <div class="success" style="margin-top: 20px; background: #003c00;">
+                <strong>🎯 總結：前端核心職責</strong>
+                <ul style="margin-top: 10px;">
+                    <li>✅ 情境判斷 → 知道什麼時候該調用哪個API</li>
+                    <li>✅ API調用 → 傳入正確的參數（appointmentId, customerId）</li>
+                    <li>✅ 結果處理 → 根據 eligible、checkpoint、reason 顯示對應訊息</li>
+                    <li>✅ UI互動 → 確認對話框、錯誤提示、成功通知</li>
+                    <li>✅ 狀態更新 → 更新預約列表中的簡訊狀態</li>
+                    <li>✅ 次早補發通知 → 接收並顯示次早預約補發結果</li>
+                </ul>
+            </div>
+        </div>
+
         <!-- 發送判斷邏輯 -->
         <div class="section">
             <h2>🔍 發送判斷邏輯（兩層規則）</h2>
