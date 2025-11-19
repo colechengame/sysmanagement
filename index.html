@@ -801,16 +801,57 @@
             }
         }
 
+        /* 漢堡選單按鈕 */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .menu-toggle:active {
+            transform: scale(0.95);
+        }
+
         @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
             .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
+                width: 280px;
+                height: 100vh;
+                position: fixed;
+                left: -280px;
+                top: 0;
+                transition: left 0.3s ease;
+                z-index: 1000;
+            }
+
+            .sidebar.show {
+                left: 0;
             }
 
             .main-wrapper {
                 margin-left: 0;
                 width: 100%;
+            }
+
+            .main-content {
+                padding: 80px 15px 20px 15px;
             }
 
             .sidebar-header {
@@ -827,8 +868,55 @@
 
             .nav-item {
                 margin: 3px 10px;
+                font-size: 15px;
             }
 
+            /* 遮罩層 */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
+            /* 容器和卡片 */
+            .container {
+                padding: 0;
+            }
+
+            .slide {
+                padding: 20px 15px;
+                margin-bottom: 15px;
+            }
+
+            .slide-header {
+                font-size: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            /* 表格響應式 */
+            table {
+                font-size: 13px;
+                display: block;
+                overflow-x: auto;
+            }
+
+            /* 時間軸 */
             .timeline-item.left .timeline-content,
             .timeline-item.right .timeline-content {
                 width: 100%;
@@ -841,10 +929,32 @@
             .timeline-dot {
                 left: 20px;
             }
+
+            /* 卡片式元素 */
+            .sms-showcase {
+                flex-direction: column;
+            }
+
+            .sms-card {
+                width: 100%;
+                margin: 10px 0;
+            }
+
+            /* 按鈕 */
+            .button {
+                width: 100%;
+                margin: 5px 0;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- 漢堡選單按鈕 -->
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+
+    <!-- 遮罩層 -->
+    <div class="sidebar-overlay" onclick="toggleMenu()"></div>
+
     <!-- 左側導航欄 -->
     <div class="sidebar">
         <div class="sidebar-header">
@@ -1701,6 +1811,14 @@
     </div><!-- 結束 main-wrapper -->
 
     <script>
+        // 手機選單切換
+        function toggleMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+
         // 主Tab切換
         function showMainTab(num) {
             // 隱藏所有主Tab內容
@@ -1718,6 +1836,14 @@
 
             // 對應的導航項目加上active
             document.querySelectorAll('.nav-item')[num - 1].classList.add('active');
+
+            // 手機版：關閉選單
+            if (window.innerWidth <= 768) {
+                const sidebar = document.querySelector('.sidebar');
+                const overlay = document.querySelector('.sidebar-overlay');
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
+            }
 
             // 滾動到頂部
             window.scrollTo({ top: 0, behavior: 'smooth' });
