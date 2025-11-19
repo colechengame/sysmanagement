@@ -440,9 +440,11 @@
         }
 
         @media (max-width: 768px) {
+            /* 導航樣式 */
             .floating-nav {
                 width: 50px;
                 padding: 15px 10px;
+                left: 10px;
             }
 
             .nav-title {
@@ -464,6 +466,149 @@
 
             .floating-nav.expanded .nav-list {
                 display: block;
+            }
+
+            /* 容器和間距 */
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+
+            .slide {
+                padding: 20px;
+                margin-bottom: 15px;
+                border-radius: 8px;
+            }
+
+            /* 標題字體 */
+            h1 {
+                font-size: 24px !important;
+                line-height: 1.4;
+            }
+
+            h2 {
+                font-size: 20px;
+                margin-top: 20px;
+            }
+
+            h3 {
+                font-size: 18px;
+            }
+
+            h4 {
+                font-size: 16px;
+            }
+
+            /* 表格響應式 */
+            table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                font-size: 13px;
+            }
+
+            table thead {
+                display: none;
+            }
+
+            table tr {
+                display: block;
+                margin-bottom: 15px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 10px;
+            }
+
+            table td {
+                display: flex;
+                justify-content: space-between;
+                padding: 8px 5px;
+                border: none;
+                text-align: right;
+            }
+
+            table td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                text-align: left;
+                margin-right: 10px;
+            }
+
+            /* 手動為表格添加標籤 */
+            table tbody tr td:nth-child(1):before {
+                content: "時間: ";
+            }
+            table tbody tr td:nth-child(2):before {
+                content: "門市: ";
+            }
+            table tbody tr td:nth-child(3):before {
+                content: "療程: ";
+            }
+            table tbody tr td:nth-child(4):before {
+                content: "群組/規則: ";
+            }
+            table tbody tr td:nth-child(5):before {
+                content: "狀態: ";
+            }
+
+            /* 按鈕樣式 */
+            .button {
+                width: 100%;
+                margin: 5px 0 !important;
+                padding: 14px 20px;
+                font-size: 16px;
+            }
+
+            /* 簡訊確認視窗 */
+            .scenario-card {
+                padding: 15px;
+            }
+
+            /* 訊息框 */
+            .notification-demo,
+            .highlight-box,
+            .info-box,
+            .warning-box,
+            .danger-box,
+            .group-container {
+                padding: 15px;
+                margin: 15px 0;
+            }
+
+            /* 流程步驟 */
+            .flow-step {
+                padding: 12px;
+                margin: 10px 0;
+                font-size: 14px;
+            }
+
+            /* 標籤 */
+            .tag {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+
+            /* 幻燈片編號 */
+            .slide-number {
+                font-size: 18px;
+                padding: 6px 12px;
+            }
+
+            /* 簡訊內容區域 */
+            .scenario-card > div[style*="border: 3px solid"] {
+                padding: 15px !important;
+            }
+
+            /* 列表項間距 */
+            ul, ol {
+                padding-left: 20px;
+            }
+
+            li {
+                margin: 8px 0;
             }
         }
 
