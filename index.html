@@ -773,6 +773,549 @@
             margin-top: 30px;
         }
 
+        /* ===== Tab 5: 互動模擬樣式 ===== */
+        .sim-control-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .sim-panel-section {
+            margin-bottom: 25px;
+        }
+
+        .sim-panel-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .sim-panel-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sim-status-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .sim-status-option {
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            border: 3px solid transparent;
+            font-weight: 500;
+        }
+
+        .sim-status-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .sim-status-option.active {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .sim-status-none {
+            background: #e0e0e0;
+            color: #616161;
+        }
+
+        .sim-status-scheduled {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .sim-status-delivered {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .sim-status-cancelled {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .sim-status-failed {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .sim-scenario-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .sim-scenario-option {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            border: 3px solid transparent;
+        }
+
+        .sim-scenario-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .sim-scenario-option.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .sim-scenario-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .sim-scenario-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .sim-current-state {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .sim-state-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .sim-appointments-display {
+            display: grid;
+            gap: 20px;
+        }
+
+        .sim-appointment-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 6px solid;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .sim-appointment-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .sim-appointment-card.earliest {
+            border-left-color: #ff9800;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        }
+
+        .sim-appointment-card.second {
+            border-left-color: #2196f3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+
+        .sim-appointment-card.new-added {
+            border-left-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            animation: simCardSlideIn 0.5s ease;
+        }
+
+        @keyframes simCardSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .sim-appointment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .sim-appointment-time {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .sim-appointment-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .sim-badge-earliest {
+            background: #ff9800;
+            color: white;
+        }
+
+        .sim-badge-second {
+            background: #2196f3;
+            color: white;
+        }
+
+        .sim-badge-new {
+            background: #4caf50;
+            color: white;
+        }
+
+        .sim-appointment-info {
+            font-size: 15px;
+            color: #666;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .sim-sms-status-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .sim-status-details {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .sim-action-area {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .sim-action-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .sim-action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .sim-action-btn {
+            padding: 15px 35px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .sim-action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+
+        .sim-action-btn:active {
+            transform: translateY(0);
+        }
+
+        .sim-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .sim-btn-success {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .sim-btn-warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+        }
+
+        .sim-btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            color: white;
+        }
+
+        .sim-operation-hint {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .sim-hint-title {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .sim-hint-content {
+            color: #856404;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .sim-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            display: none;
+        }
+
+        .sim-modal.show {
+            display: block;
+        }
+
+        .sim-modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            animation: simFadeIn 0.3s;
+        }
+
+        @keyframes simFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .sim-modal-dialog {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            max-width: 90vw;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+            animation: simModalSlideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes simModalSlideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .sim-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 35px;
+            border-radius: 15px 15px 0 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .sim-modal-body {
+            padding: 35px;
+        }
+
+        .sim-modal-text {
+            font-size: 17px;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        .sim-highlight-box {
+            background: #fff3cd;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .sim-info-section {
+            background: #f8f9fa;
+            border-left: 5px solid #ff9800;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .sim-info-section p {
+            margin: 10px 0;
+            font-size: 15px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .sim-status-badge {
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+
+        .sim-modal-footer {
+            padding: 25px 35px;
+            border-top: 2px solid #f0f0f0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .sim-modal-btn {
+            padding: 14px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .sim-modal-btn-cancel {
+            background: white;
+            color: #333;
+            border: 2px solid #d0d0d0;
+        }
+
+        .sim-modal-btn-cancel:hover {
+            background: #f5f5f5;
+            transform: translateY(-2px);
+        }
+
+        .sim-modal-btn-confirm {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .sim-modal-btn-confirm:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-2px);
+        }
+
+        .sim-toast {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            padding: 20px 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 10000;
+            min-width: 350px;
+            animation: simToastSlideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes simToastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(120%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .sim-toast.show {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sim-toast.success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border-left: 6px solid #28a745;
+        }
+
+        .sim-toast.info {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+            color: #0c5460;
+            border-left: 6px solid #17a2b8;
+        }
+
+        .sim-toast.warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+            border-left: 6px solid #ffc107;
+        }
+
+        .sim-toast-icon {
+            font-size: 28px;
+        }
+
+        .sim-toast-message {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .sim-reset-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .sim-reset-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+        }
+
         /* 響應式設計 */
         @media (max-width: 1024px) {
             .grid-2col {
@@ -978,6 +1521,10 @@
             <div class="nav-item" onclick="showMainTab(4)">
                 <span class="icon">🔍</span>
                 <span>預約查詢互動</span>
+            </div>
+            <div class="nav-item" onclick="showMainTab(5)">
+                <span class="icon">🎮</span>
+                <span>互動模擬</span>
             </div>
         </div>
 
@@ -1807,6 +2354,103 @@
                 <iframe src="預約查詢互動.html" style="width: 100%; min-height: 100vh; border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);" onload="this.style.height = this.contentWindow.document.body.scrollHeight + 'px';"></iframe>
             </div>
         </div>
+
+        <!-- Tab 5: 互動模擬 -->
+        <div id="mainTab5" class="tab-content">
+            <div class="container">
+                <div style="text-align: center; color: white; margin-bottom: 30px;">
+                    <h1 style="font-size: 42px; margin-bottom: 15px;">🎮 簡訊管理系統 - 完整狀態互動模擬</h1>
+                    <p style="font-size: 20px;">體驗不同簡訊狀態下的各種場景處理</p>
+                </div>
+
+                <!-- 控制面板 -->
+                <div class="sim-control-panel">
+                    <!-- 簡訊狀態選擇 -->
+                    <div class="sim-panel-section">
+                        <div class="sim-panel-title">
+                            <span>📊</span>
+                            <span>步驟 1：選擇最早預約的簡訊狀態</span>
+                        </div>
+                        <div class="sim-status-selector">
+                            <div class="sim-status-option sim-status-none active" onclick="selectSimStatus('none')">
+                                <div style="font-size: 20px; margin-bottom: 5px;">❌</div>
+                                <div>未發送</div>
+                            </div>
+                            <div class="sim-status-option sim-status-scheduled" onclick="selectSimStatus('scheduled')">
+                                <div style="font-size: 20px; margin-bottom: 5px;">⏰</div>
+                                <div>排程中</div>
+                            </div>
+                            <div class="sim-status-option sim-status-delivered" onclick="selectSimStatus('delivered')">
+                                <div style="font-size: 20px; margin-bottom: 5px;">✅</div>
+                                <div>已送達</div>
+                            </div>
+                            <div class="sim-status-option sim-status-cancelled" onclick="selectSimStatus('cancelled')">
+                                <div style="font-size: 20px; margin-bottom: 5px;">🚫</div>
+                                <div>已取消</div>
+                            </div>
+                            <div class="sim-status-option sim-status-failed" onclick="selectSimStatus('failed')">
+                                <div style="font-size: 20px; margin-bottom: 5px;">⚠️</div>
+                                <div>發送失敗</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 場景選擇 -->
+                    <div class="sim-panel-section">
+                        <div class="sim-panel-title">
+                            <span>🎯</span>
+                            <span>步驟 2：選擇要測試的場景</span>
+                        </div>
+                        <div class="sim-scenario-selector">
+                            <div class="sim-scenario-option active" onclick="selectSimScenario('add-earlier')">
+                                <div class="sim-scenario-icon">⏰</div>
+                                <div class="sim-scenario-name">新增更早預約</div>
+                            </div>
+                            <div class="sim-scenario-option" onclick="selectSimScenario('cancel-earliest')">
+                                <div class="sim-scenario-icon">🔄</div>
+                                <div class="sim-scenario-name">取消最早預約</div>
+                            </div>
+                            <div class="sim-scenario-option" onclick="selectSimScenario('add-second')">
+                                <div class="sim-scenario-icon">📌</div>
+                                <div class="sim-scenario-name">新增次早預約</div>
+                            </div>
+                            <div class="sim-scenario-option" onclick="selectSimScenario('modify-time')">
+                                <div class="sim-scenario-icon">✏️</div>
+                                <div class="sim-scenario-name">修改預約時間</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 當前狀態 -->
+                <div class="sim-current-state">
+                    <h2 class="sim-state-title">當前預約狀態</h2>
+                    <div class="sim-appointments-display" id="simAppointmentsDisplay">
+                        <!-- 動態生成 -->
+                    </div>
+                </div>
+
+                <!-- 操作區域 -->
+                <div class="sim-action-area">
+                    <h3 class="sim-action-title">操作執行</h3>
+                    <div class="sim-action-buttons" id="simActionButtons">
+                        <!-- 動態生成 -->
+                    </div>
+                    <div class="sim-operation-hint" id="simOperationHint">
+                        <!-- 動態生成 -->
+                    </div>
+                </div>
+
+                <!-- 重置按鈕 -->
+                <button class="sim-reset-btn" onclick="resetSimState()">🔄 重置</button>
+
+                <!-- Modal Container -->
+                <div id="simModalContainer"></div>
+
+                <!-- Toast -->
+                <div id="simToast" class="sim-toast"></div>
+            </div>
+        </div>
         </div><!-- 結束 main-content -->
     </div><!-- 結束 main-wrapper -->
 
@@ -1867,6 +2511,441 @@
             // 情境按鈕加上active
             event.target.classList.add('active');
         }
+
+        // ===== Tab 5: 互動模擬 JavaScript =====
+        // 狀態數據
+        const simSmsStatuses = {
+            'none': {
+                name: '未發送',
+                class: 'sim-status-none',
+                icon: '❌',
+                description: '尚未安排簡訊發送'
+            },
+            'scheduled': {
+                name: '排程中',
+                class: 'sim-status-scheduled',
+                icon: '⏰',
+                description: '已安排發送，等待系統在設定時間自動發送',
+                sendTime: '12/04(四) 18:00'
+            },
+            'delivered': {
+                name: '已送達',
+                class: 'sim-status-delivered',
+                icon: '✅',
+                description: '簡訊已成功送達客戶手機',
+                sentTime: '12/04(四) 18:00'
+            },
+            'cancelled': {
+                name: '已取消',
+                class: 'sim-status-cancelled',
+                icon: '🚫',
+                description: '排程後被手動取消，未實際發送給客戶',
+                cancelledTime: '12/03(三) 15:30'
+            },
+            'failed': {
+                name: '發送失敗',
+                class: 'sim-status-failed',
+                icon: '⚠️',
+                description: '系統嘗試發送但失敗',
+                failReason: '電話號碼錯誤'
+            }
+        };
+
+        let simCurrentStatus = 'none';
+        let simCurrentScenario = 'add-earlier';
+        let simAppointments = [];
+
+        // 初始化模擬系統
+        function initSimulation() {
+            updateSimDisplay();
+        }
+
+        // 選擇狀態
+        function selectSimStatus(status) {
+            simCurrentStatus = status;
+            document.querySelectorAll('.sim-status-option').forEach(el => {
+                el.classList.remove('active');
+            });
+            event.target.closest('.sim-status-option').classList.add('active');
+            updateSimDisplay();
+        }
+
+        // 選擇場景
+        function selectSimScenario(scenario) {
+            simCurrentScenario = scenario;
+            document.querySelectorAll('.sim-scenario-option').forEach(el => {
+                el.classList.remove('active');
+            });
+            event.target.closest('.sim-scenario-option').classList.add('active');
+            updateSimDisplay();
+        }
+
+        // 更新顯示
+        function updateSimDisplay() {
+            const status = simSmsStatuses[simCurrentStatus];
+
+            // 根據場景初始化預約
+            switch(simCurrentScenario) {
+                case 'add-earlier':
+                    simAppointments = [{
+                        time: '14:30', date: '12/05(五)', member: '王小姐',
+                        treatment: '雷射除斑', smsStatus: simCurrentStatus, isEarliest: true
+                    }];
+                    break;
+                case 'cancel-earliest':
+                    simAppointments = [
+                        { time: '14:30', date: '12/05(五)', member: '王小姐',
+                          treatment: '雷射除斑', smsStatus: simCurrentStatus, isEarliest: true },
+                        { time: '16:00', date: '12/05(五)', member: '王小姐',
+                          treatment: '電波拉提', smsStatus: 'none', isSecond: true }
+                    ];
+                    break;
+                case 'add-second':
+                    simAppointments = [{
+                        time: '14:30', date: '12/05(五)', member: '王小姐',
+                        treatment: '雷射除斑', smsStatus: simCurrentStatus, isEarliest: true
+                    }];
+                    break;
+                case 'modify-time':
+                    simAppointments = [{
+                        time: '14:30', date: '12/05(五)', member: '王小姐',
+                        treatment: '雷射除斑', smsStatus: simCurrentStatus, isEarliest: true
+                    }];
+                    break;
+            }
+
+            renderSimAppointments();
+            renderSimActionButtons();
+            renderSimHint();
+        }
+
+        // 渲染預約列表
+        function renderSimAppointments() {
+            const display = document.getElementById('simAppointmentsDisplay');
+            if (!display) return;
+            display.innerHTML = '';
+
+            simAppointments.forEach(apt => {
+                const status = simSmsStatuses[apt.smsStatus];
+                const card = document.createElement('div');
+                card.className = `sim-appointment-card ${apt.isEarliest ? 'earliest' : apt.isSecond ? 'second' : ''}`;
+
+                let badgeHTML = '';
+                if (apt.isEarliest) badgeHTML = '<span class="sim-appointment-badge sim-badge-earliest">最早預約</span>';
+                else if (apt.isSecond) badgeHTML = '<span class="sim-appointment-badge sim-badge-second">次早預約</span>';
+
+                let detailsHTML = '';
+                if (apt.smsStatus !== 'none') {
+                    if (status.sendTime) detailsHTML = `<div class="sim-status-details">預計發送：${status.sendTime}</div>`;
+                    else if (status.sentTime) detailsHTML = `<div class="sim-status-details">發送時間：${status.sentTime}</div>`;
+                    else if (status.cancelledTime) detailsHTML = `<div class="sim-status-details">取消時間：${status.cancelledTime}</div>`;
+                    else if (status.failReason) detailsHTML = `<div class="sim-status-details">失敗原因：${status.failReason}</div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="sim-appointment-header">
+                        <div class="sim-appointment-time">${apt.date} ${apt.time}</div>
+                        ${badgeHTML}
+                    </div>
+                    <div class="sim-appointment-info">會員：${apt.member}<br>療程：${apt.treatment}</div>
+                    <div>
+                        簡訊狀態：<span class="sim-sms-status-display ${status.class}">${status.icon} ${status.name}</span>
+                        ${detailsHTML}
+                    </div>
+                `;
+                display.appendChild(card);
+            });
+        }
+
+        // 渲染操作按鈕
+        function renderSimActionButtons() {
+            const container = document.getElementById('simActionButtons');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const scenarios = {
+                'add-earlier': { button: '⏰ 新增更早預約（10:30）', class: 'sim-btn-primary', action: 'executeSimAddEarlier' },
+                'cancel-earliest': { button: '❌ 取消最早預約（14:30）', class: 'sim-btn-danger', action: 'executeSimCancelEarliest' },
+                'add-second': { button: '📌 新增次早預約（16:00）', class: 'sim-btn-success', action: 'executeSimAddSecond' },
+                'modify-time': { button: '✏️ 修改預約時間（14:30 → 10:30）', class: 'sim-btn-warning', action: 'executeSimModifyTime' }
+            };
+
+            const scenario = scenarios[simCurrentScenario];
+            const btn = document.createElement('button');
+            btn.className = `sim-action-btn ${scenario.class}`;
+            btn.textContent = scenario.button;
+            btn.onclick = window[scenario.action];
+            container.appendChild(btn);
+        }
+
+        // 渲染提示
+        function renderSimHint() {
+            const hint = document.getElementById('simOperationHint');
+            if (!hint) return;
+
+            const hints = {
+                'add-earlier': {
+                    'none': '最早預約未發送簡訊。新增更早預約時，新預約將成為最早並排程簡訊。',
+                    'scheduled': '最早預約已排程簡訊。新增更早預約時，新預約將成為最早，原預約簡訊會被自動取消。',
+                    'delivered': '最早預約簡訊已送達。新增更早預約時，新預約將成為最早並排程簡訊，原預約簡訊已無法取消。',
+                    'cancelled': '最早預約簡訊已取消。新增更早預約時，新預約將成為最早並排程簡訊。',
+                    'failed': '最早預約簡訊發送失敗。新增更早預約時，新預約將成為最早並排程簡訊。'
+                },
+                'cancel-earliest': {
+                    'none': '最早預約未發送簡訊。取消後，次早預約補位並可選擇是否排程簡訊。',
+                    'scheduled': '最早預約已排程簡訊。取消後，該簡訊會被取消，次早預約補位並可選擇是否排程簡訊。',
+                    'delivered': '最早預約簡訊已送達。取消後，次早預約補位並可選擇是否排程簡訊（會員已收到第一則提醒）。',
+                    'cancelled': '最早預約簡訊已取消。取消預約後，次早預約補位並可選擇是否排程簡訊。',
+                    'failed': '最早預約簡訊發送失敗。取消預約後，次早預約補位並可選擇是否排程簡訊。'
+                },
+                'add-second': {
+                    'none': '最早預約未發送簡訊。新增次早預約時，會提示修復最早預約的簡訊狀態。',
+                    'scheduled': '最早預約已排程簡訊。新增次早預約時，次早不發送（遵守 SYSGroup 規則）。',
+                    'delivered': '最早預約簡訊已送達。新增次早預約時，次早不發送（會員已收到提醒）。',
+                    'cancelled': '最早預約簡訊已取消。新增次早預約時，會提示是否重新為最早預約排程簡訊。',
+                    'failed': '最早預約簡訊發送失敗。新增次早預約時，會提示修復最早預約的簡訊問題。'
+                },
+                'modify-time': {
+                    'none': '最早預約未發送簡訊。修改時間為更早時，可選擇是否排程簡訊。',
+                    'scheduled': '最早預約已排程簡訊。修改時間為更早時，需重新計算發送時間並更新排程。',
+                    'delivered': '最早預約簡訊已送達。修改時間為更早時，無法取消已送達的簡訊，需重新發送新的提醒。',
+                    'cancelled': '最早預約簡訊已取消。修改時間為更早時，可選擇是否重新排程簡訊。',
+                    'failed': '最早預約簡訊發送失敗。修改時間為更早時，建議先修復發送問題再重新排程。'
+                }
+            };
+
+            hint.innerHTML = `
+                <div class="sim-hint-title">💡 當前狀態說明</div>
+                <div class="sim-hint-content">${hints[simCurrentScenario][simCurrentStatus]}</div>
+            `;
+        }
+
+        // ===== 執行操作 =====
+        function executeSimAddEarlier() {
+            const status = simSmsStatuses[simCurrentStatus];
+
+            if (simCurrentStatus === 'delivered') {
+                showSimModal(`
+                    <div class="sim-modal-header">新增更早預約</div>
+                    <div class="sim-modal-body">
+                        <p class="sim-modal-text">您新增的預約（<strong>10:30</strong>）將成為最早預約</p>
+                        <div class="sim-info-section">
+                            <p>原最早預約（14:30）簡訊已送達：</p>
+                            <p>狀態：<span class="sim-status-badge ${status.class}">${status.name}</span></p>
+                            <p>發送時間：${status.sentTime}</p>
+                            <p style="color: #f57c00; font-weight: bold;">⚠️ 已送達的簡訊無法取消</p>
+                        </div>
+                        <p class="sim-modal-text">新的最早預約（10:30）將排程新的簡訊</p>
+                    </div>
+                    <div class="sim-modal-footer">
+                        <button class="sim-modal-btn sim-modal-btn-cancel" onclick="closeSimModal()">取消</button>
+                        <button class="sim-modal-btn sim-modal-btn-confirm" onclick="confirmSimAddEarlier()">確認新增</button>
+                    </div>
+                `);
+            } else {
+                showSimModal(`
+                    <div class="sim-modal-header">新增更早預約</div>
+                    <div class="sim-modal-body">
+                        <p class="sim-modal-text">您新增的預約（<strong>10:30</strong>）將成為最早預約</p>
+                        ${simCurrentStatus !== 'none' ? `
+                        <p class="sim-modal-text">
+                            <span class="sim-highlight-box">{確認發送簡訊}</span>後將會自動取消以下簡訊寄送：
+                        </p>
+                        <div class="sim-info-section">
+                            <p>原最早預約（14:30）簡訊排程：</p>
+                            <p>狀態：<span class="sim-status-badge ${status.class}">${status.name}</span></p>
+                            ${status.sendTime ? `<p>預計發送：${status.sendTime}</p>` : ''}
+                            ${status.cancelledTime ? `<p>取消時間：${status.cancelledTime}</p>` : ''}
+                            ${status.failReason ? `<p>失敗原因：${status.failReason}</p>` : ''}
+                        </div>
+                        ` : `<p class="sim-modal-text">新的最早預約（10:30）將排程簡訊</p>`}
+                    </div>
+                    <div class="sim-modal-footer">
+                        <button class="sim-modal-btn sim-modal-btn-cancel" onclick="closeSimModal()">取消</button>
+                        <button class="sim-modal-btn sim-modal-btn-confirm" onclick="confirmSimAddEarlier()">確認發送</button>
+                    </div>
+                `);
+            }
+        }
+
+        function confirmSimAddEarlier() {
+            closeSimModal();
+            simAppointments = [
+                { time: '10:30', date: '12/05(五)', member: '王小姐', treatment: '音波拉提',
+                  smsStatus: 'scheduled', isEarliest: true, isNew: true },
+                { time: '14:30', date: '12/05(五)', member: '王小姐', treatment: '雷射除斑',
+                  smsStatus: simCurrentStatus === 'delivered' ? 'delivered' : 'cancelled' }
+            ];
+            renderSimAppointments();
+            setTimeout(() => {
+                document.querySelector('.sim-appointment-card.earliest').classList.add('new-added');
+            }, 100);
+            showSimToast('success', '✓ 操作成功', '已新增更早預約並排程簡訊');
+        }
+
+        function executeSimAddSecond() {
+            const status = simSmsStatuses[simCurrentStatus];
+
+            if (simCurrentStatus === 'none' || simCurrentStatus === 'cancelled' || simCurrentStatus === 'failed') {
+                showSimModal(`
+                    <div class="sim-modal-header">新增次早預約</div>
+                    <div class="sim-modal-body">
+                        <p class="sim-modal-text">您新增的是次早預約時間（<strong>16:00</strong>）</p>
+                        <p class="sim-modal-text">
+                            <span class="sim-highlight-box">{發送簡訊}</span>後將最早預約簡訊寄送：
+                        </p>
+                        <div class="sim-info-section">
+                            <p>原最早預約（14:30）簡訊排程：</p>
+                            <p>狀態：<span class="sim-status-badge ${status.class}">${status.name}</span></p>
+                            ${status.failReason ? `<p>失敗原因：${status.failReason}</p>` : ''}
+                            ${status.cancelledTime ? `<p>取消時間：${status.cancelledTime}</p>` : ''}
+                            <p>預計發送：12/04(四)18:00</p>
+                        </div>
+                    </div>
+                    <div class="sim-modal-footer">
+                        <button class="sim-modal-btn sim-modal-btn-cancel" onclick="confirmSimAddSecondNoSend()">取消發送</button>
+                        <button class="sim-modal-btn sim-modal-btn-confirm" onclick="confirmSimAddSecondSend()">確認發送</button>
+                    </div>
+                `);
+            } else {
+                simAppointments.push({
+                    time: '16:00', date: '12/05(五)', member: '王小姐',
+                    treatment: '電波拉提', smsStatus: 'none', isSecond: true
+                });
+                renderSimAppointments();
+                showSimToast('info', 'ℹ️ 已新增', '已新增次早預約，最早預約已有簡訊');
+            }
+        }
+
+        function confirmSimAddSecondNoSend() {
+            closeSimModal();
+            simAppointments.push({
+                time: '16:00', date: '12/05(五)', member: '王小姐',
+                treatment: '電波拉提', smsStatus: 'none', isSecond: true
+            });
+            renderSimAppointments();
+            showSimToast('info', 'ℹ️ 已新增', '已新增次早預約，未排程簡訊');
+        }
+
+        function confirmSimAddSecondSend() {
+            closeSimModal();
+            simAppointments[0].smsStatus = 'scheduled';
+            simAppointments.push({
+                time: '16:00', date: '12/05(五)', member: '王小姐',
+                treatment: '電波拉提', smsStatus: 'none', isSecond: true
+            });
+            renderSimAppointments();
+            showSimToast('success', '✓ 操作成功', '已為最早預約排程簡訊，並新增次早預約');
+        }
+
+        function executeSimCancelEarliest() {
+            showSimModal(`
+                <div class="sim-modal-header">取消最早預約</div>
+                <div class="sim-modal-body">
+                    <p class="sim-modal-text">您取消了最早預約（<strong>14:30</strong>）</p>
+                    <p class="sim-modal-text">次早預約（<strong>16:00</strong>）將成為新的最早預約</p>
+                    <p class="sim-modal-text">
+                        <span class="sim-highlight-box">{確認發送簡訊}</span>後將會為次早預約安排簡訊
+                    </p>
+                </div>
+                <div class="sim-modal-footer">
+                    <button class="sim-modal-btn sim-modal-btn-cancel" onclick="closeSimModal()">取消</button>
+                    <button class="sim-modal-btn sim-modal-btn-confirm" onclick="confirmSimCancelEarliest()">確認發送</button>
+                </div>
+            `);
+        }
+
+        function confirmSimCancelEarliest() {
+            closeSimModal();
+            simAppointments = [{
+                time: '16:00', date: '12/05(五)', member: '王小姐',
+                treatment: '電波拉提', smsStatus: 'scheduled', isEarliest: true, isNew: true
+            }];
+            renderSimAppointments();
+            setTimeout(() => {
+                document.querySelector('.sim-appointment-card.earliest').classList.add('new-added');
+            }, 100);
+            showSimToast('success', '✓ 操作成功', '已取消原預約，並為新的最早預約排程簡訊');
+        }
+
+        function executeSimModifyTime() {
+            const status = simSmsStatuses[simCurrentStatus];
+
+            showSimModal(`
+                <div class="sim-modal-header">修改預約時間</div>
+                <div class="sim-modal-body">
+                    <p class="sim-modal-text">您將預約時間從 <strong>14:30</strong> 修改為 <strong>10:30</strong></p>
+                    ${simCurrentStatus === 'scheduled' ? `
+                    <p class="sim-modal-text">原簡訊排程需要更新發送時間</p>
+                    <div class="sim-info-section">
+                        <p>原排程：12/04(四) 18:00</p>
+                        <p>新排程：12/04(四) 18:00（時間不變，但會重新排程）</p>
+                    </div>
+                    ` : simCurrentStatus === 'delivered' ? `
+                    <p class="sim-modal-text">原簡訊已送達，需要發送新的提醒</p>
+                    <div class="sim-info-section">
+                        <p>原簡訊：已於 ${status.sentTime} 送達（內容：14:30）</p>
+                        <p>新簡訊：將重新排程（內容：10:30）</p>
+                    </div>
+                    ` : `<p class="sim-modal-text">是否為修改後的預約排程簡訊？</p>`}
+                </div>
+                <div class="sim-modal-footer">
+                    <button class="sim-modal-btn sim-modal-btn-cancel" onclick="closeSimModal()">取消</button>
+                    <button class="sim-modal-btn sim-modal-btn-confirm" onclick="confirmSimModifyTime()">確認修改</button>
+                </div>
+            `);
+        }
+
+        function confirmSimModifyTime() {
+            closeSimModal();
+            simAppointments[0].time = '10:30';
+            simAppointments[0].smsStatus = 'scheduled';
+            renderSimAppointments();
+            showSimToast('success', '✓ 操作成功', '已修改預約時間並重新排程簡訊');
+        }
+
+        // ===== 通用函數 =====
+        function showSimModal(content) {
+            const container = document.getElementById('simModalContainer');
+            if (!container) return;
+            container.innerHTML = `
+                <div class="sim-modal show">
+                    <div class="sim-modal-overlay" onclick="closeSimModal()"></div>
+                    <div class="sim-modal-dialog">${content}</div>
+                </div>
+            `;
+        }
+
+        function closeSimModal() {
+            const container = document.getElementById('simModalContainer');
+            if (container) container.innerHTML = '';
+        }
+
+        function showSimToast(type, icon, message) {
+            const toast = document.getElementById('simToast');
+            if (!toast) return;
+            toast.className = `sim-toast ${type} show`;
+            toast.innerHTML = `
+                <div class="sim-toast-icon">${icon}</div>
+                <div class="sim-toast-message">${message}</div>
+            `;
+            setTimeout(() => toast.classList.remove('show'), 4000);
+        }
+
+        function resetSimState() {
+            updateSimDisplay();
+            showSimToast('info', '🔄 重置完成', '已恢復初始狀態');
+        }
+
+        // ESC 關閉模態框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeSimModal();
+        });
+
+        // 頁面載入時初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initSimulation();
+        });
     </script>
 </body>
 </html>

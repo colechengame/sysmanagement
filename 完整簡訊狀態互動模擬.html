@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡訊管理系統 - 完整簡訊狀態互動模擬</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.95;
+        }
+
+        /* 控制面板 */
+        .control-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .panel-section {
+            margin-bottom: 25px;
+        }
+
+        .panel-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .panel-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 簡訊狀態選擇 */
+        .status-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .status-option {
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            border: 3px solid transparent;
+            font-weight: 500;
+        }
+
+        .status-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .status-option.active {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .status-none {
+            background: #e0e0e0;
+            color: #616161;
+        }
+
+        .status-scheduled {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-delivered {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status-cancelled {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .status-failed {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        /* 場景選擇 */
+        .scenario-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .scenario-option {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            border: 3px solid transparent;
+        }
+
+        .scenario-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .scenario-option.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .scenario-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .scenario-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* 當前狀態顯示 */
+        .current-state {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .state-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .appointments-display {
+            display: grid;
+            gap: 20px;
+        }
+
+        .appointment-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 6px solid;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .appointment-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .appointment-card.earliest {
+            border-left-color: #ff9800;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        }
+
+        .appointment-card.second {
+            border-left-color: #2196f3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+
+        .appointment-card.new-added {
+            border-left-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            animation: cardSlideIn 0.5s ease;
+        }
+
+        @keyframes cardSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .appointment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .appointment-time {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .appointment-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .badge-earliest {
+            background: #ff9800;
+            color: white;
+        }
+
+        .badge-second {
+            background: #2196f3;
+            color: white;
+        }
+
+        .badge-new {
+            background: #4caf50;
+            color: white;
+        }
+
+        .appointment-info {
+            font-size: 15px;
+            color: #666;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .sms-status-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .status-details {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* 操作區域 */
+        .action-area {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .action-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 15px 35px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            color: white;
+        }
+
+        /* 操作提示 */
+        .operation-hint {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .hint-title {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .hint-content {
+            color: #856404;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            display: none;
+        }
+
+        .modal.show {
+            display: block;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-dialog {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            max-width: 90vw;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 35px;
+            border-radius: 15px 15px 0 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .modal-body {
+            padding: 35px;
+        }
+
+        .modal-text {
+            font-size: 17px;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        .highlight-box {
+            background: #fff3cd;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            border-left: 5px solid #ff9800;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .info-section p {
+            margin: 10px 0;
+            font-size: 15px;
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .status-badge {
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+
+        .modal-footer {
+            padding: 25px 35px;
+            border-top: 2px solid #f0f0f0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .modal-btn {
+            padding: 14px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .modal-btn-cancel {
+            background: white;
+            color: #333;
+            border: 2px solid #d0d0d0;
+        }
+
+        .modal-btn-cancel:hover {
+            background: #f5f5f5;
+            transform: translateY(-2px);
+        }
+
+        .modal-btn-confirm {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .modal-btn-confirm:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-2px);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            padding: 20px 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 10000;
+            min-width: 350px;
+            animation: toastSlideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(120%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .toast.show {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border-left: 6px solid #28a745;
+        }
+
+        .toast.info {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+            color: #0c5460;
+            border-left: 6px solid #17a2b8;
+        }
+
+        .toast.warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+            border-left: 6px solid #ffc107;
+        }
+
+        .toast-icon {
+            font-size: 28px;
+        }
+
+        .toast-message {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        /* 重置按鈕 */
+        .reset-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .reset-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📱 簡訊管理系統 - 完整狀態互動模擬</h1>
+            <p>體驗不同簡訊狀態下的各種場景處理</p>
+        </div>
+
+        <!-- 控制面板 -->
+        <div class="control-panel">
+            <!-- 簡訊狀態選擇 -->
+            <div class="panel-section">
+                <div class="panel-title">
+                    <span>📊</span>
+                    <span>步驟 1：選擇最早預約的簡訊狀態</span>
+                </div>
+                <div class="status-selector">
+                    <div class="status-option status-none active" onclick="selectStatus('none')">
+                        <div style="font-size: 20px; margin-bottom: 5px;">❌</div>
+                        <div>未發送</div>
+                    </div>
+                    <div class="status-option status-scheduled" onclick="selectStatus('scheduled')">
+                        <div style="font-size: 20px; margin-bottom: 5px;">⏰</div>
+                        <div>排程中</div>
+                    </div>
+                    <div class="status-option status-delivered" onclick="selectStatus('delivered')">
+                        <div style="font-size: 20px; margin-bottom: 5px;">✅</div>
+                        <div>已送達</div>
+                    </div>
+                    <div class="status-option status-cancelled" onclick="selectStatus('cancelled')">
+                        <div style="font-size: 20px; margin-bottom: 5px;">🚫</div>
+                        <div>已取消</div>
+                    </div>
+                    <div class="status-option status-failed" onclick="selectStatus('failed')">
+                        <div style="font-size: 20px; margin-bottom: 5px;">⚠️</div>
+                        <div>發送失敗</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 場景選擇 -->
+            <div class="panel-section">
+                <div class="panel-title">
+                    <span>🎯</span>
+                    <span>步驟 2：選擇要測試的場景</span>
+                </div>
+                <div class="scenario-selector">
+                    <div class="scenario-option active" onclick="selectScenario('add-earlier')">
+                        <div class="scenario-icon">⏰</div>
+                        <div class="scenario-name">新增更早預約</div>
+                    </div>
+                    <div class="scenario-option" onclick="selectScenario('cancel-earliest')">
+                        <div class="scenario-icon">🔄</div>
+                        <div class="scenario-name">取消最早預約</div>
+                    </div>
+                    <div class="scenario-option" onclick="selectScenario('add-second')">
+                        <div class="scenario-icon">📌</div>
+                        <div class="scenario-name">新增次早預約</div>
+                    </div>
+                    <div class="scenario-option" onclick="selectScenario('modify-time')">
+                        <div class="scenario-icon">✏️</div>
+                        <div class="scenario-name">修改預約時間</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 當前狀態 -->
+        <div class="current-state">
+            <h2 class="state-title">當前預約狀態</h2>
+            <div class="appointments-display" id="appointmentsDisplay">
+                <!-- 動態生成 -->
+            </div>
+        </div>
+
+        <!-- 操作區域 -->
+        <div class="action-area">
+            <h3 class="action-title">操作執行</h3>
+            <div class="action-buttons" id="actionButtons">
+                <!-- 動態生成 -->
+            </div>
+            <div class="operation-hint" id="operationHint">
+                <!-- 動態生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 重置按鈕 -->
+    <button class="reset-btn" onclick="resetState()">🔄 重置</button>
+
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // 狀態數據
+        const smsStatuses = {
+            'none': {
+                name: '未發送',
+                class: 'status-none',
+                icon: '❌',
+                description: '尚未安排簡訊發送'
+            },
+            'scheduled': {
+                name: '排程中',
+                class: 'status-scheduled',
+                icon: '⏰',
+                description: '已安排發送，等待系統在設定時間自動發送',
+                sendTime: '12/04(四) 18:00'
+            },
+            'delivered': {
+                name: '已送達',
+                class: 'status-delivered',
+                icon: '✅',
+                description: '簡訊已成功送達客戶手機',
+                sentTime: '12/04(四) 18:00'
+            },
+            'cancelled': {
+                name: '已取消',
+                class: 'status-cancelled',
+                icon: '🚫',
+                description: '排程後被手動取消，未實際發送給客戶',
+                cancelledTime: '12/03(三) 15:30'
+            },
+            'failed': {
+                name: '發送失敗',
+                class: 'status-failed',
+                icon: '⚠️',
+                description: '系統嘗試發送但失敗',
+                failReason: '電話號碼錯誤'
+            }
+        };
+
+        let currentStatus = 'none';
+        let currentScenario = 'add-earlier';
+        let appointments = [];
+
+        // 初始化
+        function init() {
+            updateDisplay();
+        }
+
+        // 選擇狀態
+        function selectStatus(status) {
+            currentStatus = status;
+
+            // 更新選中狀態
+            document.querySelectorAll('.status-option').forEach(el => {
+                el.classList.remove('active');
+            });
+            event.target.closest('.status-option').classList.add('active');
+
+            updateDisplay();
+        }
+
+        // 選擇場景
+        function selectScenario(scenario) {
+            currentScenario = scenario;
+
+            // 更新選中狀態
+            document.querySelectorAll('.scenario-option').forEach(el => {
+                el.classList.remove('active');
+            });
+            event.target.closest('.scenario-option').classList.add('active');
+
+            updateDisplay();
+        }
+
+        // 更新顯示
+        function updateDisplay() {
+            const status = smsStatuses[currentStatus];
+
+            // 根據場景初始化預約
+            switch(currentScenario) {
+                case 'add-earlier':
+                    appointments = [
+                        {
+                            time: '14:30',
+                            date: '12/05(五)',
+                            member: '王小姐',
+                            treatment: '雷射除斑',
+                            smsStatus: currentStatus,
+                            isEarliest: true
+                        }
+                    ];
+                    break;
+
+                case 'cancel-earliest':
+                    appointments = [
+                        {
+                            time: '14:30',
+                            date: '12/05(五)',
+                            member: '王小姐',
+                            treatment: '雷射除斑',
+                            smsStatus: currentStatus,
+                            isEarliest: true
+                        },
+                        {
+                            time: '16:00',
+                            date: '12/05(五)',
+                            member: '王小姐',
+                            treatment: '電波拉提',
+                            smsStatus: 'none',
+                            isSecond: true
+                        }
+                    ];
+                    break;
+
+                case 'add-second':
+                    appointments = [
+                        {
+                            time: '14:30',
+                            date: '12/05(五)',
+                            member: '王小姐',
+                            treatment: '雷射除斑',
+                            smsStatus: currentStatus,
+                            isEarliest: true
+                        }
+                    ];
+                    break;
+
+                case 'modify-time':
+                    appointments = [
+                        {
+                            time: '14:30',
+                            date: '12/05(五)',
+                            member: '王小姐',
+                            treatment: '雷射除斑',
+                            smsStatus: currentStatus,
+                            isEarliest: true
+                        }
+                    ];
+                    break;
+            }
+
+            renderAppointments();
+            renderActionButtons();
+            renderHint();
+        }
+
+        // 渲染預約列表
+        function renderAppointments() {
+            const display = document.getElementById('appointmentsDisplay');
+            display.innerHTML = '';
+
+            appointments.forEach(apt => {
+                const status = smsStatuses[apt.smsStatus];
+                const card = document.createElement('div');
+                card.className = `appointment-card ${apt.isEarliest ? 'earliest' : apt.isSecond ? 'second' : ''}`;
+
+                let badgeHTML = '';
+                if (apt.isEarliest) {
+                    badgeHTML = '<span class="appointment-badge badge-earliest">最早預約</span>';
+                } else if (apt.isSecond) {
+                    badgeHTML = '<span class="appointment-badge badge-second">次早預約</span>';
+                }
+
+                let detailsHTML = '';
+                if (apt.smsStatus !== 'none') {
+                    if (status.sendTime) {
+                        detailsHTML = `<div class="status-details">預計發送：${status.sendTime}</div>`;
+                    } else if (status.sentTime) {
+                        detailsHTML = `<div class="status-details">發送時間：${status.sentTime}</div>`;
+                    } else if (status.cancelledTime) {
+                        detailsHTML = `<div class="status-details">取消時間：${status.cancelledTime}</div>`;
+                    } else if (status.failReason) {
+                        detailsHTML = `<div class="status-details">失敗原因：${status.failReason}</div>`;
+                    }
+                }
+
+                card.innerHTML = `
+                    <div class="appointment-header">
+                        <div class="appointment-time">${apt.date} ${apt.time}</div>
+                        ${badgeHTML}
+                    </div>
+                    <div class="appointment-info">
+                        會員：${apt.member}<br>
+                        療程：${apt.treatment}
+                    </div>
+                    <div>
+                        簡訊狀態：<span class="sms-status-display ${status.class}">${status.icon} ${status.name}</span>
+                        ${detailsHTML}
+                    </div>
+                `;
+
+                display.appendChild(card);
+            });
+        }
+
+        // 渲染操作按鈕
+        function renderActionButtons() {
+            const container = document.getElementById('actionButtons');
+            container.innerHTML = '';
+
+            const scenarios = {
+                'add-earlier': {
+                    button: '⏰ 新增更早預約（10:30）',
+                    class: 'btn-primary',
+                    action: 'executeAddEarlier'
+                },
+                'cancel-earliest': {
+                    button: '❌ 取消最早預約（14:30）',
+                    class: 'btn-danger',
+                    action: 'executeCancelEarliest'
+                },
+                'add-second': {
+                    button: '📌 新增次早預約（16:00）',
+                    class: 'btn-success',
+                    action: 'executeAddSecond'
+                },
+                'modify-time': {
+                    button: '✏️ 修改預約時間（14:30 → 10:30）',
+                    class: 'btn-warning',
+                    action: 'executeModifyTime'
+                }
+            };
+
+            const scenario = scenarios[currentScenario];
+            const btn = document.createElement('button');
+            btn.className = `action-btn ${scenario.class}`;
+            btn.textContent = scenario.button;
+            btn.onclick = window[scenario.action];
+            container.appendChild(btn);
+        }
+
+        // 渲染提示
+        function renderHint() {
+            const hint = document.getElementById('operationHint');
+            const status = smsStatuses[currentStatus];
+
+            const hints = {
+                'add-earlier': {
+                    'none': '最早預約未發送簡訊。新增更早預約時，新預約將成為最早並排程簡訊。',
+                    'scheduled': '最早預約已排程簡訊。新增更早預約時，新預約將成為最早，原預約簡訊會被自動取消。',
+                    'delivered': '最早預約簡訊已送達。新增更早預約時，新預約將成為最早並排程簡訊，原預約簡訊已無法取消。',
+                    'cancelled': '最早預約簡訊已取消。新增更早預約時，新預約將成為最早並排程簡訊。',
+                    'failed': '最早預約簡訊發送失敗。新增更早預約時，新預約將成為最早並排程簡訊。'
+                },
+                'cancel-earliest': {
+                    'none': '最早預約未發送簡訊。取消後，次早預約補位並可選擇是否排程簡訊。',
+                    'scheduled': '最早預約已排程簡訊。取消後，該簡訊會被取消，次早預約補位並可選擇是否排程簡訊。',
+                    'delivered': '最早預約簡訊已送達。取消後，次早預約補位並可選擇是否排程簡訊（會員已收到第一則提醒）。',
+                    'cancelled': '最早預約簡訊已取消。取消預約後，次早預約補位並可選擇是否排程簡訊。',
+                    'failed': '最早預約簡訊發送失敗。取消預約後，次早預約補位並可選擇是否排程簡訊。'
+                },
+                'add-second': {
+                    'none': '最早預約未發送簡訊。新增次早預約時，會提示修復最早預約的簡訊狀態。',
+                    'scheduled': '最早預約已排程簡訊。新增次早預約時，次早不發送（遵守 SYSGroup 規則）。',
+                    'delivered': '最早預約簡訊已送達。新增次早預約時，次早不發送（會員已收到提醒）。',
+                    'cancelled': '最早預約簡訊已取消。新增次早預約時，會提示是否重新為最早預約排程簡訊。',
+                    'failed': '最早預約簡訊發送失敗。新增次早預約時，會提示修復最早預約的簡訊問題。'
+                },
+                'modify-time': {
+                    'none': '最早預約未發送簡訊。修改時間為更早時，可選擇是否排程簡訊。',
+                    'scheduled': '最早預約已排程簡訊。修改時間為更早時，需重新計算發送時間並更新排程。',
+                    'delivered': '最早預約簡訊已送達。修改時間為更早時，無法取消已送達的簡訊，需重新發送新的提醒。',
+                    'cancelled': '最早預約簡訊已取消。修改時間為更早時，可選擇是否重新排程簡訊。',
+                    'failed': '最早預約簡訊發送失敗。修改時間為更早時，建議先修復發送問題再重新排程。'
+                }
+            };
+
+            hint.innerHTML = `
+                <div class="hint-title">💡 當前狀態說明</div>
+                <div class="hint-content">${hints[currentScenario][currentStatus]}</div>
+            `;
+        }
+
+        // ===== 執行操作 =====
+        function executeAddEarlier() {
+            const status = smsStatuses[currentStatus];
+
+            if (currentStatus === 'delivered') {
+                showModal(`
+                    <div class="modal-header">新增更早預約</div>
+                    <div class="modal-body">
+                        <p class="modal-text">
+                            您新增的預約（<strong>10:30</strong>）將成為最早預約
+                        </p>
+                        <div class="info-section">
+                            <p>原最早預約（14:30）簡訊已送達：</p>
+                            <p>狀態：<span class="status-badge ${status.class}">${status.name}</span></p>
+                            <p>發送時間：${status.sentTime}</p>
+                            <p style="color: #f57c00; font-weight: bold;">⚠️ 已送達的簡訊無法取消</p>
+                        </div>
+                        <p class="modal-text">新的最早預約（10:30）將排程新的簡訊</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button>
+                        <button class="modal-btn modal-btn-confirm" onclick="confirmAddEarlier()">確認新增</button>
+                    </div>
+                `);
+            } else {
+                showModal(`
+                    <div class="modal-header">新增更早預約</div>
+                    <div class="modal-body">
+                        <p class="modal-text">
+                            您新增的預約（<strong>10:30</strong>）將成為最早預約
+                        </p>
+                        ${currentStatus !== 'none' ? `
+                        <p class="modal-text">
+                            <span class="highlight-box">{確認發送簡訊}</span>後將會自動取消以下簡訊寄送：
+                        </p>
+                        <div class="info-section">
+                            <p>原最早預約（14:30）簡訊排程：</p>
+                            <p>狀態：<span class="status-badge ${status.class}">${status.name}</span></p>
+                            ${status.sendTime ? `<p>預計發送：${status.sendTime}</p>` : ''}
+                            ${status.cancelledTime ? `<p>取消時間：${status.cancelledTime}</p>` : ''}
+                            ${status.failReason ? `<p>失敗原因：${status.failReason}</p>` : ''}
+                        </div>
+                        ` : `
+                        <p class="modal-text">
+                            新的最早預約（10:30）將排程簡訊
+                        </p>
+                        `}
+                    </div>
+                    <div class="modal-footer">
+                        <button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button>
+                        <button class="modal-btn modal-btn-confirm" onclick="confirmAddEarlier()">確認發送</button>
+                    </div>
+                `);
+            }
+        }
+
+        function confirmAddEarlier() {
+            closeModal();
+
+            appointments = [
+                {
+                    time: '10:30',
+                    date: '12/05(五)',
+                    member: '王小姐',
+                    treatment: '音波拉提',
+                    smsStatus: 'scheduled',
+                    isEarliest: true,
+                    isNew: true
+                },
+                {
+                    time: '14:30',
+                    date: '12/05(五)',
+                    member: '王小姐',
+                    treatment: '雷射除斑',
+                    smsStatus: currentStatus === 'delivered' ? 'delivered' : 'cancelled'
+                }
+            ];
+
+            renderAppointments();
+
+            // 添加動畫class
+            setTimeout(() => {
+                document.querySelector('.appointment-card.earliest').classList.add('new-added');
+            }, 100);
+
+            showToast('success', '✓ 操作成功', '已新增更早預約並排程簡訊');
+        }
+
+        function executeAddSecond() {
+            const status = smsStatuses[currentStatus];
+
+            if (currentStatus === 'none' || currentStatus === 'cancelled' || currentStatus === 'failed') {
+                showModal(`
+                    <div class="modal-header">新增次早預約</div>
+                    <div class="modal-body">
+                        <p class="modal-text">您新增的是次早預約時間（<strong>16:00</strong>）</p>
+                        <p class="modal-text">
+                            <span class="highlight-box">{發送簡訊}</span>後將最早預約簡訊寄送：
+                        </p>
+                        <div class="info-section">
+                            <p>原最早預約（14:30）簡訊排程：</p>
+                            <p>狀態：<span class="status-badge ${status.class}">${status.name}</span></p>
+                            ${status.failReason ? `<p>失敗原因：${status.failReason}</p>` : ''}
+                            ${status.cancelledTime ? `<p>取消時間：${status.cancelledTime}</p>` : ''}
+                            <p>預計發送：12/04(四)18:00</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="modal-btn modal-btn-cancel" onclick="confirmAddSecondNoSend()">取消發送</button>
+                        <button class="modal-btn modal-btn-confirm" onclick="confirmAddSecondSend()">確認發送</button>
+                    </div>
+                `);
+            } else {
+                // 已排程或已送達，直接新增
+                appointments.push({
+                    time: '16:00',
+                    date: '12/05(五)',
+                    member: '王小姐',
+                    treatment: '電波拉提',
+                    smsStatus: 'none',
+                    isSecond: true
+                });
+                renderAppointments();
+                showToast('info', 'ℹ️ 已新增', '已新增次早預約，最早預約已有簡訊');
+            }
+        }
+
+        function confirmAddSecondNoSend() {
+            closeModal();
+            appointments.push({
+                time: '16:00',
+                date: '12/05(五)',
+                member: '王小姐',
+                treatment: '電波拉提',
+                smsStatus: 'none',
+                isSecond: true
+            });
+            renderAppointments();
+            showToast('info', 'ℹ️ 已新增', '已新增次早預約，未排程簡訊');
+        }
+
+        function confirmAddSecondSend() {
+            closeModal();
+            appointments[0].smsStatus = 'scheduled';
+            appointments.push({
+                time: '16:00',
+                date: '12/05(五)',
+                member: '王小姐',
+                treatment: '電波拉提',
+                smsStatus: 'none',
+                isSecond: true
+            });
+            renderAppointments();
+            showToast('success', '✓ 操作成功', '已為最早預約排程簡訊，並新增次早預約');
+        }
+
+        function executeCancelEarliest() {
+            showModal(`
+                <div class="modal-header">取消最早預約</div>
+                <div class="modal-body">
+                    <p class="modal-text">您取消了最早預約（<strong>14:30</strong>）</p>
+                    <p class="modal-text">次早預約（<strong>16:00</strong>）將成為新的最早預約</p>
+                    <p class="modal-text">
+                        <span class="highlight-box">{確認發送簡訊}</span>後將會為次早預約安排簡訊
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button>
+                    <button class="modal-btn modal-btn-confirm" onclick="confirmCancelEarliest()">確認發送</button>
+                </div>
+            `);
+        }
+
+        function confirmCancelEarliest() {
+            closeModal();
+            appointments = [
+                {
+                    time: '16:00',
+                    date: '12/05(五)',
+                    member: '王小姐',
+                    treatment: '電波拉提',
+                    smsStatus: 'scheduled',
+                    isEarliest: true,
+                    isNew: true
+                }
+            ];
+            renderAppointments();
+            setTimeout(() => {
+                document.querySelector('.appointment-card.earliest').classList.add('new-added');
+            }, 100);
+            showToast('success', '✓ 操作成功', '已取消原預約，並為新的最早預約排程簡訊');
+        }
+
+        function executeModifyTime() {
+            const status = smsStatuses[currentStatus];
+
+            showModal(`
+                <div class="modal-header">修改預約時間</div>
+                <div class="modal-body">
+                    <p class="modal-text">您將預約時間從 <strong>14:30</strong> 修改為 <strong>10:30</strong></p>
+                    ${currentStatus === 'scheduled' ? `
+                    <p class="modal-text">原簡訊排程需要更新發送時間</p>
+                    <div class="info-section">
+                        <p>原排程：12/04(四) 18:00</p>
+                        <p>新排程：12/04(四) 18:00（時間不變，但會重新排程）</p>
+                    </div>
+                    ` : currentStatus === 'delivered' ? `
+                    <p class="modal-text">原簡訊已送達，需要發送新的提醒</p>
+                    <div class="info-section">
+                        <p>原簡訊：已於 ${status.sentTime} 送達（內容：14:30）</p>
+                        <p>新簡訊：將重新排程（內容：10:30）</p>
+                    </div>
+                    ` : `
+                    <p class="modal-text">是否為修改後的預約排程簡訊？</p>
+                    `}
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button>
+                    <button class="modal-btn modal-btn-confirm" onclick="confirmModifyTime()">確認修改</button>
+                </div>
+            `);
+        }
+
+        function confirmModifyTime() {
+            closeModal();
+            appointments[0].time = '10:30';
+            appointments[0].smsStatus = 'scheduled';
+            renderAppointments();
+            showToast('success', '✓ 操作成功', '已修改預約時間並重新排程簡訊');
+        }
+
+        // ===== 通用函數 =====
+        function showModal(content) {
+            const container = document.getElementById('modalContainer');
+            container.innerHTML = `
+                <div class="modal show">
+                    <div class="modal-overlay" onclick="closeModal()"></div>
+                    <div class="modal-dialog">
+                        ${content}
+                    </div>
+                </div>
+            `;
+        }
+
+        function closeModal() {
+            document.getElementById('modalContainer').innerHTML = '';
+        }
+
+        function showToast(type, icon, message) {
+            const toast = document.getElementById('toast');
+            toast.className = `toast ${type} show`;
+            toast.innerHTML = `
+                <div class="toast-icon">${icon}</div>
+                <div class="toast-message">${message}</div>
+            `;
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        function resetState() {
+            updateDisplay();
+            showToast('info', '🔄 重置完成', '已恢復初始狀態');
+        }
+
+        // ESC 關閉
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // 初始化
+        init();
+    </script>
+</body>
+</html>
