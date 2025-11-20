@@ -278,7 +278,7 @@
         }
         
         // 生成簡訊預覽（包含提示詞區塊）
-        function generateSmsPreview(apt, promptText = '', modalType = 'guide-confirm') {
+        function generateSmsPreview(apt, promptText = '', modalType = 'guide-confirm', question = '') {
             // 計算簡訊內容
             const smsContent = `提醒您：有在【${apt.store}】${apt.date} ${apt.time} ,02-0000-0000,請提前30分鐘於現場報到。`;
             const charCount = smsContent.length;
@@ -289,18 +289,24 @@
             let promptBlockContent = '';
 
             if (promptText) {
+                // 組合提示文字和問句
+                let fullPromptText = promptText;
+                if (question) {
+                    fullPromptText += `<br><br><strong>${question}</strong>`;
+                }
+
                 if (modalType === 'guide-cancel' || isBlacklisted) {
                     // 引導取消模式：紅色警告樣式
-                    promptBlockStyle = 'background: #ffebee; border-left: 4px solid #d32f2f; color: #c62828; padding: 20px; margin: 20px 0; border-radius: 4px; font-weight: 500; font-size: 15px; line-height: 1.6;';
-                    promptBlockContent = `<div style="${promptBlockStyle}">⚠️ ${promptText}</div>`;
+                    promptBlockStyle = 'background: #ffebee; border-left: 4px solid #d32f2f; color: #c62828; padding: 20px; margin: 20px 0; border-radius: 4px; font-weight: 500; font-size: 15px; line-height: 1.8;';
+                    promptBlockContent = `<div style="${promptBlockStyle}">⚠️ ${fullPromptText}</div>`;
                 } else if (modalType === 'guide-confirm') {
                     // 引導確認模式：綠色提示樣式
-                    promptBlockStyle = 'background: #e8f5e9; border-left: 4px solid #388e3c; color: #2e7d32; padding: 20px; margin: 20px 0; border-radius: 4px; font-weight: 500; font-size: 15px; line-height: 1.6;';
-                    promptBlockContent = `<div style="${promptBlockStyle}">✓ ${promptText}</div>`;
+                    promptBlockStyle = 'background: #e8f5e9; border-left: 4px solid #388e3c; color: #2e7d32; padding: 20px; margin: 20px 0; border-radius: 4px; font-weight: 500; font-size: 15px; line-height: 1.8;';
+                    promptBlockContent = `<div style="${promptBlockStyle}">✓ ${fullPromptText}</div>`;
                 } else {
                     // 中性提示：藍色資訊樣式
-                    promptBlockStyle = 'background: #e3f2fd; border-left: 4px solid #1976d2; color: #1565c0; padding: 20px; margin: 20px 0; border-radius: 4px; font-weight: 500; font-size: 15px; line-height: 1.6;';
-                    promptBlockContent = `<div style="${promptBlockStyle}">ℹ️ ${promptText}</div>`;
+                    promptBlockStyle = 'background: #e3f2fd; border-left: 4px solid #1976d2; color: #1565c0; padding: 20px; margin: 20px 0; border-radius: 4px; font-weight: 500; font-size: 15px; line-height: 1.8;';
+                    promptBlockContent = `<div style="${promptBlockStyle}">ℹ️ ${fullPromptText}</div>`;
                 }
             }
 
@@ -326,7 +332,9 @@
         function showModal(body, modalType, confirmAction, cancelAction) {
             cancelAction = cancelAction || confirmAction;
             let header = isBlacklisted ? `<div style="background: #ffebee; padding: 15px; border-radius: 8px 8px 0 0; color: #d32f2f; font-weight: bold; text-align: center;">⚠️ 此會員註記為不收簡訊的黑名單</div>` : '';
-            let modalHtml = `${header}<div class="modal-header" ${header ? 'style="border-radius: 0;"': ''}><h3>${body.title}</h3></div><div class="modal-body">${body.preview || ''}${body.text}</div><div class="modal-footer">${body.footer || '<button id="modal-cancel-btn" class="modal-btn"></button><button id="modal-confirm-btn" class="modal-btn"></button>'}</div>`;
+            // 只在 body.text 有內容時才顯示
+            let textContent = body.text ? `<div style="margin-top: 15px;">${body.text}</div>` : '';
+            let modalHtml = `${header}<div class="modal-header" ${header ? 'style="border-radius: 0;"': ''}><h3>${body.title}</h3></div><div class="modal-body">${body.preview || ''}${textContent}</div><div class="modal-footer">${body.footer || '<button id="modal-cancel-btn" class="modal-btn"></button><button id="modal-confirm-btn" class="modal-btn"></button>'}</div>`;
             const container = document.getElementById('modalContainer');
             container.innerHTML = `<div class="modal show"><div class="modal-overlay"></div><div class="modal-dialog">${modalHtml}</div></div>`;
             const confirmBtn = document.getElementById('modal-confirm-btn');
@@ -365,8 +373,8 @@
                 // 新預約會先被加入，然後 enforceEarliestOnlyRule() 會找出 ID 最小的作為最早
                 const body = {
                     title: '注意：時間衝突',
-                    preview: generateSmsPreview(sameTimeApt, '根據「先來後到」規則，此預約（ID 較小）為最早預約。新增的預約不會發送簡訊。', 'guide-confirm'), // 顯示現有同時間預約（ID較小）
-                    text: `<p class="modal-text">您新增的預約時間（${newAptData.time}）與現有預約衝突。根據「先來後到」規則，將優先處理已存在的預約 (ID: ${sameTimeApt.id})。</p><p class="modal-text">是否要為**此筆現有預約**修正簡訊狀態？</p>`
+                    preview: generateSmsPreview(sameTimeApt, '根據「先來後到」規則，此預約（ID 較小）為最早預約。新增的預約不會發送簡訊。', 'guide-confirm', '是否要為此筆現有預約更新簡訊內容與發送時間？'),
+                    text: ''
                 };
                 showModal(body, 'guide-confirm', (shouldSend) => {
                     closeModal();
@@ -386,8 +394,8 @@
                 // 正常情況：新增的預約時間確實更早
                 const body = {
                     title: '新增更早預約',
-                    preview: generateSmsPreview(newAptData, '系統將為此預約發送簡訊，並自動取消同群組其他預約的簡訊排程。', 'guide-confirm'),
-                    text: '<p class="modal-text">系統將以此內容為新預約發送提醒，並**取消**舊的最早預約排程。是否確認？</p>'
+                    preview: generateSmsPreview(newAptData, '系統將為此預約發送簡訊，並自動取消同群組其他預約的簡訊排程。', 'guide-confirm', '是否確認發送此預約的簡訊？'),
+                    text: ''
                 };
                 showModal(body, 'guide-confirm', (shouldSend) => {
                     closeModal();
@@ -420,8 +428,8 @@
             const newAptData = { id: nextId, time: existingEarliest.time, date: '12/05(五)', member: '王小姐', store: '板橋岩盤浴', sysGroup: 1, creationTime: new Date() };
             const body = {
                 title: '注意：時間衝突',
-                preview: generateSmsPreview(existingEarliest, '根據「先來後到」規則，此預約（ID 較小）為最早預約。新增的預約不會發送簡訊。', 'guide-confirm'), // 顯示舊預約（ID較小）的簡訊內容
-                text: `<p class="modal-text">您新增的預約時間與現有預約衝突。根據「先來後到」規則，將優先處理此筆已存在的預約 (ID: ${existingEarliest.id})。</p><p class="modal-text">是否要為**此筆舊預約**修正簡訊狀態？</p>`
+                preview: generateSmsPreview(existingEarliest, '根據「先來後到」規則，此預約（ID 較小）為最早預約。新增的預約不會發送簡訊。', 'guide-confirm', '是否要為此筆舊預約更新簡訊內容與發送時間？'),
+                text: ''
             };
              showModal(body, 'guide-confirm', (shouldSend) => {
                 closeModal();
@@ -454,8 +462,8 @@
                 // 時間衝突：應用「同時間預約」規則
                 const body = {
                     title: '注意：時間衝突',
-                    preview: generateSmsPreview(sameTimeApt, '根據「先來後到」規則，此預約（ID 較小）為最早預約。新增的預約不會發送簡訊。', 'guide-confirm'),
-                    text: `<p class="modal-text">您新增的預約時間（${newAptData.time}）與現有預約衝突。根據「先來後到」規則，將優先處理已存在的預約 (ID: ${sameTimeApt.id})。</p><p class="modal-text">是否要為**此筆現有預約**修正簡訊狀態？</p>`
+                    preview: generateSmsPreview(sameTimeApt, '根據「先來後到」規則，此預約（ID 較小）為最早預約。新增的預約不會發送簡訊。', 'guide-confirm', '是否要為此筆現有預約更新簡訊內容與發送時間？'),
+                    text: ''
                 };
                 showModal(body, 'guide-confirm', (shouldSend) => {
                     closeModal();
@@ -477,8 +485,8 @@
             if (earliest && ['none', 'cancelled', 'failed'].includes(earliest.smsStatus)) {
                 const body = {
                     title: '注意：最早預約需要處理',
-                    preview: generateSmsPreview(earliest, '系統建議為最早預約修正簡訊狀態。次早預約不會發送簡訊。', 'guide-confirm'),
-                    text: `<p class="modal-text">在新增次早預約的同時，系統發現最早的預約簡訊狀態異常。是否要為此筆**最早的預約**修正並發送簡訊？</p>`
+                    preview: generateSmsPreview(earliest, '系統建議為最早預約修正簡訊狀態。次早預約不會發送簡訊。', 'guide-confirm', '是否要為此筆最早預約更新簡訊內容與發送時間？'),
+                    text: ''
                 };
                 showModal(body, 'guide-confirm', (shouldSend) => {
                     closeModal();
@@ -496,8 +504,8 @@
                 // 情況 A：最早預約簡訊正常，引導取消發送
                 const body = {
                     title: '新增次早預約',
-                    preview: generateSmsPreview(newAptData, '此為次早預約，同群組內已有更早的預約。此預約不會發送簡訊。', 'guide-cancel'),
-                    text: `<p class="modal-text">您新增的是次早預約（${newAptData.time}）。</p><p class="modal-text">此預約不會發送簡訊，是否確認新增？</p>`
+                    preview: generateSmsPreview(newAptData, '此為次早預約，同群組內已有更早的預約。此預約不會發送簡訊。', 'guide-cancel', '是否確認新增此預約？'),
+                    text: ''
                 };
                 showModal(body, 'guide-cancel', (shouldAdd) => {
                      closeModal();
@@ -531,8 +539,8 @@
             const nextEarliest = getEarliestInGroup(groupApts.filter(a => a.id !== earliest.id));
             const body = {
                 title: '取消最早預約',
-                preview: nextEarliest ? generateSmsPreview(nextEarliest, '系統將為此補位預約發送簡訊，並自動取消其他預約的簡訊排程。', 'guide-confirm') : '',
-                text: `<p class="modal-text">您確定要取消預約 (ID: ${earliest.id}, 時間: ${earliest.time})？</p>${nextEarliest ? '<p class="modal-text">系統將為下一筆補位的預約發送提醒。</p>' : '<p class="modal-text">這是該群組最後一筆預約。</p>'}`
+                preview: nextEarliest ? generateSmsPreview(nextEarliest, '系統將為此補位預約發送簡訊，並自動取消其他預約的簡訊排程。', 'guide-confirm', '是否確認為補位預約發送簡訊？') : '',
+                text: nextEarliest ? '' : `<p class="modal-text">這是該群組最後一筆預約，取消後將無預約可補位。</p>`
             };
             showModal(body, 'guide-confirm', (shouldSend) => {
                 closeModal();
@@ -582,8 +590,8 @@
                     // 時間衝突：應用「同時間預約」規則
                     const conflictBody = {
                         title: '注意：時間衝突',
-                        preview: generateSmsPreview(sameTimeApt, '根據「先來後到」規則，此預約（ID 較小）為最早預約。新增的預約不會發送簡訊。', 'guide-confirm'),
-                        text: `<p class="modal-text">您新增的預約時間（${newAptData.time}）與目標群組現有預約衝突。根據「先來後到」規則，將優先處理已存在的預約 (ID: ${sameTimeApt.id})。</p><p class="modal-text">是否要為**此筆現有預約**修正簡訊狀態？</p>`
+                        preview: generateSmsPreview(sameTimeApt, '根據「先來後到」規則，此預約（ID 較小）為最早預約。新增的預約不會發送簡訊。', 'guide-confirm', '是否要為此筆現有預約更新簡訊內容與發送時間？'),
+                        text: ''
                     };
                     showModal(conflictBody, 'guide-confirm', (shouldSend) => {
                         closeModal();
@@ -602,8 +610,8 @@
                     // 正常情況：沒有時間衝突
                     const previewBody = {
                         title: `新增預約至 G${group}`,
-                        preview: generateSmsPreview(newAptData, '系統將為此預約發送簡訊。若此為該群組最早預約，將自動取消其他預約的簡訊排程。', 'guide-confirm'),
-                        text: `<p class="modal-text">系統將以此內容為新預約發送提醒。是否確認？</p>`
+                        preview: generateSmsPreview(newAptData, '系統將為此預約發送簡訊。若此為該群組最早預約，將自動取消其他預約的簡訊排程。', 'guide-confirm', '是否確認發送此預約的簡訊？'),
+                        text: ''
                     };
                     showModal(previewBody, 'guide-confirm', (shouldSend) => {
                         closeModal();
