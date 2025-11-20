@@ -781,6 +781,32 @@
                 <strong>⚠️ 重要前提</strong><br>
                 每個預約對應一封簡訊的設計不變（<strong>不考慮合併簡訊</strong>），僅透過「跳過發送」來達到優化目的
             </div>
+
+            <h2 style="margin-top: 40px;">判斷總流程圖</h2>
+            <div style="margin: 20px 0; border: 2px solid #667eea; border-radius: 10px; padding: 25px;">
+                 <div class="flow-step" data-step="➤" style="background: #f8f9ff; justify-content: center; text-align: center; padding: 20px; font-size: 16px;">
+                    <strong>任何預約操作 (新增/修改/取消)</strong>
+                </div>
+                <div style="text-align: center; font-size: 24px; color: #667eea; margin: 5px 0;">▼</div>
+                <div class="flow-step" data-step="1" style="background: #fff9e6; border-left-color: #ffc107;">
+                    <strong>第一關：客戶資格檢查 (黑/白/特殊名單)</strong><br>
+                    <span style="color: #dc3545; font-size: 13px;"><strong>→ 若不通過，則引導取消發送並引導取消發送。</strong></span>
+                </div>
+                <div style="text-align: center; font-size: 24px; color: #667eea; margin: 5px 0;">▼</div>
+                <div class="flow-step" data-step="2">
+                    <strong>第二關：執行 SYSGroup 規則判斷</strong><br>
+                    <span style="color: #666; font-size: 14px;">判斷是否為群組/門市內的「最早預約」。</span>
+                </div>
+                <div style="text-align: center; font-size: 24px; color: #667eea; margin: 5px 0;">▼</div>
+                <div class="flow-step" data-step="3" style="background: #e3f2fd; border-left-color: #2196f3;">
+                    <strong>第三關：彈出「發送預覽」視窗</strong><br>
+                    <span style="color: #666; font-size: 14px;">根據前兩關的結果，決定彈窗的內容與樣式。</span>
+                </div>
+                <div style="text-align: center; font-size: 24px; color: #667eea; margin: 5px 0;">▼</div>
+                <div class="flow-step" data-step="✓" style="background: #d4edda; border-left-color: #28a745; justify-content: center; text-align: center; padding: 20px; font-size: 16px;">
+                    <strong>使用者最終確認</strong>
+                </div>
+            </div>
         </div>
 
         <!-- 第2張：簡訊發送前置條件 -->
@@ -800,112 +826,66 @@
                 </p>
             </div>
 
-            <h2>完整檢查流程（三道關卡）</h2>
-            <div style="margin: 20px 0;">
-                <div class="flow-step" data-step="1" style="background: #f8f9ff;">
-                    <strong>第一關：預約時間優先級檢查</strong><br>
-                    <span style="color: #666; font-size: 14px;">是否為當天在該範圍（群組/門市）內的最早預約？</span><br>
-                    <span style="color: #dc3545; font-size: 13px;">❌ 不是最早 → 跳過發送</span><br>
-                    <span style="color: #28a745; font-size: 13px;">✓ 是最早 → 繼續到第二關</span>
-                </div>
-                <div class="flow-step" data-step="2" style="background: #fff9e6; border-left-color: #ffc107;">
-                    <strong style="color: #f57c00;">第二關：客戶資格檢查（本頁重點）</strong><br>
-                    <span style="color: #666; font-size: 14px;">檢查客戶的 Type 和相關欄位設定</span><br>
-                    <span style="color: #dc3545; font-size: 13px;">❌ 不符合資格 → 顯示提示並結束</span><br>
-                    <span style="color: #28a745; font-size: 13px;">✓ 通過檢查 → 繼續到第三關</span>
-                </div>
-                <div class="flow-step" data-step="3" style="background: #e3f2fd; border-left-color: #2196f3;">
-                    <strong>第三關：用戶最終確認</strong><br>
-                    <span style="color: #666; font-size: 14px;">進入「發出簡訊內容」介面，由用戶決定是否發送</span>
-                </div>
-            </div>
 
-            <h2 style="margin-top: 30px;">客戶資格檢查規則（第二關詳細說明）</h2>
+
+            <h2 style="margin-top: 30px;">客戶資格檢查規則</h2>
 
             <div class="group-container" style="border-color: #667eea;">
                 <div class="group-title" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>Type: 標註 - 黑白名單規則</span>
+                    <span>最終判斷流程 v2.5</span>
                     <span style="background: #667eea; color: white; padding: 5px 12px; border-radius: 12px; font-size: 12px;">預設啟用</span>
                 </div>
-                
-                <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #28a745;">
-                    <h4 style="color: #155724; margin-bottom: 10px;">⭐ 白名單（最高優先級）</h4>
-                    <p style="line-height: 1.8;">
-                        <strong>Mark 欄位包含以下關鍵字 → 強制通過，可發送簡訊</strong><br>
-                        <span class="store-group" style="background: #28a745;">天使</span>
-                        <span class="store-group" style="background: #28a745;">好友</span>
-                    </p>
-                    <p style="margin-top: 10px; color: #666; font-size: 13px;">
-                        💡 即使同時包含黑名單關鍵字，白名單優先，仍可發送
-                    </p>
-                </div>
 
-                <div style="background: #f8d7da; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #dc3545;">
-                    <h4 style="color: #721c24; margin-bottom: 10px;">🚫 黑名單（若無白名單才生效）</h4>
-                    <p style="line-height: 1.8; margin-bottom: 10px;">
-                        <strong>Mark 欄位包含以下任一關鍵字 → 不發送簡訊</strong>
-                    </p>
-                    <div style="background: white; padding: 12px; border-radius: 6px;">
-                        <span class="store-group" style="background: #dc3545;">無</span>
-                        <span class="store-group" style="background: #dc3545;">拒</span>
-                        <span class="store-group" style="background: #dc3545;">沒</span>
-                        <span class="store-group" style="background: #dc3545;">員工</span>
-                        <span class="store-group" style="background: #dc3545;">醫師</span>
-                        <span class="store-group" style="background: #dc3545;">離職</span>
-                        <span class="store-group" style="background: #dc3545;">暫停</span>
-                        <span class="store-group" style="background: #dc3545;">誤</span>
-                        <span class="store-group" style="background: #dc3545;">簡訊</span>
-                        <span class="store-group" style="background: #dc3545;">澳門</span>
-                        <span class="store-group" style="background: #dc3545;">香港</span>
-                        <span class="store-group" style="background: #dc3545;">大陸</span>
-                        <span class="store-group" style="background: #dc3545;">空號</span>
-                        <span class="store-group" style="background: #dc3545;">非本人</span>
-                        <span class="store-group" style="background: #dc3545;">過世</span>
-                        <span class="store-group" style="background: #dc3545;">往生</span>
-                        <span class="store-group" style="background: #dc3545;">SPY</span>
-                        <span class="store-group" style="background: #dc3545;">孕</span>
-                        <span class="store-group" style="background: #dc3545;">客訴</span>
-                        <span class="store-group" style="background: #dc3545;">歿</span>
-                        <span class="store-group" style="background: #dc3545;">間諜</span>
+                <div class="flow-step" data-step="1" style="background: #f8d7da; border-left-color: #dc3545;">
+                    <strong style="color: #721c24;">第一關：黑名單檢查 (絕對優先)</strong><br>
+                    <span style="color: #666; font-size: 14px;">針對 `Type: 標註` 的預約，檢查 `Mark` 欄位是否包含以下任一關鍵字:</span><br>
+                    <div style="background: white; padding: 8px; border-radius: 6px; margin-top: 5px;">
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">無</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">拒</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">沒</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">員工</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">醫師</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">離職</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">暫停</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">誤</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">簡訊</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">澳門</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">香港</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">大陸</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">空號</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">非本人</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">過世</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">往生</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">SPY</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">孕</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">客訴</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">歿</span>
+                        <span class="store-group" style="background: #dc3545; font-size: 12px;">間諜</span>
                     </div>
-                    <p style="margin-top: 12px; color: #666; font-size: 13px;">
-                        💡 已移除：R、勿、不、V（這些關鍵字已不再作為黑名單）
-                    </p>
+                    <span style="color: #dc3545; font-size: 13px; margin-top:10px; display: block;"><strong>→ 若符合，直接引導取消發送，流程結束。</strong></span>
                 </div>
 
-                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ffc107;">
-                    <h4 style="color: #856404; margin-bottom: 10px;">⚙️ 特殊處理規則</h4>
-                    <table style="margin-top: 10px; font-size: 13px;">
-                        <thead>
-                            <tr>
-                                <th style="width: 15%;">關鍵字</th>
-                                <th style="width: 40%;">規則</th>
-                                <th style="width: 45%;">範例</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>勿</strong></td>
-                                <td>包含「勿」但<strong>不包含</strong>「勿久等」→ 不發送</td>
-                                <td>
-                                    ❌ 「勿打擾」→ 不發送<br>
-                                    ✓ 「勿久等請提早聯繫」→ 可發送
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>不</strong></td>
-                                <td>包含「不」但<strong>不包含</strong>「推/call/摳/電/聯」任一字 → 不發送</td>
-                                <td>
-                                    ❌ 「不想接電話」→ 不發送<br>
-                                    ✓ 「不推」→ 可發送<br>
-                                    ✓ 「不call我」→ 可發送
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <p style="margin-top: 12px; color: #f57c00; font-size: 13px; font-weight: bold;">
-                        ⚠️ 注意：「勿」和「不」雖已從基本黑名單移除，但仍有特殊處理規則
-                    </p>
+                <div class="flow-step" data-step="2" style="background: #fff3cd; border-left-color: #ffc107;">
+                    <strong style="color: #856404;">第二關：特殊規則檢查 (內含白名單例外)</strong><br>
+                    <span style="color: #666; font-size: 14px;">針對 `Type: 標註` 的預約，若 `Mark` 欄位符合以下任一規則，則進行白名單例外檢查。</span><br>
+                    <ul style="font-size: 13px; margin-top: 5px;">
+                        <li>包含「勿」但**不包含**「勿久等」</li>
+                        <li>包含「不」但**不包含**「推/call/摳/電/聯」</li>
+                    </ul>
+                    <span style="color: #28a745; font-size: 13px;"><strong>→ 若同時包含白名單關鍵字 (`天使`, `好友`)，則直接通過，流程結束。</strong></span><br>
+                    <span style="color: #dc3545; font-size: 13px;"><strong>→ 若不含白名單，則引導取消發送，流程結束。</strong></span>
+                </div>
+
+                <div class="flow-step" data-step="3" style="background: #e3f2fd; border-left-color: #2196f3;">
+                    <strong style="color: #0d47a1;">第三關：電訪銷開關檢查</strong><br>
+                    <span style="color: #666; font-size: 14px;">僅當後台開關打開時，檢查 `promote` 欄位是否為 `0`, `10`, `20`。</span><br>
+                    <span style="color: #dc3545; font-size: 13px;"><strong>→ 若開關打開且符合條件，則引導取消發送，流程結束。</strong></span>
+                </div>
+
+                <div class="flow-step" data-step="4" style="background: #d4edda; border-left-color: #28a745;">
+                    <strong style="color: #155724;">第四關：預設通過</strong><br>
+                    <span style="color: #666; font-size: 14px;">若預約資訊能通過前面所有關卡的檢查。</span><br>
+                     <span style="color: #28a745; font-size: 13px;"><strong>→ 正常，可發送。</strong></span>
                 </div>
             </div>
 
@@ -967,76 +947,58 @@
                     <tr>
                         <th style="width: 20%;">Type</th>
                         <th style="width: 30%;">Mark / promote</th>
-                        <th style="width: 35%;">判斷結果</th>
+                        <th style="width: 35%;">判斷結果 (黑名單 > 特殊規則(含白名單) > 電訪銷)</th>
                         <th style="width: 15%;">是否發送</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr style="background: #f0fff4;">
-                        <td>標註</td>
-                        <td>天使會員</td>
-                        <td>白名單優先</td>
-                        <td><span class="tag tag-send">✓ 發送</span></td>
-                    </tr>
-                    <tr style="background: #f0fff4;">
-                        <td>標註</td>
-                        <td>好友推薦</td>
-                        <td>白名單優先</td>
-                        <td><span class="tag tag-send">✓ 發送</span></td>
-                    </tr>
-                    <tr style="background: #f0fff4;">
-                        <td>標註</td>
-                        <td>好友但拒絕推銷</td>
-                        <td>白名單優先，忽略「拒」</td>
-                        <td><span class="tag tag-send">✓ 發送</span></td>
-                    </tr>
                     <tr style="background: #fff5f5;">
                         <td>標註</td>
-                        <td>拒絕推銷</td>
-                        <td>包含黑名單「拒」</td>
+                        <td>好友但拒絕推銷</td>
+                        <td>第一關：命中黑名單「拒」</td>
                         <td><span class="tag tag-skip">✗ 不發送</span></td>
+                    </tr>
+                    <tr style="background: #f0fff4;">
+                        <td>標註</td>
+                        <td>天使不接電話</td>
+                        <td>第二關：命中特殊規則「不」，但同時命中白名單「天使」例外</td>
+                        <td><span class="tag tag-send">✓ 發送</span></td>
                     </tr>
                     <tr style="background: #fff5f5;">
                         <td>標註</td>
                         <td>勿打擾</td>
-                        <td>包含「勿」且無「勿久等」</td>
+                        <td>第二關：命中特殊規則「勿」，且無白名單例外</td>
                         <td><span class="tag tag-skip">✗ 不發送</span></td>
                     </tr>
                     <tr style="background: #f0fff4;">
                         <td>標註</td>
                         <td>勿久等請提早聯繫</td>
-                        <td>包含「勿久等」例外</td>
+                        <td>第二關：未命中「勿」的特殊規則</td>
                         <td><span class="tag tag-send">✓ 發送</span></td>
                     </tr>
-                    <tr style="background: #fff5f5;">
+                     <tr style="background: #f0fff4;">
                         <td>標註</td>
-                        <td>不想接電話</td>
-                        <td>包含「不」但無例外字</td>
-                        <td><span class="tag tag-skip">✗ 不發送</span></td>
-                    </tr>
-                    <tr style="background: #f0fff4;">
-                        <td>標註</td>
-                        <td>不推</td>
-                        <td>包含「不」但有「推」</td>
+                        <td>天使會員</td>
+                        <td>通過所有引導取消發送規則，預設通過</td>
                         <td><span class="tag tag-send">✓ 發送</span></td>
                     </tr>
                     <tr style="background: #fff5f5;">
                         <td>標註</td>
                         <td>員工家屬</td>
-                        <td>包含黑名單「員工」</td>
+                        <td>第一關：命中黑名單「員工」</td>
                         <td><span class="tag tag-skip">✗ 不發送</span></td>
-                    </tr>
-                    <tr style="background: #f0fff4;">
-                        <td>接受電訪/銷</td>
-                        <td>promote = 0（開關關閉）</td>
-                        <td>不檢查此項</td>
-                        <td><span class="tag tag-send">✓ 發送</span></td>
                     </tr>
                     <tr style="background: #fff5f5;">
                         <td>接受電訪/銷</td>
                         <td>promote = 0（開關打開）</td>
-                        <td>拒絕狀態</td>
+                        <td>第三關：命中電訪銷規則</td>
                         <td><span class="tag tag-skip">✗ 不發送</span></td>
+                    </tr>
+                     <tr style="background: #f0fff4;">
+                        <td>接受電訪/銷</td>
+                        <td>promote = 0（開關關閉）</td>
+                        <td>第三關：電訪銷開關未打開，通過</td>
+                        <td><span class="tag tag-send">✓ 發送</span></td>
                     </tr>
                 </tbody>
             </table>
