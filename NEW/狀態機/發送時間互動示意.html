@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡訊自動排程時間軸</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 20px;
+            opacity: 0.95;
+        }
+        
+        .scenario-tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+        
+        .tab-button {
+            background: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .tab-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .tab-button.active {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .scenario-content {
+            display: none;
+        }
+        
+        .scenario-content.active {
+            display: block;
+        }
+        
+        .timeline-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+        
+        .scenario-title {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .scenario-desc {
+            font-size: 18px;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            border-radius: 5px;
+        }
+        
+        .timeline {
+            position: relative;
+            padding: 40px 0;
+        }
+        
+        .timeline-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            transform: translateX(-50%);
+        }
+        
+        .timeline-item {
+            display: flex;
+            margin-bottom: 60px;
+            position: relative;
+        }
+        
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .timeline-item.left {
+            flex-direction: row;
+        }
+        
+        .timeline-item.right {
+            flex-direction: row-reverse;
+        }
+        
+        .timeline-content {
+            width: 45%;
+            padding: 25px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border: 3px solid;
+            position: relative;
+        }
+        
+        .timeline-item.left .timeline-content {
+            margin-right: auto;
+            border-color: #3498db;
+        }
+        
+        .timeline-item.right .timeline-content {
+            margin-left: auto;
+            border-color: #27ae60;
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            border: 5px solid;
+            z-index: 10;
+        }
+        
+        .timeline-item.left .timeline-dot {
+            border-color: #3498db;
+        }
+        
+        .timeline-item.right .timeline-dot {
+            border-color: #27ae60;
+        }
+        
+        .content-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .content-icon {
+            font-size: 32px;
+        }
+        
+        .content-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .content-time {
+            font-size: 18px;
+            color: #e74c3c;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        
+        .content-desc {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+        }
+        
+        .phone-mockup {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .phone-header {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #ecf0f1;
+        }
+        
+        .phone-screen {
+            background: #000;
+            border-radius: 30px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin: 0 auto;
+            max-width: 400px;
+        }
+        
+        .phone-notch {
+            height: 30px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            margin: 0 auto 10px;
+            width: 150px;
+        }
+        
+        .phone-content {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 20px;
+            min-height: 500px;
+        }
+        
+        .sms-bubble {
+            background: #e8f5e9;
+            border-radius: 18px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #27ae60;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .sms-sender {
+            font-size: 14px;
+            color: #27ae60;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .sms-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .sms-time {
+            font-size: 12px;
+            color: #95a5a6;
+            text-align: right;
+        }
+        
+        .info-box {
+            background: #fff3cd;
+            border-left: 5px solid #f39c12;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .info-box h3 {
+            color: #f39c12;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+        
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .info-box li {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #555;
+            padding-left: 25px;
+            position: relative;
+            margin-bottom: 8px;
+        }
+        
+        .info-box li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .highlight {
+            background: #ffeb3b;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        .appointment-time {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-block;
+            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+        }
+        
+        .warning-box {
+            background: #ffebee;
+            border-left: 5px solid #e74c3c;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .warning-box strong {
+            color: #e74c3c;
+            font-size: 16px;
+        }
+        
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 1024px) {
+            .grid-2col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⏰ 簡訊自動排程時間軸</h1>
+            <p>發送端與客戶接收端的完整互動流程</p>
+        </div>
+        
+        <div class="scenario-tabs">
+            <button class="tab-button active" onclick="showScenario(1)">
+                📅 情境一：提前預約
+            </button>
+            <button class="tab-button" onclick="showScenario(2)">
+                ⚡ 情境二：當天緊急預約
+            </button>
+            <button class="tab-button" onclick="showScenario(3)">
+                🚫 情境三：取消與重發
+            </button>
+        </div>
+        
+        <!-- 情境一：提前預約 -->
+        <div id="scenario1" class="scenario-content active">
+            <div class="timeline-container">
+                <div class="scenario-title">
+                    <span>📅</span>
+                    情境一：提前預約（標準流程）
+                </div>
+                <div class="scenario-desc">
+                    <strong>案例：</strong>客戶王小姐在 11/11（週二）下午 14:30 預約一週後 <span class="appointment-time">11/19（三）10:00</span> 的療程
+                </div>
+                
+                <div class="timeline">
+                    <div class="timeline-line"></div>
+                    
+                    <!-- 第一步：建立預約 -->
+                    <div class="timeline-item left">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">📝</span>
+                                <span class="content-title">櫃台建立預約</span>
+                            </div>
+                            <div class="content-time">11/11（二）14:30</div>
+                            <div class="content-desc">
+                                <strong>操作：</strong>櫃台人員在系統中建立預約<br>
+                                <strong>客戶：</strong>王小姐<br>
+                                <strong>療程時間：</strong><span class="appointment-time">11/19（三）10:00</span><br>
+                                <strong>系統狀態：</strong>簡訊狀態顯示「未發送」
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第二步：系統自動排程 -->
+                    <div class="timeline-item right">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">🤖</span>
+                                <span class="content-title">系統自動排程</span>
+                            </div>
+                            <div class="content-time">11/11（二）14:30（立即）</div>
+                            <div class="content-desc">
+                                <strong>邏輯判斷：</strong>預約時間為 <span class="appointment-time">11/19（三）10:00</span>，距離現在超過前一天 18:00<br>
+                                <strong>排程決定：</strong>自動設定在 <span class="highlight">11/18（二）18:00</span> 發送<br>
+                                <strong>系統狀態：</strong>簡訊狀態更新為「排程中」
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第三步：店經理確認 -->
+                    <div class="timeline-item left">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">👨‍💼</span>
+                                <span class="content-title">店經理鼠標懸浮查看</span>
+                            </div>
+                            <div class="content-time">11/11（二）15:00</div>
+                            <div class="content-desc">
+                                <strong>操作：</strong>店經理將鼠標移到「簡訊管理」欄位<br>
+                                <strong>顯示：</strong>色塊淡出，顯示「排程中」狀態<br>
+                                <strong>可執行：</strong>若需要可點擊「取消」按鈕（距發送時間超過30分鐘）
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第四步：系統發送 -->
+                    <div class="timeline-item right">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">📤</span>
+                                <span class="content-title">系統自動發送簡訊</span>
+                            </div>
+                            <div class="content-time">11/18（二）18:00（準時發送）</div>
+                            <div class="content-desc">
+                                <strong>發送內容：</strong>「提醒您有預約：【羅東光澤】<span class="appointment-time">11/19(三) 10:00</span>」<br>
+                                <strong>系統狀態：</strong>簡訊狀態更新為「已送達」<br>
+                                <strong>記錄：</strong>系統記錄發送時間與狀態
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第五步：客戶接收 -->
+                    <div class="timeline-item left">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">📱</span>
+                                <span class="content-title">客戶收到簡訊</span>
+                            </div>
+                            <div class="content-time">11/18（二）18:00（即時接收）</div>
+                            <div class="content-desc">
+                                <strong>王小姐手機顯示：</strong>收到診所提醒簡訊<br>
+                                <strong>效果：</strong>客戶在療程前一天晚上收到提醒，不會忘記預約<br>
+                                <strong>時間充裕：</strong>距離療程還有16小時，若有變動可提前告知
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第六步：客戶到店 -->
+                    <div class="timeline-item right">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">✅</span>
+                                <span class="content-title">客戶準時到店</span>
+                            </div>
+                            <div class="content-time">11/19（三）10:00</div>
+                            <div class="content-desc">
+                                <strong>結果：</strong>王小姐因收到提醒準時到店<br>
+                                <strong>櫃台操作：</strong>更新聯絡狀態為「簡訊」<br>
+                                <strong>統計價值：</strong>系統記錄成功提醒案例，提升到店率
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <h3>💡 情境一重點整理</h3>
+                    <ul>
+                        <li>預約建立後，系統<span class="highlight">立即自動排程</span>在前一天 18:00 發送</li>
+                        <li>店經理隨時可透過鼠標懸浮查看狀態，必要時可取消</li>
+                        <li>客戶在<span class="highlight">療程前一天晚上</span>收到提醒，時間充裕</li>
+                        <li>此為最標準且最常見的流程，適用於90%以上的預約情況</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="phone-mockup">
+                <div class="phone-header">📱 客戶端接收畫面模擬</div>
+                <div class="phone-screen">
+                    <div class="phone-notch"></div>
+                    <div class="phone-content">
+                        <div class="sms-bubble">
+                            <div class="sms-sender">Dr. Shine 醫美診所</div>
+                            <div class="sms-text">
+                                提醒您有預約：【羅東光澤】<span class="appointment-time">11/19(三) 10:00</span>，03-9XX-XXXX，如須改約請聯繫您的專屬諮詢師。
+                            </div>
+                            <div class="sms-time">11/18 18:00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 情境二：當天緊急預約 -->
+        <div id="scenario2" class="scenario-content">
+            <div class="timeline-container">
+                <div class="scenario-title">
+                    <span>⚡</span>
+                    情境二：當天緊急預約（特殊邏輯）
+                </div>
+                <div class="scenario-desc">
+                    <strong>案例：</strong>客戶李先生在 11/12（週二）上午 11:00 致電，希望當天下午 <span class="appointment-time">15:00</span> 做療程
+                </div>
+                
+                <div class="timeline">
+                    <div class="timeline-line"></div>
+                    
+                    <!-- 第一步：緊急預約 -->
+                    <div class="timeline-item left">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">📞</span>
+                                <span class="content-title">客戶來電預約</span>
+                            </div>
+                            <div class="content-time">11/12（二）11:00</div>
+                            <div class="content-desc">
+                                <strong>情況：</strong>李先生來電希望當天下午 <span class="appointment-time">15:00</span> 療程<br>
+                                <strong>櫃台：</strong>確認時段可行，在系統建立預約<br>
+                                <strong>療程時間：</strong><span class="appointment-time">11/12（二）15:00</span>（同一天）
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第二步：系統智能判斷 -->
+                    <div class="timeline-item right">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">🧠</span>
+                                <span class="content-title">系統智能判斷</span>
+                            </div>
+                            <div class="content-time">11/12（二）11:00（立即）</div>
+                            <div class="content-desc">
+                                <strong>邏輯判斷：</strong>預約時間為今天 <span class="appointment-time">15:00</span>，已經超過「前一天 18:00」<br>
+                                <strong>自動調整：</strong>改為在 <span class="highlight">療程前 1 小時</span> 發送<br>
+                                <strong>排程時間：</strong>11/12（二）14:00 發送<br>
+                                <strong>系統狀態：</strong>簡訊狀態顯示「排程中」
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第三步：電話已確認 -->
+                    <div class="timeline-item left">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">💬</span>
+                                <span class="content-title">店經理評估</span>
+                            </div>
+                            <div class="content-time">11/12（二）11:05</div>
+                            <div class="content-desc">
+                                <strong>考量：</strong>客戶剛剛才電話確認，已經知道療程時間<br>
+                                <strong>判斷：</strong>可能不需要再發簡訊<br>
+                                <strong>操作選項：</strong>鼠標移到簡訊管理，點擊「取消」按鈕<br>
+                                <strong>可行性：</strong>距離發送時間還有3小時，可以取消
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第四步：決定保留簡訊 -->
+                    <div class="timeline-item right">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">✅</span>
+                                <span class="content-title">決定保留排程</span>
+                            </div>
+                            <div class="content-time">11/12（二）11:05</div>
+                            <div class="content-desc">
+                                <strong>店經理決定：</strong>還是保留簡訊排程<br>
+                                <strong>原因：</strong>多一次提醒更保險，客戶可能會忘記<br>
+                                <strong>狀態：</strong>維持「排程中」，等待系統在 14:00 自動發送
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第五步：自動發送 -->
+                    <div class="timeline-item left">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">📤</span>
+                                <span class="content-title">系統發送簡訊</span>
+                            </div>
+                            <div class="content-time">11/12（二）14:00</div>
+                            <div class="content-desc">
+                                <strong>發送內容：</strong>「提醒您有預約：【羅東光澤】<span class="appointment-time">11/12(二) 15:00</span>」<br>
+                                <strong>系統狀態：</strong>更新為「已送達」<br>
+                                <strong>時機：</strong>療程前1小時，讓客戶及時準備出門
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第六步：客戶準時到達 -->
+                    <div class="timeline-item right">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">🎯</span>
+                                <span class="content-title">客戶準時到達</span>
+                            </div>
+                            <div class="content-time">11/12（二）15:00</div>
+                            <div class="content-desc">
+                                <strong>結果：</strong>李先生在簡訊提醒後準時到達<br>
+                                <strong>反饋：</strong>「還好有簡訊提醒，差點忘了時間！」<br>
+                                <strong>價值：</strong>即使是緊急預約，系統仍提供完整保障
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <h3>⚡ 情境二重點整理</h3>
+                    <ul>
+                        <li>當預約時間已超過「前一天 18:00」，系統<span class="highlight">自動改為療程前 1 小時</span>發送</li>
+                        <li>店經理可評估是否需要簡訊，電話已確認的情況下可選擇取消</li>
+                        <li>但建議<span class="highlight">保留簡訊排程</span>作為雙重保障，避免客戶遺忘</li>
+                        <li>緊急預約仍能享有完整的自動化提醒服務</li>
+                    </ul>
+                </div>
+                
+                <div class="warning-box">
+                    <strong>⚠️ 注意：</strong>如果建立預約時距離療程時間已不到 1.5 小時（例如 13:40 建立 15:00 的預約），系統會設定為「立即發送」，幾乎沒有時間取消。建議在這種極端緊急的情況下，建立預約後立即檢查簡訊狀態。
+                </div>
+            </div>
+            
+            <div class="phone-mockup">
+                <div class="phone-header">📱 客戶端接收畫面模擬</div>
+                <div class="phone-screen">
+                    <div class="phone-notch"></div>
+                    <div class="phone-content">
+                        <div class="sms-bubble">
+                            <div class="sms-sender">Dr. Shine 醫美診所</div>
+                            <div class="sms-text">
+                                提醒您有預約：【羅東光澤】<span class="appointment-time">11/12(二) 15:00</span>，03-9XX-XXXX，如須改約請聯繫您的專屬諮詢師。
+                            </div>
+                            <div class="sms-time">11/12 14:00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 情境三：取消與重發 -->
+        <div id="scenario3" class="scenario-content">
+            <div class="timeline-container">
+                <div class="scenario-title">
+                    <span>🚫</span>
+                    情境三：取消與重新發送流程
+                </div>
+                <div class="scenario-desc">
+                    <strong>案例：</strong>客戶陳小姐預約 <span class="appointment-time">11/15（五）14:00</span> 療程，但中途有狀況變化需要調整
+                </div>
+                
+                <div class="timeline">
+                    <div class="timeline-line"></div>
+                    
+                    <!-- 第一步：標準建立 -->
+                    <div class="timeline-item left">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">📝</span>
+                                <span class="content-title">建立預約與排程</span>
+                            </div>
+                            <div class="content-time">11/13（三）10:00</div>
+                            <div class="content-desc">
+                                <strong>預約建立：</strong>陳小姐預約 <span class="appointment-time">11/15（五）14:00</span><br>
+                                <strong>系統排程：</strong>自動設定在 11/14（四）18:00 發送<br>
+                                <strong>狀態：</strong>簡訊狀態顯示「排程中」
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第二步：VIP優先電話 -->
+                    <div class="timeline-item right">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">⭐</span>
+                                <span class="content-title">VIP客戶電話確認</span>
+                            </div>
+                            <div class="content-time">11/14（四）10:00</div>
+                            <div class="content-desc">
+                                <strong>政策：</strong>對VIP客戶採取電話優先策略<br>
+                                <strong>操作：</strong>櫃台主動致電陳小姐確認預約<br>
+                                <strong>結果：</strong>電話已接通並確認，客戶已知療程時間<br>
+                                <strong>決定：</strong>不需要再發簡訊了
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第三步：取消簡訊 -->
+                    <div class="timeline-item left">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">❌</span>
+                                <span class="content-title">取消簡訊排程</span>
+                            </div>
+                            <div class="content-time">11/14（四）10:05</div>
+                            <div class="content-desc">
+                                <strong>操作：</strong>櫃台將鼠標移到「簡訊管理」欄位<br>
+                                <strong>顯示：</strong>色塊淡出，出現「取消」按鈕<br>
+                                <strong>執行：</strong>點擊「取消」按鈕<br>
+                                <strong>檢查：</strong>距離發送時間 18:00 還有8小時，大於30分鐘限制 ✅<br>
+                                <strong>結果：</strong>系統狀態更新為「已取消」
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第四步：突發狀況 -->
+                    <div class="timeline-item right">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">📞</span>
+                                <span class="content-title">客戶來電變更</span>
+                            </div>
+                            <div class="content-time">11/14（四）16:00</div>
+                            <div class="content-desc">
+                                <strong>狀況：</strong>陳小姐來電表示臨時有事，想確認能否提前到 <span class="appointment-time">11/15 上午 11:00</span><br>
+                                <strong>處理：</strong>櫃台確認時段可行，更新系統中的預約時間<br>
+                                <strong>問題：</strong>之前的簡訊已取消，需要重新發送提醒
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第五步：重新發送 -->
+                    <div class="timeline-item left">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">🔄</span>
+                                <span class="content-title">重新發送簡訊</span>
+                            </div>
+                            <div class="content-time">11/14（四）16:05</div>
+                            <div class="content-desc">
+                                <strong>操作：</strong>櫃台鼠標移到「已取消」的簡訊管理欄位<br>
+                                <strong>顯示：</strong>出現「重新發送」按鈕<br>
+                                <strong>執行：</strong>點擊「重新發送」<br>
+                                <strong>系統判斷：</strong>新的預約時間為明天 <span class="appointment-time">11:00</span>，但現在已經下午4點<br>
+                                <strong>排程邏輯：</strong>設定在今晚 18:00 發送（仍符合前一天18:00邏輯）<br>
+                                <strong>狀態：</strong>更新為「排程中」
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第六步：成功發送 -->
+                    <div class="timeline-item right">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">✅</span>
+                                <span class="content-title">簡訊成功送達</span>
+                            </div>
+                            <div class="content-time">11/14（四）18:00</div>
+                            <div class="content-desc">
+                                <strong>發送：</strong>系統在排程時間準時發送<br>
+                                <strong>內容：</strong>「提醒您有預約：【羅東光澤】<span class="appointment-time">11/15(五) 11:00</span>」<br>
+                                <strong>狀態：</strong>更新為「已送達」<br>
+                                <strong>客戶：</strong>收到正確的時間提醒
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第七步：順利完成 -->
+                    <div class="timeline-item left">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="content-header">
+                                <span class="content-icon">🎊</span>
+                                <span class="content-title">療程順利完成</span>
+                            </div>
+                            <div class="content-time">11/15（五）11:00</div>
+                            <div class="content-desc">
+                                <strong>結果：</strong>陳小姐準時到達並完成療程<br>
+                                <strong>反饋：</strong>感謝診所能配合時間調整且還有簡訊提醒<br>
+                                <strong>價值：</strong>靈活的取消與重發機制讓服務更有彈性
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <h3>🔄 情境三重點整理</h3>
+                    <ul>
+                        <li><span class="highlight">取消簡訊：</span>當電話已確認或其他原因，可在發送前30分鐘以上取消排程</li>
+                        <li><span class="highlight">重新發送：</span>若後續有需求（時間變更、客戶要求），可隨時重新發送</li>
+                        <li>重新發送後，系統會<span class="highlight">重新計算排程時間</span>（前一天18:00或前1小時）</li>
+                        <li>這個機制提供彈性，讓店經理可根據實際情況靈活調整</li>
+                    </ul>
+                </div>
+                
+                <div class="warning-box">
+                    <strong>🚨 30分鐘鎖定規則：</strong>距離原定發送時間不到30分鐘的簡訊將被鎖定，無法取消。這是為了避免系統已經在準備發送時被打斷。建議盡早決定是否需要取消簡訊。
+                </div>
+                
+                <div class="info-box" style="background: #ffebee; border-color: #e74c3c; margin-top: 20px;">
+                    <h3 style="color: #e74c3c;">📋 發送失敗處理流程</h3>
+                    <ul>
+                        <li><strong>發送失敗原因：</strong>號碼錯誤、客戶停機、網路問題等</li>
+                        <li><strong>系統狀態：</strong>自動標記為「發送失敗」</li>
+                        <li><strong>處理方式：</strong>鼠標移到欄位，點擊「重新發送」</li>
+                        <li><strong>建議：</strong>同時檢查客戶手機號碼是否正確，必要時改用電話聯絡</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="grid-2col">
+                <div class="phone-mockup">
+                    <div class="phone-header">📱 取消前（原計畫）</div>
+                    <div class="phone-screen">
+                        <div class="phone-notch"></div>
+                        <div class="phone-content">
+                            <div style="text-align: center; padding: 40px; color: #95a5a6;">
+                                <div style="font-size: 60px; margin-bottom: 20px;">🚫</div>
+                                <div style="font-size: 18px; line-height: 1.6;">
+                                    <strong>簡訊已取消</strong><br><br>
+                                    因為已電話確認，<br>
+                                    此簡訊未實際發送給客戶
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="phone-mockup">
+                    <div class="phone-header">📱 重新發送後</div>
+                    <div class="phone-screen">
+                        <div class="phone-notch"></div>
+                        <div class="phone-content">
+                            <div class="sms-bubble">
+                                <div class="sms-sender">Dr. Shine 醫美診所</div>
+                                <div class="sms-text">
+                                    提醒您有預約：【羅東光澤】<span class="appointment-time">11/15(五) 11:00</span>，03-9XX-XXXX，如須改約請聯繫您的專屬諮詢師。
+                                </div>
+                                <div class="sms-time">11/14 18:00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showScenario(num) {
+            // 隱藏所有情境
+            document.querySelectorAll('.scenario-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // 移除所有按鈕的active
+            document.querySelectorAll('.tab-button').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // 顯示選中的情境
+            document.getElementById('scenario' + num).classList.add('active');
+            
+            // 按鈕加上active
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>預約查詢 - 聯絡狀態管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h2 {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        
+        th {
+            background: #f8f9fa;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 2px solid #dee2e6;
+            border-right: 1px solid #dee2e6;
+            font-size: 11px;
+        }
+        
+        td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+            border-right: 1px solid #f0f0f0;
+            vertical-align: middle;
+        }
+        
+        tr:hover {
+            background-color: #f8f9ff;
+        }
+        
+        .contact-select {
+            padding: 4px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 11px;
+            min-width: 90px;
+        }
+        
+        .contact-select:disabled {
+            background: #f5f5f5;
+            color: #666;
+        }
+        
+        .contact-select option:disabled {
+            background: #f5f5f5;
+            color: #999;
+            font-style: italic;
+        }
+        
+        /* 聯絡狀況顏色 */
+        .status-none {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+        
+        .status-not-notified {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        
+        .status-no-answer {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        /* 簡訊狀態顏色 */
+        .status-scheduled {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-delivered {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-failed {
+            background: #f5c6cb;
+            color: #721c24;
+        }
+        
+        /* select元素根據選中值變色 */
+        .contact-select.status-none { background: #f8f9fa; color: #6c757d; }
+        .contact-select.status-not-notified { background: #e2e3e5; color: #383d41; }
+        .contact-select.status-no-answer { background: #fff3cd; color: #856404; }
+        .contact-select.status-confirmed { background: #d4edda; color: #155724; }
+        
+        /* 懸浮容器 */
+        .sms-hover-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 32px;
+            padding: 4px;
+            cursor: pointer;
+        }
+        
+        /* 狀態色塊 */
+        .sms-status-block {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            cursor: pointer;
+            min-width: 85px;
+            text-align: center;
+        }
+        
+        .status-none {
+            background: #e0e0e0;
+            color: #616161;
+        }
+        
+        .status-scheduled {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .status-delivered {
+            background: #e8f5e9;
+            color: #388e3c;
+            cursor: default;
+        }
+        
+        .status-cancelled {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+        
+        .status-failed {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+        
+        .status-expired {
+            background: #f5f5f5;
+            color: #9e9e9e;
+            cursor: default;
+        }
+        
+        /* 懸浮操作按鈕 */
+        .sms-hover-actions {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+        
+        /* 懸浮時的效果 */
+        .sms-hover-container:hover .sms-status-block {
+            opacity: 0.15;
+            transform: scale(0.95);
+        }
+        
+        .sms-hover-container:hover .sms-hover-actions {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        /* 已送達和已過期狀態不顯示懸浮效果 */
+        .sms-hover-container:has(.status-delivered):hover .sms-status-block,
+        .sms-hover-container:has(.status-expired):hover .sms-status-block {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .sms-hover-container:has(.status-delivered),
+        .sms-hover-container:has(.status-expired) {
+            cursor: default;
+        }
+        
+        /* 懸浮按鈕樣式 */
+        .hover-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            min-width: 85px;
+            text-align: center;
+        }
+        
+        .hover-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        
+        .hover-btn:active {
+            transform: translateY(0);
+        }
+        
+        .hover-btn-send {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .hover-btn-send:hover {
+            background: #45a049;
+        }
+        
+        .hover-btn-cancel {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .hover-btn-cancel:hover {
+            background: #f57c00;
+        }
+        
+        .hover-btn-resend {
+            background: #03a9f4;
+            color: white;
+        }
+        
+        .hover-btn-resend:hover {
+            background: #0288d1;
+        }
+        
+        .expired-row {
+            background-color: #f8f9fa !important;
+            opacity: 0.7;
+            color: #6c757d;
+        }
+        
+        .expired-row:hover {
+            background-color: #e9ecef !important;
+        }
+        
+        .date-col { width: 80px; }
+        .member-col { width: 90px; }
+        .phone-col { width: 100px; }
+        .contact-col { width: 120px; }
+        .time-col { width: 70px; }
+        .action-col { width: 140px; }
+        .name-col { width: 100px; }
+        .treatment-col { width: 120px; }
+        .staff-col { width: 100px; }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 0;
+            border-radius: 8px;
+            width: 500px;
+            max-width: 90vw;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .close {
+            color: #aaa;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-control:focus {
+            border-color: #4a90e2;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+        
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .char-count {
+            text-align: right;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #dee2e6;
+            text-align: right;
+        }
+        
+        .btn-primary {
+            background: #4a90e2;
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-primary:hover {
+            background: #357abd;
+        }
+        
+        .success-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #d4edda;
+            color: #155724;
+            padding: 12px 20px;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1001;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>📋 預約查詢 - 聯絡狀態管理</h2>
+        <div>
+            <div>2025/10/30 ~ 2025/11/01</div>
+            <div style="font-size: 12px; opacity: 0.9;">當前時間: 2025/10/31 14:00 (模擬)</div>
+        </div>
+    </div>
+    
+    <div style="background: #f8f9fa; padding: 8px 20px; font-size: 11px; border-left: 4px solid #6c757d; margin-bottom: 1px;">
+        <strong>📌 聯絡狀況說明：</strong>
+        <span class="status-none" style="padding: 2px 6px; margin: 0 2px; border-radius: 3px;">請選擇</span>
+        <span class="status-not-notified" style="padding: 2px 6px; margin: 0 2px; border-radius: 3px;">未通知</span>
+        <span class="status-no-answer" style="padding: 2px 6px; margin: 0 2px; border-radius: 3px;">未接</span>
+        <span class="status-confirmed" style="padding: 2px 6px; margin: 0 2px; border-radius: 3px;">確認(電話)</span>
+    </div>
+    
+    <div style="background: #fff3cd; padding: 8px 20px; font-size: 11px; border-left: 4px solid #ffc107; margin-bottom: 1px;">
+        <strong>💡 操作提示：</strong>
+        將鼠標移到「簡訊管理」欄位上，狀態色塊會淡出並顯示操作按鈕
+    </div>
+    
+    <div style="background: #e8f4fd; padding: 8px 20px; font-size: 11px; border-left: 4px solid #4a90e2; margin-bottom: 1px;">
+        <strong>📊 統計資訊：</strong>
+        <span id="statsInfo">載入中...</span>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="date-col">日期</th>
+                    <th class="member-col">會員編號</th>
+                    <th class="name-col">會員名稱</th>
+                    <th class="phone-col">電話</th>
+                    <th style="width: 110px;">簡訊管理</th>
+                    <th class="contact-col">聯絡狀況</th>
+                    <th class="time-col">時間</th>
+                    <th class="treatment-col">療程名稱</th>
+                    <th class="staff-col">處理人員</th>
+                </tr>
+            </thead>
+            <tbody id="appointmentList">
+                <!-- 預約記錄會在這裡動態生成 -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 簡訊發送彈窗 -->
+    <div id="smsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>發出簡訊內容</h3>
+                <span class="close" onclick="closeSmsModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">簡訊內容</label>
+                    <div style="color: #666; font-size: 12px; margin-bottom: 8px;">
+                        預設帶入簡訊模板，每次儲存會覆蓋上次設定。系統將在指定時間自動發送。
+                    </div>
+                    <textarea id="smsContent" class="form-control" placeholder="請輸入簡訊內容...">溫馨提醒：明天有預約【新治皮草都堂】10/31(四) 14:40 課程，看診醫師安排，如改約的話以LINE專業醫護師，皮膚的配合。</textarea>
+                    <div class="char-count">字數限制：<span id="charCount">67</span>/70字</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">是否發送簡訊？</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="sendYes" name="sendSms" value="yes" checked>
+                            <label for="sendYes">發送</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="sendNo" name="sendSms" value="no">
+                            <label for="sendNo">不發送</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">發送時間</label>
+                    <input type="datetime-local" id="sendTime" class="form-control" value="2025-10-31T13:40">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="confirmSms()">確認</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 確認取消對話框 -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content" style="width: 400px;">
+            <div class="modal-header">
+                <h3>⚠️ 確認取消簡訊</h3>
+                <span class="close" onclick="closeConfirmModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage" style="line-height: 1.8; color: #333;"></p>
+                <p style="margin-top: 15px; color: #dc3545; font-size: 13px;">
+                    ⚠️ 取消後將無法恢復排程，需要重新發送。
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" style="background: #6c757d; margin-right: 10px;" onclick="closeConfirmModal()">返回</button>
+                <button class="btn-primary" style="background: #dc3545;" onclick="confirmCancelSms()">確認取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成功提示 -->
+    <div id="successToast" class="success-toast">
+        ✓ 訂下整體成功
+    </div>
+
+    <script>
+        const appointments = [
+            // ========== 昨天 2025/10/30 的預約（都已過期）==========
+            // 已過期 + 已送達
+            {id: 1, date: '2025/10/30', member: 'GT0000001', name: '【VIP】王小明', phone: '0912345678', time: '09:00', treatment: '★3樓-醫美諮詢', staff: '張醫師', contactStatus: '3', smsStatus: 'delivered'},
+            // 已過期 + 已送達
+            {id: 2, date: '2025/10/30', member: 'GT0000002', name: '林美麗', phone: '0923456789', time: '10:30', treatment: '雷射除斑', staff: '李護理師', contactStatus: '3', smsStatus: 'delivered'},
+            // 已過期 + 已取消（不可重發）
+            {id: 3, date: '2025/10/30', member: 'GT0000003', name: '陳大華', phone: '0934567890', time: '13:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '2', smsStatus: 'cancelled'},
+            // 已過期 + 發送失敗（不可重發）
+            {id: 4, date: '2025/10/30', member: 'GT0000004', name: '劉小芳', phone: '0945678901', time: '14:30', treatment: '電痛衝導入', staff: '王技師', contactStatus: '1', smsStatus: 'failed'},
+            // 已過期 + 未發送
+            {id: 5, date: '2025/10/30', member: 'GT0000005', name: '張志明', phone: '0956789012', time: '16:00', treatment: '2樓總店-【醫美】', staff: '電痛衝導入', contactStatus: '', smsStatus: ''},
+            // 已過期 + 排程中（特殊狀況：來不及取消）
+            {id: 6, date: '2025/10/30', member: 'GT0000006', name: '黃美惠', phone: '0967890123', time: '17:30', treatment: '★5樓-純美療程', staff: '超音波導入', contactStatus: '1', smsStatus: 'scheduled'},
+            // 已過期 + 已送達
+            {id: 7, date: '2025/10/30', member: 'GT0000007', name: '吳建宏', phone: '0978901234', time: '19:00', treatment: '雷射除毛', staff: '陳技師', contactStatus: '3', smsStatus: 'delivered'},
+            
+            // ========== 今天 2025/10/31 的預約（14:00前已過期，之後未過期）==========
+            // 已過期 + 已送達
+            {id: 8, date: '2025/10/31', member: 'GT0000008', name: '蔡淑女', phone: '0989012345', time: '09:00', treatment: '★3樓-醫美諮詢', staff: '李醫師', contactStatus: '3', smsStatus: 'delivered'},
+            // 已過期 + 已送達
+            {id: 9, date: '2025/10/31', member: 'GT0000009', name: '鄭大明', phone: '0990123456', time: '10:30', treatment: '電波拉提', staff: '張技師', contactStatus: '3', smsStatus: 'delivered'},
+            // 已過期 + 已取消
+            {id: 10, date: '2025/10/31', member: 'GT0000010', name: '許雅芬', phone: '0901234567', time: '12:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '2', smsStatus: 'cancelled'},
+            // 已過期 + 發送失敗
+            {id: 11, date: '2025/10/31', member: 'GT0000011', name: '【不可約】陳...', phone: '0916795179', time: '13:30', treatment: '★5樓-純美療程', staff: '電痛衝導入', contactStatus: '1', smsStatus: 'failed'},
+            
+            // --- 今天 14:00 之後（未過期）---
+            // 未過期 + 未發送（可發送）
+            {id: 12, date: '2025/10/31', member: 'GT0000012', name: '馬小玲', phone: '0912345679', time: '15:00', treatment: '雷射美白', staff: '王護理師', contactStatus: '1', smsStatus: ''},
+            // 未過期 + 排程中（可取消）
+            {id: 13, date: '2025/10/31', member: 'GT0000013', name: '周美美', phone: '0923456780', time: '16:00', treatment: '★3樓-醫美諮詢', staff: '陳醫師', contactStatus: '2', smsStatus: 'scheduled'},
+            // 未過期 + 已送達（無操作）
+            {id: 14, date: '2025/10/31', member: 'GT0000014', name: '【VIP】李董', phone: '0934567891', time: '17:00', treatment: '電痛衝導入', staff: '李技師', contactStatus: '3', smsStatus: 'delivered'},
+            // 未過期 + 已取消（可重發）
+            {id: 15, date: '2025/10/31', member: 'GT0000015', name: '趙雅婷', phone: '0945678902', time: '18:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '1', smsStatus: 'cancelled'},
+            // 未過期 + 發送失敗（可重發）
+            {id: 16, date: '2025/10/31', member: 'GT0000016', name: '錢大富', phone: '0956789013', time: '19:00', treatment: '2樓總店-【醫美】', staff: '超音波導入', contactStatus: '2', smsStatus: 'failed'},
+            
+            // ========== 明天 2025/11/01 的預約（都未過期）==========
+            // 未過期 + 排程中
+            {id: 17, date: '2025/11/01', member: 'GT0000017', name: '孫小美', phone: '0967890124', time: '09:00', treatment: '雷射除斑', staff: '張護理師', contactStatus: '3', smsStatus: 'scheduled'},
+            // 未過期 + 未發送
+            {id: 18, date: '2025/11/01', member: 'GT0000018', name: '李大偉', phone: '0978901235', time: '10:30', treatment: '★5樓-純美療程', staff: '電痛衝導入', contactStatus: '1', smsStatus: ''},
+            // 未過期 + 已送達
+            {id: 19, date: '2025/11/01', member: 'GT0000019', name: '謝美慧', phone: '0989012346', time: '13:00', treatment: '電波拉提', staff: '王技師', contactStatus: '3', smsStatus: 'delivered'},
+            // 未過期 + 未發送
+            {id: 20, date: '2025/11/01', member: 'GT0000020', name: '楊志強', phone: '0990123457', time: '14:30', treatment: '★3樓-醫美諮詢', staff: '李醫師', contactStatus: '', smsStatus: ''},
+            // 未過期 + 已取消
+            {id: 21, date: '2025/11/01', member: 'GT0000021', name: '劉雅雯', phone: '0901234568', time: '16:00', treatment: '雷射美白', staff: 'AB魔', contactStatus: '2', smsStatus: 'cancelled'},
+            // 未過期 + 發送失敗
+            {id: 22, date: '2025/11/01', member: 'GT0000022', name: '【不可約】黃...', phone: '0912345680', time: '17:30', treatment: '★5樓-純美療程', staff: '超音波導入', contactStatus: '1', smsStatus: 'failed'},
+            // 未過期 + 排程中
+            {id: 23, date: '2025/11/01', member: 'GT0000023', name: '鍾小華', phone: '0923456781', time: '19:00', treatment: '★3樓-醫美諮詢', staff: '張醫師', contactStatus: '', smsStatus: 'scheduled'}
+        ];
+
+        const contactStatusOptions = [
+            {value: '', text: '請選擇', disabled: false, class: 'status-none'},
+            {value: '1', text: '未通知', disabled: false, class: 'status-not-notified'},
+            {value: '2', text: '未接', disabled: false, class: 'status-no-answer'},
+            {value: '3', text: '確認(電話)', disabled: false, class: 'status-confirmed'}
+        ];
+
+        let currentAppointmentId = null;
+        let pendingCancelId = null;
+
+        function getSmsStatusDisplay(smsStatus) {
+            const statusMap = {
+                '': { text: '-', class: 'status-none', title: '' },
+                'scheduled': { text: '排程中', class: 'status-scheduled', title: '已安排，等待發送時間' },
+                'delivered': { text: '已送達', class: 'status-delivered', title: '簡訊已成功送達' },
+                'cancelled': { text: '已取消', class: 'status-cancelled', title: '簡訊已取消發送' },
+                'failed': { text: '發送失敗', class: 'status-failed', title: '簡訊發送失敗' }
+            };
+            return statusMap[smsStatus] || statusMap[''];
+        }
+
+        function isAppointmentExpired(appointmentId) {
+            const appointment = appointments.find(apt => apt.id === appointmentId);
+            if (!appointment) return false;
+            
+            const now = new Date('2025-10-31T14:00:00');
+            const appointmentDateTime = new Date(appointment.date.replace(/\//g, '-') + 'T' + appointment.time + ':00');
+            
+            return now > appointmentDateTime;
+        }
+
+        function generateActionButtons(appointmentId, smsStatus) {
+            const isExpired = isAppointmentExpired(appointmentId);
+            
+            // 🔒 時間已過的預約，無論簡訊狀態如何，都不允許任何操作
+            if (isExpired) {
+                // 根據簡訊狀態顯示不同的已過期訊息
+                let expiredText = '已過期';
+                if (smsStatus === 'delivered') {
+                    expiredText = '已送達';
+                } else if (smsStatus === 'cancelled') {
+                    expiredText = '已取消';
+                } else if (smsStatus === 'failed') {
+                    expiredText = '發送失敗';
+                } else if (smsStatus === 'scheduled') {
+                    expiredText = '已過期';
+                } else {
+                    expiredText = '已過期';
+                }
+                
+                return '<div class="sms-hover-container">' +
+                       '<span class="sms-status-block status-expired">' + expiredText + '</span>' +
+                       '</div>';
+            }
+            
+            // ✅ 未過期的預約才顯示操作按鈕
+            let html = '<div class="sms-hover-container">';
+            
+            if (smsStatus === '') {
+                // 未發送
+                html += '<span class="sms-status-block status-none">未發送</span>';
+                html += '<div class="sms-hover-actions">';
+                html += '<button class="hover-btn hover-btn-send" onclick="sendSms(' + appointmentId + ')">發送簡訊</button>';
+                html += '</div>';
+            } else if (smsStatus === 'scheduled') {
+                // 排程中
+                html += '<span class="sms-status-block status-scheduled">排程中</span>';
+                html += '<div class="sms-hover-actions">';
+                html += '<button class="hover-btn hover-btn-cancel" onclick="cancelSms(' + appointmentId + ')">取消</button>';
+                html += '</div>';
+            } else if (smsStatus === 'delivered') {
+                // 已送達
+                html += '<span class="sms-status-block status-delivered">已送達</span>';
+            } else if (smsStatus === 'cancelled') {
+                // 已取消 - 只有未過期才能重發
+                html += '<span class="sms-status-block status-cancelled">已取消</span>';
+                html += '<div class="sms-hover-actions">';
+                html += '<button class="hover-btn hover-btn-resend" onclick="resendSms(' + appointmentId + ')">重新發送</button>';
+                html += '</div>';
+            } else if (smsStatus === 'failed') {
+                // 發送失敗 - 只有未過期才能重發
+                html += '<span class="sms-status-block status-failed">發送失敗</span>';
+                html += '<div class="sms-hover-actions">';
+                html += '<button class="hover-btn hover-btn-resend" onclick="resendSms(' + appointmentId + ')">重新發送</button>';
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            return html;
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('appointmentList');
+            tbody.innerHTML = '';
+            
+            appointments.forEach(function(appointment) {
+                const row = document.createElement('tr');
+                const statusOption = contactStatusOptions.find(opt => opt.value === appointment.contactStatus);
+                const statusClass = statusOption ? statusOption.class : 'status-none';
+                const isExpired = isAppointmentExpired(appointment.id);
+                
+                if (isExpired) {
+                    row.classList.add('expired-row');
+                }
+                
+                const actionHtml = generateActionButtons(appointment.id, appointment.smsStatus);
+                
+                let selectOptions = '';
+                contactStatusOptions.forEach(function(option) {
+                    const selected = option.value === appointment.contactStatus ? 'selected' : '';
+                    const disabled = option.disabled ? 'disabled' : '';
+                    selectOptions += '<option value="' + option.value + '" ' + selected + ' ' + disabled + ' class="' + option.class + '">' + option.text + '</option>';
+                });
+                
+                row.innerHTML = '<td>' + appointment.date + '</td>' +
+                              '<td>' + appointment.member + '</td>' +
+                              '<td>' + appointment.name + '</td>' +
+                              '<td>' + appointment.phone + '</td>' +
+                              '<td>' + actionHtml + '</td>' +
+                              '<td><select class="contact-select ' + statusClass + '" data-id="' + appointment.id + '" onchange="updateContactStatus(' + appointment.id + ', this.value)">' + selectOptions + '</select></td>' +
+                              '<td>' + appointment.time + (isExpired ? ' (已過)' : '') + '</td>' +
+                              '<td>' + appointment.treatment + '</td>' +
+                              '<td>' + appointment.staff + '</td>';
+                
+                tbody.appendChild(row);
+            });
+            
+            updateStats();
+        }
+
+        function sendSms(appointmentId) {
+            if (isAppointmentExpired(appointmentId)) {
+                alert('診療時間已過，無法發送簡訊！');
+                return;
+            }
+            
+            currentAppointmentId = appointmentId;
+            const appointment = appointments.find(apt => apt.id === appointmentId);
+            
+            const appointmentTime = new Date(appointment.date.replace(/\//g, '-') + 'T' + appointment.time);
+            appointmentTime.setHours(appointmentTime.getHours() - 1);
+            document.getElementById('sendTime').value = appointmentTime.toISOString().slice(0, 16);
+            
+            document.getElementById('smsModal').style.display = 'block';
+            updateCharCount();
+        }
+
+        function cancelSms(appointmentId) {
+            if (isAppointmentExpired(appointmentId)) {
+                alert('診療時間已過，無法取消簡訊！');
+                return;
+            }
+            
+            const appointment = appointments.find(apt => apt.id === appointmentId);
+            const confirmMsg = '<strong>確定要取消這筆簡訊嗎？</strong><br><br>' + 
+                             '會員：<strong>' + appointment.name + '</strong><br>' +
+                             '電話：' + appointment.phone + '<br>' +
+                             '時間：' + appointment.date + ' ' + appointment.time + '<br>' +
+                             '療程：' + appointment.treatment;
+            
+            document.getElementById('confirmMessage').innerHTML = confirmMsg;
+            document.getElementById('confirmModal').style.display = 'block';
+            pendingCancelId = appointmentId;
+        }
+        
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+            pendingCancelId = null;
+        }
+        
+        function confirmCancelSms() {
+            if (pendingCancelId !== null) {
+                updateSmsStatus(pendingCancelId, 'cancelled');
+                showToast('簡訊已取消');
+                renderTable();
+                closeConfirmModal();
+            }
+        }
+
+        function resendSms(appointmentId) {
+            if (isAppointmentExpired(appointmentId)) {
+                alert('診療時間已過，無法重新發送簡訊！');
+                return;
+            }
+            
+            sendSms(appointmentId);
+        }
+
+        function updateContactStatus(appointmentId, status) {
+            updateAppointmentStatus(appointmentId, status);
+            
+            const selectElement = document.querySelector('select[data-id="' + appointmentId + '"]');
+            if (selectElement) {
+                selectElement.className = selectElement.className.replace(/status-\w+/g, '').trim();
+                const newStatusClass = contactStatusOptions.find(opt => opt.value === status);
+                const className = newStatusClass ? newStatusClass.class : 'status-none';
+                selectElement.classList.add('contact-select', className);
+            }
+            
+            renderTable();
+        }
+
+        function updateAppointmentStatus(appointmentId, status) {
+            const appointment = appointments.find(apt => apt.id === appointmentId);
+            if (appointment) {
+                appointment.contactStatus = status;
+            }
+        }
+        
+        function updateSmsStatus(appointmentId, status) {
+            const appointment = appointments.find(apt => apt.id === appointmentId);
+            if (appointment) {
+                appointment.smsStatus = status;
+            }
+        }
+
+        function closeSmsModal() {
+            document.getElementById('smsModal').style.display = 'none';
+            currentAppointmentId = null;
+        }
+
+        function confirmSms() {
+            const sendSmsValue = document.querySelector('input[name="sendSms"]:checked').value;
+            const content = document.getElementById('smsContent').value;
+            const sendTime = document.getElementById('sendTime').value;
+            
+            if (sendSmsValue === 'yes') {
+                updateSmsStatus(currentAppointmentId, 'scheduled');
+                showToast('簡訊已安排排程，等待發送時間');
+                
+                renderTable();
+                
+                setTimeout(function() {
+                    const sendSuccess = Math.random() > 0.1;
+                    
+                    if (sendSuccess) {
+                        updateSmsStatus(currentAppointmentId, 'delivered');
+                        showToast('簡訊發送成功！');
+                    } else {
+                        updateSmsStatus(currentAppointmentId, 'failed');
+                        showToast('簡訊發送失敗，請檢查網路或重新發送');
+                    }
+                    renderTable();
+                }, 8000);
+            }
+            
+            closeSmsModal();
+        }
+
+        function updateCharCount() {
+            const content = document.getElementById('smsContent').value;
+            const count = content.length;
+            document.getElementById('charCount').textContent = count;
+            
+            if (count > 70) {
+                document.getElementById('charCount').style.color = '#dc3545';
+            } else {
+                document.getElementById('charCount').style.color = '#666';
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('successToast');
+            toast.textContent = '✓ ' + message;
+            toast.style.display = 'block';
+            
+            setTimeout(function() {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        function calculateStats() {
+            const stats = {
+                total: appointments.length,
+                expired: 0,
+                notNotified: 0,
+                noAnswer: 0,
+                confirmed: 0,
+                none: 0,
+                smsScheduled: 0,
+                smsDelivered: 0,
+                smsCancelled: 0,
+                smsFailed: 0,
+                smsNone: 0
+            };
+            
+            appointments.forEach(function(appointment) {
+                if (isAppointmentExpired(appointment.id)) {
+                    stats.expired++;
+                }
+                
+                // 聯絡狀況統計
+                switch(appointment.contactStatus) {
+                    case '1': stats.notNotified++; break;
+                    case '2': stats.noAnswer++; break;
+                    case '3': stats.confirmed++; break;
+                    default: stats.none++; break;
+                }
+                
+                // 簡訊狀態統計
+                switch(appointment.smsStatus) {
+                    case 'scheduled': stats.smsScheduled++; break;
+                    case 'delivered': stats.smsDelivered++; break;
+                    case 'cancelled': stats.smsCancelled++; break;
+                    case 'failed': stats.smsFailed++; break;
+                    default: stats.smsNone++; break;
+                }
+            });
+            
+            return stats;
+        }
+
+        function updateStats() {
+            const stats = calculateStats();
+            const statsHtml = '總計: ' + stats.total + ' | ' + 
+                             '已過期: <span style="color: #dc3545;">' + stats.expired + '</span> | ' +
+                             '未處理: <span style="color: #ffc107;">' + (stats.none + stats.notNotified + stats.noAnswer) + '</span> | ' +
+                             '已確認: <span style="color: #28a745;">' + stats.confirmed + '</span> | ' +
+                             '<span style="border-left: 2px solid #999; padding-left: 10px; margin-left: 5px;">簡訊 - </span>' +
+                             '排程中: <span style="color: #007bff;" title="已安排等待發送">' + stats.smsScheduled + '</span> | ' +
+                             '已送達: <span style="color: #17a2b8;">' + stats.smsDelivered + '</span> | ' +
+                             '已取消: <span style="color: #6c757d;">' + stats.smsCancelled + '</span> | ' +
+                             '失敗: <span style="color: #dc3545;">' + stats.smsFailed + '</span>';
+            
+            const existingStats = document.getElementById('statsInfo');
+            if (existingStats) {
+                existingStats.innerHTML = statsHtml;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTable();
+            
+            document.getElementById('smsContent').addEventListener('input', updateCharCount);
+            
+            window.addEventListener('click', function(event) {
+                const smsModal = document.getElementById('smsModal');
+                const confirmModal = document.getElementById('confirmModal');
+                
+                if (event.target === smsModal) {
+                    closeSmsModal();
+                }
+                
+                if (event.target === confirmModal) {
+                    closeConfirmModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
