@@ -1,0 +1,4145 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   簡訊發送優化方案 v2.0
+  </title>
+  <style>
+   * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .slide {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .slide-number {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+        
+        h2 {
+            color: #764ba2;
+            font-size: 24px;
+            margin: 25px 0 15px 0;
+        }
+        
+        h3 {
+            color: #667eea;
+            font-size: 18px;
+            margin: 15px 0 10px 0;
+        }
+        
+        .store-group {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            margin: 4px;
+            border-radius: 16px;
+            font-size: 13px;
+        }
+        
+        .group-container {
+            background: #f8f9ff;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .group-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .highlight-box {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .danger-box {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        tr:hover {
+            background: #f8f9ff;
+        }
+        
+        .scenario-card {
+            background: #f8f9ff;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        
+        .tag-send { background: #28a745; color: white; }
+        .tag-skip { background: #dc3545; color: white; }
+        .tag-standby { background: #ffc107; color: white; }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .summary-card h4 {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .recommendation {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        
+        .store-count {
+            display: inline-block;
+            background: #764ba2;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .notification-demo {
+            background: white;
+            border: 3px solid #ffc107;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .notification-demo h4 {
+            color: #f57c00;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+        }
+        
+        .button-primary {
+            background: #28a745;
+            color: white;
+        }
+        
+        .button-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .flow-step {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            position: relative;
+            padding-left: 60px;
+        }
+        
+        .flow-step::before {
+            content: attr(data-step);
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        ul {
+            margin: 10px 0 10px 25px;
+            line-height: 1.8;
+        }
+
+        /* 浮動導航樣式 */
+        .floating-nav {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 280px;
+            max-height: 85vh;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+            padding: 20px;
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .floating-nav.collapsed {
+            width: 50px;
+            padding: 15px 10px;
+        }
+
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .nav-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+            white-space: nowrap;
+        }
+
+        .collapsed .nav-title {
+            display: none;
+        }
+
+        .toggle-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .toggle-btn:hover {
+            background: #764ba2;
+            transform: scale(1.1);
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .collapsed .nav-list {
+            display: none;
+        }
+
+        .nav-item {
+            margin: 8px 0;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 10px 12px;
+            color: #555;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            line-height: 1.4;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: #f8f9ff;
+            color: #667eea;
+            border-left-color: #667eea;
+            transform: translateX(3px);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+            border-left-color: #764ba2;
+        }
+
+        .nav-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 12px;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .nav-link.active .nav-number {
+            background: white;
+            color: #667eea;
+        }
+
+        /* 滾動條美化 */
+        .floating-nav::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .floating-nav::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .floating-nav::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .floating-nav::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 1024px) {
+            .floating-nav {
+                left: 10px;
+                width: 240px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            /* 導航樣式 - 移到底部 */
+            .floating-nav {
+                position: fixed;
+                left: 50%;
+                top: auto;
+                bottom: 20px;
+                transform: translateX(-50%);
+                width: auto;
+                max-width: 90%;
+                padding: 10px 15px;
+                max-height: 60px;
+            }
+
+            .floating-nav.collapsed {
+                width: auto;
+            }
+
+            .nav-title {
+                display: none;
+            }
+
+            .nav-list {
+                display: none;
+            }
+
+            .nav-header {
+                margin-bottom: 0;
+                padding-bottom: 0;
+                border-bottom: none;
+            }
+
+            .floating-nav.expanded {
+                max-height: 70vh;
+                width: 90%;
+                padding: 20px;
+                bottom: 20px;
+            }
+
+            .floating-nav.expanded .nav-title {
+                display: block;
+            }
+
+            .floating-nav.expanded .nav-list {
+                display: block;
+            }
+
+            .floating-nav.expanded .nav-header {
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #667eea;
+            }
+
+            /* 容器和間距 */
+            body {
+                padding: 10px;
+                padding-bottom: 90px; /* 為底部導航留空間 */
+            }
+
+            .container {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .slide {
+                padding: 20px 15px;
+                margin-bottom: 15px;
+                border-radius: 8px;
+                width: 100%;
+            }
+
+            /* 標題字體 */
+            h1 {
+                font-size: 24px !important;
+                line-height: 1.4;
+            }
+
+            h2 {
+                font-size: 20px;
+                margin-top: 20px;
+            }
+
+            h3 {
+                font-size: 18px;
+            }
+
+            h4 {
+                font-size: 16px;
+            }
+
+            /* 表格響應式 */
+            table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                font-size: 13px;
+            }
+
+            table thead {
+                display: none;
+            }
+
+            table tr {
+                display: block;
+                margin-bottom: 15px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 10px;
+            }
+
+            table td {
+                display: flex;
+                justify-content: space-between;
+                padding: 8px 5px;
+                border: none;
+                text-align: right;
+            }
+
+            table td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                text-align: left;
+                margin-right: 10px;
+            }
+
+            /* 手動為表格添加標籤 */
+            table tbody tr td:nth-child(1):before {
+                content: "時間: ";
+            }
+            table tbody tr td:nth-child(2):before {
+                content: "門市: ";
+            }
+            table tbody tr td:nth-child(3):before {
+                content: "療程: ";
+            }
+            table tbody tr td:nth-child(4):before {
+                content: "群組/規則: ";
+            }
+            table tbody tr td:nth-child(5):before {
+                content: "狀態: ";
+            }
+
+            /* 按鈕樣式 */
+            .button {
+                width: 100%;
+                margin: 5px 0 !important;
+                padding: 14px 20px;
+                font-size: 16px;
+            }
+
+            /* 簡訊確認視窗 */
+            .scenario-card {
+                padding: 15px;
+            }
+
+            /* 訊息框 */
+            .notification-demo,
+            .highlight-box,
+            .info-box,
+            .warning-box,
+            .danger-box,
+            .group-container {
+                padding: 15px;
+                margin: 15px 0;
+            }
+
+            /* 流程步驟 */
+            .flow-step {
+                padding: 12px;
+                margin: 10px 0;
+                font-size: 14px;
+            }
+
+            /* 標籤 */
+            .tag {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+
+            /* 幻燈片編號 */
+            .slide-number {
+                font-size: 18px;
+                padding: 6px 12px;
+            }
+
+            /* 簡訊內容區域 */
+            .scenario-card > div[style*="border: 3px solid"] {
+                padding: 15px !important;
+            }
+
+            /* 列表項間距 */
+            ul, ol {
+                padding-left: 20px;
+            }
+
+            li {
+                margin: 8px 0;
+            }
+        }
+
+        /* 平滑滾動 */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        .button-default {
+            background: white;
+            color: black;
+            border: 2px solid #333;
+        }
+
+        .button-warning {
+            background: #dc3545;
+            color: #ffc107;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        .compact-modal-card {
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .compact-modal-card h4 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .compact-modal-card .warning-box-inner {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #ff9800;
+        }
+        .compact-modal-card .sms-preview-box {
+            background: #f8f9ff;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .compact-modal-card p {
+            line-height: 1.6;
+            font-size: 13px;
+        }
+        .compact-modal-card .warning-box-inner p:first-child {
+            color: #f57c00;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .compact-modal-card .button-group {
+            text-align: center;
+            margin-top: 15px;
+        }
+  </style>
+ </head>
+ <body>
+  <nav class="floating-nav" id="floatingNav">
+   <div class="nav-header">
+    <span class="nav-title">
+     章節導航
+    </span>
+    <button class="toggle-btn" id="toggleBtn" onclick="toggleNav()">
+     ◀
+    </button>
+   </div>
+   <ul class="nav-list">
+    <li class="nav-item"><a class="nav-link" href="#ch-1"><span class="nav-number">1</span> 閱讀指引</a></li>
+    <li class="nav-item"><a class="nav-link" href="#ch-2"><span class="nav-number">2</span> 快速上手指南</a></li>
+    <li class="nav-item"><a class="nav-link" href="#ch-3"><span class="nav-number">3</span> 門市清單與群組規劃</a></li>
+    <li class="nav-item"><a class="nav-link" href="#ch-4"><span class="nav-number">4</span> 簡訊發送前置條件</a></li>
+    <li class="nav-item"><a class="nav-link" href="#ch-5"><span class="nav-number">5</span> 前端 UI 互動設計</a></li>
+    <li class="nav-item"><a class="nav-link" href="#ch-6"><span class="nav-number">6</span> 業務情境模擬</a></li>
+    <li class="nav-item"><a class="nav-link" href="#ch-7"><span class="nav-number">7</span> 決策總結與實施規劃</a></li>
+    <li class="nav-item"><a class="nav-link" href="#ch-8"><span class="nav-number">8</span> 謝謝聆聽</a></li>
+   </ul>
+  </nav>
+  <div class="container">
+   <div class="slide">
+    <span class="slide-number">
+     2
+    </span>
+    <h1 id="ch-1">
+     📖 閱讀指引
+    </h1>
+    <div class="info-box">
+     <h3>
+      💡 根據您的角色選擇閱讀路徑
+     </h3>
+    </div>
+    <h2 id="section-4">
+     🏪 門市操作人員(推薦閱讀路徑)
+    </h2>
+    <p>
+     <strong>
+      ✅ 必讀章節:
+     </strong>
+    </p>
+    <ul>
+     <li>
+      <a class="nav-link" href="#section-8">
+       <strong>
+        Ch2 需求概述
+       </strong>
+       - 了解為什麼要這樣設計
+      </a>
+     </li>
+     <li>
+      <a class="nav-link" href="#section-11">
+       <strong>
+        Ch3 快速上手指南
+       </strong>
+       - 5分鐘速覽核心概念
+      </a>
+     </li>
+     <li>
+      <a class="nav-link" href="#section-24">
+       <strong>
+        Ch4 門市群組規劃
+       </strong>
+       - 查詢我的門市屬於哪一組
+      </a>
+     </li>
+     <li>
+      <a class="nav-link" href="#section-31">
+       <strong>
+        Ch6 UI 互動設計
+       </strong>
+       - 看懂畫面、學會操作
+      </a>
+     </li>
+     <li>
+      <a class="nav-link" href="#section-44">
+       <strong>
+        Ch8 業務情境模擬
+       </strong>
+       - 實際案例演練
+      </a>
+     </li>
+    </ul>
+    <p>
+     <strong>
+      📌 選讀章節:
+     </strong>
+    </p>
+    <ul>
+     <li>
+      <a class="nav-link" href="#section-26">
+       <strong>
+        Ch5 客戶資格檢查
+       </strong>
+       - 看到警告時參考即可
+      </a>
+     </li>
+    </ul>
+    <p>
+     <strong>
+      ⏭️ 可跳過:
+     </strong>
+    </p>
+    <ul>
+     <li>
+      <a class="nav-link" href="#section-40">
+       <strong>
+        Ch7 資料庫設計
+       </strong>
+       - 技術實現細節
+      </a>
+     </li>
+    </ul>
+    <hr/>
+    <h2 id="section-5">
+     💻 前端工程師(推薦閱讀路徑)
+    </h2>
+    <p>
+     <strong>
+      ✅ 必讀章節:
+     </strong>
+    </p>
+    <ul>
+     <li>
+      <a class="nav-link" href="#section-8">
+       Ch2, Ch4(門市規劃), Ch5, Ch6, Ch8
+      </a>
+     </li>
+    </ul>
+    <p>
+     <strong>
+      📌 參考章節:
+     </strong>
+    </p>
+    <ul>
+     <li>
+      <a class="nav-link" href="#section-40">
+       Ch7(資料庫設計)
+      </a>
+      ,
+      <a class="nav-link" href="#section-49">
+       Ch9(決策規劃)
+      </a>
+     </li>
+    </ul>
+    <hr/>
+    <h2 id="section-6">
+     💻 後端工程師(推薦閱讀路徑)
+    </h2>
+    <p>
+     <strong>
+      ✅ 必讀章節:
+     </strong>
+    </p>
+    <ul>
+     <li>
+      <a class="nav-link" href="#section-8">
+       Ch2, Ch4, Ch5, Ch7, Ch8
+      </a>
+     </li>
+    </ul>
+    <p>
+     <strong>
+      📌 參考章節:
+     </strong>
+    </p>
+    <ul>
+     <li>
+      <a class="nav-link" href="#section-31">
+       Ch6(UI設計)
+      </a>
+      ,
+      <a class="nav-link" href="#section-49">
+       Ch9(決策規劃)
+      </a>
+     </li>
+    </ul>
+    <hr/>
+    <h2 id="section-7">
+     👔 專案經理/決策者(推薦閱讀路徑)
+    </h2>
+    <p>
+     <strong>
+      ✅ 必讀章節:
+     </strong>
+    </p>
+    <ul>
+     <li>
+      <a class="nav-link" href="#section-8">
+       Ch2(需求概述)
+      </a>
+      ,
+      <a class="nav-link" href="#section-31">
+       Ch6(UI設計)
+      </a>
+      ,
+      <a class="nav-link" href="#section-49">
+       Ch9(決策規劃)
+      </a>
+     </li>
+    </ul>
+    <p>
+     <strong>
+      📌 參考章節:
+     </strong>
+    </p>
+    <ul>
+     <li>
+      <a class="nav-link" href="#section-11">
+       Ch3(快速上手)
+      </a>
+      ,
+      <a class="nav-link" href="#section-44">
+       Ch8(業務情境)
+      </a>
+     </li>
+    </ul>
+   </div>
+   <div class="slide">
+    <span class="slide-number">
+     4
+    </span>
+    <h1 id="ch-2">
+     <strong>
+      🚀
+     </strong>
+     快速上手指南(5分鐘速覽)
+    </h1>
+    <div class="highlight-box">
+     <h3>
+      📋 新手必讀 - 快速掌握核心概念
+     </h3>
+    </div>
+    <h2 id="section-12">
+     🎯 核心原則(記住這3點)
+    </h2>
+    <h3 id="section-13">
+     1️⃣ 往最早的排程靠齊
+    </h3>
+    <p>
+     同一天、同一群組內,只對
+     <strong>
+      最早的預約
+     </strong>
+     發送簡訊
+    </p>
+    <div class="highlight-box">
+     <p>
+      <strong>
+       範例:
+      </strong>
+     </p>
+     <ul>
+      <li>
+       客人當天有 10:30、14:00、16:00 三個預約
+      </li>
+      <li>
+       ✅ 只發送 10:30 的簡訊
+      </li>
+      <li>
+       ✗ 14:00 和 16:00 不發送
+      </li>
+     </ul>
+    </div>
+    <h3 id="section-14">
+     2️⃣ 同一群組只發一封
+    </h3>
+    <p>
+     同一個門市群組內的預約,當天只發一封簡訊
+    </p>
+    <div class="highlight-box">
+     <p>
+      <strong>
+       範例:
+      </strong>
+     </p>
+     <ul>
+      <li>
+       板橋醫美 09:00(群組3)
+      </li>
+      <li>
+       板橋岩盤浴 16:00(群組3)
+      </li>
+      <li>
+       ✅ 只發送 09:00 的簡訊(同屬群組3)
+      </li>
+     </ul>
+    </div>
+    <h3 id="section-15">
+     3️⃣ 不同群組各發各的
+    </h3>
+    <p>
+     不同群組之間互不影響,各自判斷最早預約
+    </p>
+    <div class="highlight-box">
+     <p>
+      <strong>
+       範例:
+      </strong>
+     </p>
+     <ul>
+      <li>
+       板橋醫美 09:00(群組3)✅ 發送
+      </li>
+      <li>
+       忠孝岩盤浴 14:00(群組1)✅ 也發送
+      </li>
+      <li>
+       原因:不同群組,各發各的
+      </li>
+     </ul>
+    </div>
+    <hr/>
+    <h2 id="section-16">
+     🎨 操作要點(認識3種按鈕)
+    </h2>
+    <h3 id="section-17">
+     ✅ 綠色按鈕 - 建議執行
+    </h3>
+    <p>
+     系統建議您執行的操作(例如:確認發送)
+    </p>
+    <h3 id="section-18">
+     ⚠️ 紅色警告 - 不建議發送
+    </h3>
+    <p>
+     客人在黑名單或有特殊情況,強烈建議不要發送
+    </p>
+    <h3 id="section-19">
+     🔘 灰色按鈕 - 中性選項
+    </h3>
+    <p>
+     取消操作或一般情況的選項
+    </p>
+    <hr/>
+    <h2 id="section-20">
+     <strong>
+      📌
+     </strong>
+     常見情境(處理這3種狀況)
+    </h2>
+    <h3 id="section-21">
+     情境1:新增更早的預約
+    </h3>
+    <ul>
+     <li>
+      <strong>
+       系統行為:
+      </strong>
+      會彈出確認視窗
+     </li>
+     <li>
+      <strong>
+       提示內容:
+      </strong>
+      新預約將成為最早,原預約簡訊將取消
+     </li>
+     <li>
+      <strong>
+       您的操作:
+      </strong>
+      確認是否要發送新的簡訊
+     </li>
+    </ul>
+    <h3 id="section-22">
+     情境2:取消最早的預約
+    </h3>
+    <ul>
+     <li>
+      <strong>
+       系統行為:
+      </strong>
+      會自動補位
+     </li>
+     <li>
+      <strong>
+       提示內容:
+      </strong>
+      次早預約將自動升級為最早
+     </li>
+     <li>
+      <strong>
+       您的操作:
+      </strong>
+      確認是否要為次早預約發送簡訊
+     </li>
+    </ul>
+    <h3 id="section-23">
+     情境3:看到紅色警告
+    </h3>
+    <ul>
+     <li>
+      <strong>
+       系統行為:
+      </strong>
+      顯示警告訊息
+     </li>
+     <li>
+      <strong>
+       提示內容:
+      </strong>
+      客人拒收簡訊
+     </li>
+     <li>
+      <strong>
+       您的操作:
+      </strong>
+      建議點擊「不發送」
+     </li>
+    </ul>
+    <hr/>
+    <div class="info-box">
+     <h3>
+      💡 想了解更詳細的說明?
+     </h3>
+     <p>
+      👉
+      <strong>
+       Ch4 門市群組規劃
+      </strong>
+      - 查詢您的門市屬於哪一組
+     </p>
+     <p>
+      👉
+      <strong>
+       Ch6 UI 互動設計
+      </strong>
+      - 完整的操作畫面說明
+     </p>
+     <p>
+      👉
+      <strong>
+       Ch8 業務情境模擬
+      </strong>
+      - 9個完整案例演練
+     </p>
+    </div>
+   </div>
+   <div class="slide">
+    <span class="slide-number">
+     5
+    </span>
+    <h1 id="ch-3">
+     🏢 完整門市清單與群組規劃
+    </h1>
+    <div class="highlight-box">
+     <p>
+      共
+      <strong>
+       27個門市
+      </strong>
+      ,建議設定
+      <strong>
+       5個消耗區域群組
+      </strong>
+     </p>
+    </div>
+    <h2 id="section-25">
+     📊 快速查詢表(使用者重點)
+    </h2>
+    <div class="info-box">
+     <h3>
+      💡 快速查詢:我的門市屬於哪一組?
+     </h3>
+    </div>
+    <table>
+     <thead>
+      <tr>
+       <th>
+        門市名稱
+       </th>
+       <th>
+        群組編號
+       </th>
+       <th>
+        規則類型
+       </th>
+       <th>
+        說明
+       </th>
+      </tr>
+     </thead>
+     <tbody>
+      <tr>
+       <td>
+        忠孝岩盤浴
+       </td>
+       <td>
+        群組1
+       </td>
+       <td>
+        群組規則
+       </td>
+       <td>
+        與忠孝光澤共享最早排程
+       </td>
+      </tr>
+      <tr>
+       <td>
+        忠孝光澤
+       </td>
+       <td>
+        群組1
+       </td>
+       <td>
+        群組規則
+       </td>
+       <td>
+        與忠孝岩盤浴共享最早排程
+       </td>
+      </tr>
+      <tr>
+       <td>
+        羅東岩盤浴
+       </td>
+       <td>
+        群組2
+       </td>
+       <td>
+        群組規則
+       </td>
+       <td>
+        與羅東光澤共享最早排程
+       </td>
+      </tr>
+      <tr>
+       <td>
+        羅東光澤
+       </td>
+       <td>
+        群組2
+       </td>
+       <td>
+        群組規則
+       </td>
+       <td>
+        與羅東岩盤浴共享最早排程
+       </td>
+      </tr>
+      <tr>
+       <td>
+        板橋醫美
+       </td>
+       <td>
+        群組3
+       </td>
+       <td>
+        群組規則
+       </td>
+       <td>
+        與板橋岩盤浴共享最早排程
+       </td>
+      </tr>
+      <tr>
+       <td>
+        板橋岩盤浴
+       </td>
+       <td>
+        群組3
+       </td>
+       <td>
+        群組規則
+       </td>
+       <td>
+        與板橋醫美共享最早排程
+       </td>
+      </tr>
+      <tr>
+       <td>
+        中壢彤顏健保
+       </td>
+       <td>
+        群組4
+       </td>
+       <td>
+        群組規則
+       </td>
+       <td>
+        與中壢彤顏醫美、中壢岩盤浴共享
+       </td>
+      </tr>
+      <tr>
+       <td>
+        中壢彤顏醫美
+       </td>
+       <td>
+        群組4
+       </td>
+       <td>
+        群組規則
+       </td>
+       <td>
+        與中壢彤顏健保、中壢岩盤浴共享
+       </td>
+      </tr>
+      <tr>
+       <td>
+        中壢岩盤浴
+       </td>
+       <td>
+        群組4
+       </td>
+       <td>
+        群組規則
+       </td>
+       <td>
+        與中壢彤顏健保、中壢彤顏醫美共享
+       </td>
+      </tr>
+      <tr>
+       <td>
+        台中光澤診所
+       </td>
+       <td>
+        群組5
+       </td>
+       <td>
+        群組規則
+       </td>
+       <td>
+        與台中岩盤浴共享最早排程
+       </td>
+      </tr>
+      <tr>
+       <td>
+        台中岩盤浴
+       </td>
+       <td>
+        群組5
+       </td>
+       <td>
+        群組規則
+       </td>
+       <td>
+        與台中光澤診所共享最早排程
+       </td>
+      </tr>
+      <tr>
+       <td>
+        南西光澤診所
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化
+       </td>
+      </tr>
+      <tr>
+       <td>
+        永和彤顏診所
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化
+       </td>
+      </tr>
+      <tr>
+       <td>
+        古亭光澤
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化
+       </td>
+      </tr>
+      <tr>
+       <td>
+        大直光澤診所
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化
+       </td>
+      </tr>
+      <tr>
+       <td>
+        新竹光澤診所
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化
+       </td>
+      </tr>
+      <tr>
+       <td>
+        高雄光澤
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化
+       </td>
+      </tr>
+      <tr>
+       <td>
+        八德健保診所
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化
+       </td>
+      </tr>
+      <tr>
+       <td>
+        三重光澤
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化
+       </td>
+      </tr>
+      <tr>
+       <td>
+        桃園岩盤浴
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化
+       </td>
+      </tr>
+      <tr>
+       <td>
+        林口彤顏診所
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化
+       </td>
+      </tr>
+      <tr>
+       <td>
+        台北岩盤浴
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化
+       </td>
+      </tr>
+      <tr>
+       <td>
+        新莊光澤診所
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化
+       </td>
+      </tr>
+      <tr>
+       <td>
+        桃園彤顏健保
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化
+       </td>
+      </tr>
+      <tr>
+       <td>
+        三峽光澤診所
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化
+       </td>
+      </tr>
+      <tr>
+       <td>
+        三民光澤診所
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化
+       </td>
+      </tr>
+      <tr>
+       <td>
+        板橋光澤健保
+       </td>
+       <td>
+        獨立
+       </td>
+       <td>
+        同門市規則
+       </td>
+       <td>
+        僅限同一門市優化 ⭐
+       </td>
+      </tr>
+     </tbody>
+    </table>
+    <div class="info-box">
+     <p>
+      <strong>
+       💡 使用說明:
+      </strong>
+     </p>
+     <ul>
+      <li>
+       <strong>
+        群組規則:
+       </strong>
+       您的門市與群組內其他門市共享「當天最早排程」
+      </li>
+      <li>
+       <strong>
+        同門市規則:
+       </strong>
+       只在您自己門市內判斷「當天最早排程」
+      </li>
+     </ul>
+    </div>
+    <div class="group-container">
+     <details>
+      <summary>
+       📋 詳細群組設定(點擊展開)
+      </summary>
+      <div class="highlight-box">
+       <h3>
+        📊 門市分類概況
+       </h3>
+       <ul>
+        <li>
+         <strong>
+          消耗區域群組:
+         </strong>
+         5個群組,共
+         <strong>
+          11家門市
+         </strong>
+         (可跨群組內不同門市優化)
+        </li>
+        <li>
+         <strong>
+          同一門市規則:
+         </strong>
+         <strong>
+          16家門市
+         </strong>
+         (僅限同一門市優化)
+        </li>
+       </ul>
+      </div>
+      <h2>
+       消耗區域門市群組設定
+      </h2>
+      <div class="highlight-box">
+       <p>
+        <strong>
+         群組 1 - 忠孝區域 (2門市)
+        </strong>
+       </p>
+       <p>
+        <code>
+         忠孝岩盤浴
+        </code>
+        ,
+        <code>
+         忠孝光澤
+        </code>
+       </p>
+       <p>
+        <strong>
+         群組 2 - 羅東區域 (2門市)
+        </strong>
+       </p>
+       <p>
+        <code>
+         羅東岩盤浴
+        </code>
+        ,
+        <code>
+         羅東光澤
+        </code>
+       </p>
+       <p>
+        <strong>
+         群組 3 - 板橋區域 (2門市)
+        </strong>
+       </p>
+       <p>
+        <code>
+         板橋醫美
+        </code>
+        ,
+        <code>
+         板橋岩盤浴
+        </code>
+       </p>
+       <p>
+        ⚠️
+        <strong>
+         板橋光澤健保
+        </strong>
+        已從此群組移除,改採「同一門市規則」
+       </p>
+       <p>
+        <strong>
+         群組 4 - 中壢彤顏區域 (3門市)
+        </strong>
+       </p>
+       <p>
+        <code>
+         中壢彤顏健保
+        </code>
+        ,
+        <code>
+         中壢彤顏醫美
+        </code>
+        ,
+        <code>
+         中壢岩盤浴
+        </code>
+       </p>
+       <p>
+        <strong>
+         群組 5 - 台中區域 (2門市)
+        </strong>
+       </p>
+       <p>
+        <code>
+         台中光澤診所
+        </code>
+        ,
+        <code>
+         台中岩盤浴
+        </code>
+       </p>
+      </div>
+      <div class="highlight-box">
+       <h3>
+        <strong>
+         📌
+        </strong>
+        消耗區域群組小計
+       </h3>
+       <p>
+        <strong>
+         共 11 家門市
+        </strong>
+        (2+2+2+3+2)
+       </p>
+       <p>
+        規則:同一會員在同一群組內(可跨門市)只發送
+        <strong>
+         最早1封
+        </strong>
+       </p>
+      </div>
+      <h2>
+       採用「同一門市規則」的門市
+      </h2>
+      <div class="info-box">
+       <p>
+        以下
+        <strong>
+         16個門市
+        </strong>
+        不在消耗區域群組內,採用「
+        <strong>
+         同一門市規則
+        </strong>
+        」
+       </p>
+       <p>
+        <code>
+         南西光澤診所
+        </code>
+        ,
+        <code>
+         永和彤顏診所
+        </code>
+        ,
+        <code>
+         古亭光澤
+        </code>
+        ,
+        <code>
+         大直光澤診所
+        </code>
+        ,
+        <code>
+         新竹光澤診所
+        </code>
+        ,
+        <code>
+         高雄光澤
+        </code>
+        ,
+        <code>
+         八德健保診所
+        </code>
+        ,
+        <code>
+         三重光澤
+        </code>
+        ,
+        <code>
+         桃園岩盤浴
+        </code>
+        ,
+        <code>
+         林口彤顏診所
+        </code>
+        ,
+        <code>
+         台北岩盤浴
+        </code>
+        ,
+        <code>
+         新莊光澤診所
+        </code>
+        ,
+        <code>
+         桃園彤顏健保
+        </code>
+        ,
+        <code>
+         三峽光澤診所
+        </code>
+        ,
+        <code>
+         三民光澤診所
+        </code>
+        ,
+        <code>
+         板橋光澤健保 ⭐
+        </code>
+       </p>
+       <p>
+        💡 這些門市的規則:
+        <strong>
+         同一天 + 同一門市
+        </strong>
+        的多個預約 → 只發送最早的一封簡訊
+       </p>
+       <p>
+        ⭐
+        <strong>
+         板橋光澤健保
+        </strong>
+        從群組3例外移入此類別
+       </p>
+      </div>
+     </details>
+    </div>
+   </div>
+   <div class="slide">
+    <span class="slide-number">
+     6
+    </span>
+    <h1 id="ch-4">
+     🔐 簡訊發送前置條件 - 客戶資格檢查
+    </h1>
+    <div class="highlight-box">
+     <h3>
+      ⚠️ 通用規則 - 適用於所有簡訊發送場景
+     </h3>
+    </div>
+    <h2 id="section-27">
+     🎯 使用者快速指南(操作重點)
+    </h2>
+    <div class="info-box">
+     <h3>
+      💡 看到警告就知道怎麼做
+     </h3>
+    </div>
+    <h3 id="section-28">
+     🚨 看到紅色警告 → 不要發送
+    </h3>
+    <ul>
+     <li>
+      <strong>
+       警告訊息:
+      </strong>
+      此會員註記為不收簡訊的黑名單
+     </li>
+     <li>
+      <strong>
+       建議操作:
+      </strong>
+      點擊紅色「不發送」按鈕
+     </li>
+     <li>
+      <strong>
+       原因:
+      </strong>
+      客人明確拒絕接收簡訊
+     </li>
+    </ul>
+    <h3 id="section-29">
+     ⚡ 看到黃色提示 → 注意檢查
+    </h3>
+    <ul>
+     <li>
+      <strong>
+       提示訊息:
+      </strong>
+      排程衝突 或 自動補位通知
+     </li>
+     <li>
+      <strong>
+       建議操作:
+      </strong>
+      確認資訊後,決定是否發送
+     </li>
+     <li>
+      <strong>
+       原因:
+      </strong>
+      需要您確認簡訊內容是否正確
+     </li>
+    </ul>
+    <h3 id="section-30">
+     ✅ 看到綠色按鈕 → 建議執行
+    </h3>
+    <ul>
+     <li>
+      <strong>
+       按鈕文字:
+      </strong>
+      確認發送
+     </li>
+     <li>
+      <strong>
+       建議操作:
+      </strong>
+      一般情況下可以直接發送
+     </li>
+     <li>
+      <strong>
+       原因:
+      </strong>
+      系統判斷此客戶適合發送簡訊
+     </li>
+    </ul>
+    <div class="group-container">
+     <details>
+      <summary>
+       🔧 詳細規則說明(工程師參考,點擊展開)
+      </summary>
+      <div class="highlight-box">
+       <p>
+        <strong>
+         此檢查邏輯在任何簡訊發送前都會執行,包括:
+        </strong>
+       </p>
+       <ul>
+        <li>
+         ✓ 新建預約的簡訊提醒
+        </li>
+        <li>
+         ✓ 預約修改(改時間/改門市)的重新提醒
+        </li>
+        <li>
+         ✓ 取消最早預約後的次早補發
+        </li>
+        <li>
+         ✓ 新增更早預約的簡訊發送
+        </li>
+        <li>
+         ✓ 所有會進入「發出簡訊內容」介面的操作
+        </li>
+       </ul>
+      </div>
+      <h2>
+       客戶資格檢查規則
+      </h2>
+      <div class="highlight-box">
+       <p>
+        <strong>
+         最終判斷流程 v2.5
+        </strong>
+        (預設啟用)
+       </p>
+       <p>
+        <strong>
+         第一關:黑名單檢查 (絕對優先)
+        </strong>
+       </p>
+       <p>
+        針對
+        <code>
+         Type: 標註
+        </code>
+        的預約,檢查
+        <code>
+         Mark
+        </code>
+        欄位是否包含以下任一關鍵字:
+        <code>
+         無
+        </code>
+        ,
+        <code>
+         拒
+        </code>
+        ,
+        <code>
+         沒
+        </code>
+        ,
+        <code>
+         員工
+        </code>
+        ,
+        <code>
+         醫師
+        </code>
+        ,
+        <code>
+         離職
+        </code>
+        ,
+        <code>
+         暫停
+        </code>
+        ,
+        <code>
+         誤
+        </code>
+        ,
+        <code>
+         簡訊
+        </code>
+        ,
+        <code>
+         澳門
+        </code>
+        ,
+        <code>
+         香港
+        </code>
+        ,
+        <code>
+         大陸
+        </code>
+        ,
+        <code>
+         空號
+        </code>
+        ,
+        <code>
+         非本人
+        </code>
+        ,
+        <code>
+         過世
+        </code>
+        ,
+        <code>
+         往生
+        </code>
+        ,
+        <code>
+         SPY
+        </code>
+        ,
+        <code>
+         孕
+        </code>
+        ,
+        <code>
+         客訴
+        </code>
+        ,
+        <code>
+         歿
+        </code>
+        ,
+        <code>
+         間諜
+        </code>
+       </p>
+       <p>
+        → 若符合,直接引導取消發送,流程結束。
+       </p>
+       <p>
+        <strong>
+         第二關:特殊規則檢查 (內含白名單例外)
+        </strong>
+       </p>
+       <p>
+        針對
+        <code>
+         Type: 標註
+        </code>
+        的預約,若
+        <code>
+         Mark
+        </code>
+        欄位符合以下任一規則,則進行白名單例外檢查。
+       </p>
+       <ul>
+        <li>
+         包含「勿」但
+         <strong>
+          不包含
+         </strong>
+         「勿久等」
+        </li>
+        <li>
+         包含「不」但
+         <strong>
+          不包含
+         </strong>
+         「推/call/摳/電/聯」
+        </li>
+       </ul>
+       <p>
+        → 若同時包含白名單關鍵字 (
+        <code>
+         天使
+        </code>
+        ,
+        <code>
+         好友
+        </code>
+        ),則直接通過,流程結束。
+       </p>
+       <p>
+        → 若不含白名單,則引導取消發送,流程結束。
+       </p>
+       <p>
+        <strong>
+         第三關:電訪銷開關檢查
+        </strong>
+       </p>
+       <p>
+        僅當後台開關打開時,檢查
+        <code>
+         promote
+        </code>
+        欄位是否為
+        <code>
+         0
+        </code>
+        ,
+        <code>
+         10
+        </code>
+        ,
+        <code>
+         20
+        </code>
+        。
+       </p>
+       <p>
+        → 若開關打開且符合條件,則引導取消發送,流程結束。
+       </p>
+       <p>
+        <strong>
+         第四關:預設通過
+        </strong>
+       </p>
+       <p>
+        若預約資訊能通過前面所有關卡的檢查。
+       </p>
+       <p>
+        → 正常,可發送。
+       </p>
+      </div>
+      <div class="info-box">
+       <p>
+        <strong>
+         Type: 接受電訪/銷 - 前端開關控制
+        </strong>
+        (預設關閉)
+       </p>
+       <h4>
+        🎛️ 開關說明
+       </h4>
+       <ul>
+        <li>
+         <strong>
+          開關關閉(預設):
+         </strong>
+         不檢查此項,所有 promote 狀態的客戶都可發送
+        </li>
+        <li>
+         <strong>
+          開關打開:
+         </strong>
+         額外過濾 promote 為 0、10、20 的客戶
+        </li>
+       </ul>
+       <table>
+        <thead>
+         <tr>
+          <th>
+           promote 值
+          </th>
+          <th>
+           狀態說明
+          </th>
+          <th>
+           開關關閉
+          </th>
+          <th>
+           開關打開
+          </th>
+         </tr>
+        </thead>
+        <tbody>
+         <tr>
+          <td>
+           <strong>
+            0
+           </strong>
+          </td>
+          <td>
+           拒絕
+          </td>
+          <td>
+           ✓ 發送
+          </td>
+          <td>
+           ✗ 不發送
+          </td>
+         </tr>
+         <tr>
+          <td>
+           <strong>
+            10
+           </strong>
+          </td>
+          <td>
+           勿Call勿約
+          </td>
+          <td>
+           ✓ 發送
+          </td>
+          <td>
+           ✗ 不發送
+          </td>
+         </tr>
+         <tr>
+          <td>
+           <strong>
+            20
+           </strong>
+          </td>
+          <td>
+           勿call可line
+          </td>
+          <td>
+           ✓ 發送
+          </td>
+          <td>
+           ✗ 不發送
+          </td>
+         </tr>
+         <tr>
+          <td>
+           其他
+          </td>
+          <td>
+           NULL 或其他值
+          </td>
+          <td>
+           ✓ 發送
+          </td>
+          <td>
+           ✓ 發送
+          </td>
+         </tr>
+        </tbody>
+       </table>
+      </div>
+      <h2>
+       測試案例範例
+      </h2>
+      <table>
+       <thead>
+        <tr>
+         <th>
+          Type
+         </th>
+         <th>
+          Mark / promote
+         </th>
+         <th>
+          判斷結果 (黑名單 &gt; 特殊規則(含白名單) &gt; 電訪銷)
+         </th>
+         <th>
+          是否發送
+         </th>
+        </tr>
+       </thead>
+       <tbody>
+        <tr>
+         <td>
+          標註
+         </td>
+         <td>
+          好友但拒絕推銷
+         </td>
+         <td>
+          第一關:命中黑名單「拒」
+         </td>
+         <td>
+          ✗ 不發送
+         </td>
+        </tr>
+        <tr>
+         <td>
+          標註
+         </td>
+         <td>
+          天使不接電話
+         </td>
+         <td>
+          第二關:命中特殊規則「不」,但同時命中白名單「天使」例外
+         </td>
+         <td>
+          ✓ 發送
+         </td>
+        </tr>
+        <tr>
+         <td>
+          標註
+         </td>
+         <td>
+          勿打擾
+         </td>
+         <td>
+          第二關:命中特殊規則「勿」,且無白名單例外
+         </td>
+         <td>
+          ✗ 不發送
+         </td>
+        </tr>
+        <tr>
+         <td>
+          標註
+         </td>
+         <td>
+          勿久等請提早聯繫
+         </td>
+         <td>
+          第二關:未命中「勿」的特殊規則
+         </td>
+         <td>
+          ✓ 發送
+         </td>
+        </tr>
+        <tr>
+         <td>
+          標註
+         </td>
+         <td>
+          天使會員
+         </td>
+         <td>
+          通過所有引導取消發送規則,預設通過
+         </td>
+         <td>
+          ✓ 發送
+         </td>
+        </tr>
+        <tr>
+         <td>
+          標註
+         </td>
+         <td>
+          員工家屬
+         </td>
+         <td>
+          第一關:命中黑名單「員工」
+         </td>
+         <td>
+          ✗ 不發送
+         </td>
+        </tr>
+        <tr>
+         <td>
+          接受電訪/銷
+         </td>
+         <td>
+          promote = 0(開關打開)
+         </td>
+         <td>
+          第三關:命中電訪銷規則
+         </td>
+         <td>
+          ✗ 不發送
+         </td>
+        </tr>
+        <tr>
+         <td>
+          接受電訪/銷
+         </td>
+         <td>
+          promote = 0(開關關閉)
+         </td>
+         <td>
+          第三關:電訪銷開關未打開,通過
+         </td>
+         <td>
+          ✓ 發送
+         </td>
+        </tr>
+       </tbody>
+      </table>
+      <div class="highlight-box">
+       <h3>
+        ⚠️ 實作重點提醒
+       </h3>
+       <ul>
+        <li>
+         <strong>
+          檢查時機:
+         </strong>
+         在進入「發出簡訊內容」介面
+         <strong>
+          之前
+         </strong>
+         執行
+        </li>
+        <li>
+         <strong>
+          白名單優先:
+         </strong>
+         天使/好友會員豁免所有黑名單規則
+        </li>
+        <li>
+         <strong>
+          關鍵字比對:
+         </strong>
+         採用部分匹配(包含即符合)
+        </li>
+        <li>
+         <strong>
+          開關預設:
+         </strong>
+         「接受電訪/銷」過濾預設關閉,避免誤攔
+        </li>
+        <li>
+         <strong>
+          不符合提示:
+         </strong>
+         若客戶不符合資格,應顯示明確提示訊息
+        </li>
+        <li>
+         <strong>
+          記錄追蹤:
+         </strong>
+         建議記錄因資格檢查而未發送的案例供後續分析
+        </li>
+       </ul>
+      </div>
+      <div class="info-box">
+       <h3>
+        💡 與主流程的整合點
+       </h3>
+       <p>
+        <strong>
+         此檢查在以下時刻觸發:
+        </strong>
+       </p>
+       <ul>
+        <li>
+         1️⃣ 新建預約後,準備發送提醒簡訊時
+        </li>
+        <li>
+         2️⃣ 修改預約(時間/門市)後,準備重新發送時
+        </li>
+        <li>
+         3️⃣ 取消最早預約,準備為次早預約補發時
+        </li>
+        <li>
+         4️⃣ 新增更早預約,準備為新最早發送時
+        </li>
+       </ul>
+       <p>
+        <strong>
+         所有情況都會先通過此檢查,才進入「發出簡訊內容」確認介面
+        </strong>
+       </p>
+      </div>
+     </details>
+    </div>
+   </div>
+   <div class="slide">
+    <span class="slide-number">
+     7
+    </span>
+    <h1 id="ch-5">
+     🎯 前端 UI 互動設計規範
+    </h1>
+    <div class="info-box">
+     <h3>
+      📋 設計規範說明
+     </h3>
+     <p>
+      根據預約新增、取消、修改等操作,前端需要判斷並顯示對應的提示訊息和按鈕樣式。以下定義標準互動場景的 UI 設計規範。
+     </p>
+    </div>
+    <div class="highlight-box">
+     <h3>
+      🎯 核心設計原則
+     </h3>
+     <p>
+      1.
+      <strong>
+       往最早的排程靠齊
+      </strong>
+      - 以當天最早預約為準發送簡訊
+     </p>
+     <p>
+      2.
+      <strong>
+       預約不會被擋
+      </strong>
+      - 簡訊規則只影響發送邏輯,不阻止預約建立
+     </p>
+     <p>
+      3.
+      <strong>
+       以「當天 + SYSGroup」為單位
+      </strong>
+      - 同一客戶同一天同一群組只發送最早一筆
+     </p>
+     <p>
+      4.
+      <strong>
+       不同 SYSGroup 彼此獨立
+      </strong>
+      - 各群組的簡訊狀態互不影響
+     </p>
+    </div>
+    <h2 id="section-32">
+     彈窗共用結構
+    </h2>
+    <div class="highlight-box">
+     <h3>
+      📱 簡訊確認視窗架構
+     </h3>
+     <p>
+      當預約操作會影響簡訊發送時,系統彈出統一結構的確認視窗:
+     </p>
+     <ul>
+      <li>
+       <strong>
+        1. 標題列
+       </strong>
+       - 簡訊發送 / 簡訊取消
+      </li>
+      <li>
+       <strong>
+        2. 提醒資訊區
+       </strong>
+       - 顯示 0~N 個提醒框(依重要性排序)
+      </li>
+      <li>
+       <strong>
+        3. 簡訊預覽區
+       </strong>
+       - 顯示/編輯簡訊內容與發送時間
+      </li>
+      <li>
+       <strong>
+        4. 按鈕列
+       </strong>
+       - 左側取消 / 右側確認
+      </li>
+     </ul>
+    </div>
+    <h2 id="section-33">
+     顏色與狀態定義
+    </h2>
+    <table>
+     <thead>
+      <tr>
+       <th>
+        狀態
+       </th>
+       <th>
+        用途
+       </th>
+       <th>
+        視覺呈現
+       </th>
+      </tr>
+     </thead>
+     <tbody>
+      <tr>
+       <td>
+        <strong>
+         danger
+        </strong>
+        危險/高風險
+       </td>
+       <td>
+        違反客戶設定,可能帶來客訴
+       </td>
+       <td>
+        🚨 紅色系
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <strong>
+         warning
+        </strong>
+        警告/提醒
+       </td>
+       <td>
+        排程衝突,自動補位通知
+       </td>
+       <td>
+        ⚡ 黃色/橘色系
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <strong>
+         success
+        </strong>
+        正向引導
+       </td>
+       <td>
+        系統建議執行的操作
+       </td>
+       <td>
+        ✅ 綠色
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <strong>
+         default
+        </strong>
+        中立/取消
+       </td>
+       <td>
+        保守不做變更
+       </td>
+       <td>
+        🔘 灰色
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <strong>
+         info
+        </strong>
+        資訊提示
+       </td>
+       <td>
+        一般資訊說明
+       </td>
+       <td>
+        ℹ️ 藍色系
+       </td>
+      </tr>
+     </tbody>
+    </table>
+    <h2 id="section-34">
+     標準互動場景
+    </h2>
+    <div class="scenario-card">
+     <h3 id="section-35">
+      情境 1:標準發送
+     </h3>
+     <div class="compact-modal-card">
+      <h4 style="color: #667eea;">
+       📱 簡訊發送
+      </h4>
+      <div class="sms-preview-box">
+       <p>
+        <strong>
+         簡訊內容:
+        </strong>
+       </p>
+       <div style="background: white; border: 1px solid #ddd; padding: 10px; border-radius: 6px; font-size: 13px; line-height: 1.6;">
+        提醒您有預約:【板橋光澤醫美】12/05 (五) 10:30,電話02-xxxx-xxxx,如須改約請聯繫您的專屬諮詢師。
+       </div>
+      </div>
+      <div class="button-group">
+       <button class="button button-default">
+        不發送
+       </button>
+       <button class="button button-primary">
+        確認發送
+       </button>
+      </div>
+     </div>
+    </div>
+    <div class="scenario-card">
+     <h3 id="section-36">
+      情境 2:客人拒收(黑名單)
+     </h3>
+     <div class="compact-modal-card">
+      <h4 style="color: #667eea;">
+       📱 簡訊發送
+      </h4>
+      <div class="warning-box-inner" style="border-left-color: #dc3545;">
+       <p style="color: #dc3545; font-size: 14px; font-weight: bold;">
+        發送受阻: 客人已設定「不要發送簡訊」,強制發送可能引起客訴。
+       </p>
+      </div>
+      <div class="sms-preview-box">
+       <p>
+        <strong>
+         簡訊內容:
+        </strong>
+       </p>
+       <div style="background: white; border: 1px solid #ddd; padding: 10px; border-radius: 6px; font-size: 13px; line-height: 1.6;">
+        提醒您有預約:【板橋光澤醫美】12/05 (五) 10:30,電話02-xxxx-xxxx,如須改約請聯繫您的專屬諮詢師。
+       </div>
+      </div>
+      <div class="button-group">
+       <button class="button button-warning">
+        不發送
+       </button>
+       <button class="button button-default">
+        確認發送
+       </button>
+      </div>
+     </div>
+    </div>
+    <div class="scenario-card">
+     <h3>
+      情境 3:排程衝突(有複數預約)
+     </h3>
+     <div class="compact-modal-card">
+      <h4 style="color: #667eea;">
+       📱 簡訊發送
+      </h4>
+      <div class="warning-box-inner">
+       <p>
+        排程衝突
+       </p>
+       <p style="font-size: 13px; line-height: 1.6; margin-top: 8px;">
+        客人已有複數預約如下:
+        <br>
+        2025-12-05 10:30 ← 最早預約(將發送簡訊)
+        <br>
+        2025-12-05 14:30
+        <br>
+        2025-12-05 16:00
+        <br>
+        以最早預約簡訊為主,以下開放更新簡訊內容。
+       </p>
+      </div>
+      <div class="sms-preview-box">
+       <p>
+        <strong>
+         簡訊內容:
+        </strong>
+       </p>
+       <div style="background: white; border: 1px solid #ddd; padding: 10px; border-radius: 6px; font-size: 13px; line-height: 1.6;">
+        提醒您有預約:【板橋光澤醫美】12/05 (五) 10:30,電話02-xxxx-xxxx,如須改約請聯繫您的專屬諮詢師。
+       </div>
+      </div>
+      <div class="button-group">
+       <button class="button button-default">
+        不發送
+       </button>
+       <button class="button button-primary">
+        確認發送
+       </button>
+      </div>
+     </div>
+    </div>
+    <div class="scenario-card">
+     <h3>
+      情境 4:複合風險(黑名單+排程衝突)
+     </h3>
+     <div class="compact-modal-card">
+      <h4 style="color: #667eea;">
+       📱 發送受阻
+      </h4>
+      <div class="warning-box-inner" style="border-left-color: #dc3545;">
+       <p style="color: #dc3545; font-size: 14px; font-weight: bold;">
+        發送受阻: 客人已設定「不要發送簡訊」
+       </p>
+      </div>
+      <div class="warning-box-inner">
+       <p>
+        排程衝突
+       </p>
+       <p style="font-size: 13px; line-height: 1.6; margin-top: 8px;">
+        客人已有複數預約,以最早預約簡訊為主
+       </p>
+      </div>
+      <div class="sms-preview-box">
+       <p>
+        <strong>
+         簡訊內容:
+        </strong>
+       </p>
+       <div style="background: white; border: 1px solid #ddd; padding: 10px; border-radius: 6px; font-size: 13px; line-height: 1.6;">
+        提醒您有預約:【板橋光澤醫美】12/05 (五) 10:30,電話02-xxxx-xxxx,如須改約請聯繫您的專屬諮詢師。
+       </div>
+      </div>
+      <div class="button-group">
+       <button class="button button-warning">
+        不發送
+       </button>
+       <button class="button button-default">
+        確認發送
+       </button>
+      </div>
+     </div>
+    </div>
+    <div class="scenario-card">
+     <h3>
+      情境 5:自動補位(取消最早預約)
+     </h3>
+     <div class="compact-modal-card">
+      <h4 style="color: #667eea;">
+       📱 簡訊發送
+      </h4>
+      <div class="warning-box-inner">
+       <p>
+        自動補位通知
+       </p>
+       <p style="font-size: 13px; line-height: 1.6; margin-top: 8px;">
+        當天尚有其他預約,系統將自動改以當天最早預約發送簡訊:
+        <br>
+        2025-12-05 14:00 (補位預約,將發送簡訊)
+        <br>
+        2025-12-05 18:00
+        <br>
+        系統將自動改以 12/05 14:00 預約發送通知簡訊,您可於下方編輯內容。
+       </p>
+      </div>
+      <div class="sms-preview-box">
+       <p>
+        <strong>
+         簡訊內容:
+        </strong>
+       </p>
+       <div style="background: white; border: 1px solid #ddd; padding: 10px; border-radius: 6px; font-size: 13px; line-height: 1.6;">
+        提醒您有預約:【板橋岩盤浴】12/05 (五) 14:00,電話02-xxxx-xxxx,如須改約請聯繫您的專屬諮詢師。
+       </div>
+      </div>
+      <div class="button-group">
+       <button class="button button-default">
+        不發送
+       </button>
+       <button class="button button-primary">
+        確認發送
+       </button>
+      </div>
+     </div>
+    </div>
+    <div class="info-box" style="margin-top: 30px;">
+     <h3>
+      💡 UI 設計重點總結
+     </h3>
+     <ul style="margin-top: 10px; line-height: 2;">
+      <li>
+       <strong>
+        綠色底白色字:
+       </strong>
+       正面建議操作(發送/確認發送)
+      </li>
+      <li>
+       <strong>
+        白色底黑色字:
+       </strong>
+       中性或取消操作(不發送/取消發送/確認發送)
+      </li>
+      <li>
+       <strong>
+        紅底黃字帶特效:
+       </strong>
+       強烈警示(黑名單、次早預約的取消發送)
+      </li>
+      <li>
+       <strong>
+        互動場景 3 可合併:
+       </strong>
+       黑名單提示會置於最上方,其他場景提示置於下方
+      </li>
+      <li>
+       <strong>
+        一致性原則:
+       </strong>
+       相同互動場景在不同頁面使用相同的配色和文案
+      </li>
+     </ul>
+    </div>
+   </div>
+   <div class="slide">
+    <span class="slide-number">
+     9
+    </span>
+    <h1 id="ch-6">
+     🎬 業務情境模擬與驗證
+    </h1>
+    <div class="highlight-box">
+     <h3 id="section-1">
+      📋 情境總覽
+     </h3>
+     <p>
+      本章包含9個完整業務情境,涵蓋所有可能的簡訊發送場景
+     </p>
+    </div>
+    <h2 id="section-45">
+     門市群組規則情境
+    </h2>
+    <div class="scenario-card">
+     <h3>
+      情境 A:板橋區域多預約
+     </h3>
+     <table>
+      <thead>
+       <tr>
+        <th>
+         時間
+        </th>
+        <th>
+         門市
+        </th>
+        <th>
+         會員
+        </th>
+        <th>
+         療程
+        </th>
+        <th>
+         簡訊狀態
+        </th>
+       </tr>
+      </thead>
+      <tbody>
+       <tr>
+        <td>
+         <strong>
+          10:00
+         </strong>
+        </td>
+        <td>
+         板橋醫美
+        </td>
+        <td>
+         王小明
+        </td>
+        <td>
+         雷射除斑
+        </td>
+        <td>
+         <span class="tag tag-send">
+          ✓ 發送
+         </span>
+        </td>
+       </tr>
+       <tr>
+        <td>
+         16:30
+        </td>
+        <td>
+         板橋岩盤浴
+        </td>
+        <td>
+         王小明
+        </td>
+        <td>
+         岩盤浴療程
+        </td>
+        <td>
+         <span class="tag tag-skip">
+          ✗ 跳過
+         </span>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <div class="highlight-box">
+      <p>
+       <strong>
+        📊 結果分析:
+       </strong>
+       2個預約跨2個門市,但屬於群組3(板橋區域)→ 只發送1封簡訊(節省50%)
+      </p>
+     </div>
+    </div>
+    <div class="scenario-card">
+     <h3>
+      情境 B:中壢彤顏區域跨門市
+     </h3>
+     <table>
+      <thead>
+       <tr>
+        <th>
+         時間
+        </th>
+        <th>
+         門市
+        </th>
+        <th>
+         會員
+        </th>
+        <th>
+         療程
+        </th>
+        <th>
+         簡訊狀態
+        </th>
+       </tr>
+      </thead>
+      <tbody>
+       <tr>
+        <td>
+         <strong>
+          10:30
+         </strong>
+        </td>
+        <td>
+         中壢彤顏健保
+        </td>
+        <td>
+         李美麗
+        </td>
+        <td>
+         健保治療
+        </td>
+        <td>
+         <span class="tag tag-send">
+          ✓ 發送
+         </span>
+        </td>
+       </tr>
+       <tr>
+        <td>
+         15:00
+        </td>
+        <td>
+         中壢彤顏醫美
+        </td>
+        <td>
+         李美麗
+        </td>
+        <td>
+         美容療程
+        </td>
+        <td>
+         <span class="tag tag-skip">
+          ✗ 跳過
+         </span>
+        </td>
+       </tr>
+       <tr>
+        <td>
+         17:30
+        </td>
+        <td>
+         中壢岩盤浴
+        </td>
+        <td>
+         李美麗
+        </td>
+        <td>
+         岩盤浴療程
+        </td>
+        <td>
+         <span class="tag tag-skip">
+          ✗ 跳過
+         </span>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <div class="highlight-box">
+      <p>
+       <strong>
+        結果:
+       </strong>
+       3個預約跨3個門市,但都屬於群組4(中壢彤顏區域)→ 只發送1封簡訊(節省67%)
+      </p>
+     </div>
+    </div>
+    <div class="scenario-card">
+     <h3>
+      情境 C:忠孝區域同時段
+     </h3>
+     <table>
+      <thead>
+       <tr>
+        <th>
+         時間
+        </th>
+        <th>
+         門市
+        </th>
+        <th>
+         會員
+        </th>
+        <th>
+         療程
+        </th>
+        <th>
+         簡訊狀態
+        </th>
+       </tr>
+      </thead>
+      <tbody>
+       <tr>
+        <td>
+         <strong>
+          13:00
+         </strong>
+        </td>
+        <td>
+         忠孝岩盤浴
+        </td>
+        <td>
+         陳大華
+        </td>
+        <td>
+         岩盤浴
+        </td>
+        <td>
+         <span class="tag tag-send">
+          ✓ 發送
+         </span>
+        </td>
+       </tr>
+       <tr>
+        <td>
+         13:30
+        </td>
+        <td>
+         忠孝光澤
+        </td>
+        <td>
+         陳大華
+        </td>
+        <td>
+         光澤療程
+        </td>
+        <td>
+         <span class="tag tag-skip">
+          ✗ 跳過
+         </span>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <div class="highlight-box">
+      <p>
+       <strong>
+        結果:
+       </strong>
+       間隔僅30分鐘也只發1封(屬於群組1)
+      </p>
+     </div>
+    </div>
+    <h2 id="section-46">
+     獨立門市規則情境
+    </h2>
+    <div class="scenario-card">
+     <h3>
+      情境 D:三重光澤(獨立門市)
+     </h3>
+     <table>
+      <thead>
+       <tr>
+        <th>
+         時間
+        </th>
+        <th>
+         門市
+        </th>
+        <th>
+         會員
+        </th>
+        <th>
+         療程
+        </th>
+        <th>
+         簡訊狀態
+        </th>
+       </tr>
+      </thead>
+      <tbody>
+       <tr>
+        <td>
+         <strong>
+          10:00
+         </strong>
+        </td>
+        <td>
+         三重光澤
+        </td>
+        <td>
+         張志明
+        </td>
+        <td>
+         醫美諮詢
+        </td>
+        <td>
+         <span class="tag tag-send">
+          ✓ 發送
+         </span>
+        </td>
+       </tr>
+       <tr>
+        <td>
+         15:00
+        </td>
+        <td>
+         三重光澤
+        </td>
+        <td>
+         張志明
+        </td>
+        <td>
+         療程治療
+        </td>
+        <td>
+         <span class="tag tag-skip">
+          ✗ 跳過
+         </span>
+        </td>
+       </tr>
+       <tr>
+        <td>
+         18:00
+        </td>
+        <td>
+         三重光澤
+        </td>
+        <td>
+         張志明
+        </td>
+        <td>
+         術後追蹤
+        </td>
+        <td>
+         <span class="tag tag-skip">
+          ✗ 跳過
+         </span>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <div class="info-box">
+      <p>
+       <strong>
+        📌 規則說明:
+       </strong>
+       三重光澤不在任何群組 → 採用「同門市規則」
+      </p>
+      <p>
+       <strong>
+        結果:
+       </strong>
+       同一門市3個預約 → 只發送最早的1封
+      </p>
+     </div>
+    </div>
+    <div class="scenario-card">
+     <h3>
+      情境 E:高雄光澤(獨立門市)
+     </h3>
+     <table>
+      <thead>
+       <tr>
+        <th>
+         時間
+        </th>
+        <th>
+         門市
+        </th>
+        <th>
+         會員
+        </th>
+        <th>
+         療程
+        </th>
+        <th>
+         簡訊狀態
+        </th>
+       </tr>
+      </thead>
+      <tbody>
+       <tr>
+        <td>
+         <strong>
+          09:00
+         </strong>
+        </td>
+        <td>
+         高雄光澤
+        </td>
+        <td>
+         劉小芳
+        </td>
+        <td>
+         第一次療程
+        </td>
+        <td>
+         <span class="tag tag-send">
+          ✓ 發送
+         </span>
+        </td>
+       </tr>
+       <tr>
+        <td>
+         14:30
+        </td>
+        <td>
+         高雄光澤
+        </td>
+        <td>
+         劉小芳
+        </td>
+        <td>
+         第二次療程
+        </td>
+        <td>
+         <span class="tag tag-skip">
+          ✗ 跳過
+         </span>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+    </div>
+    <div class="scenario-card">
+     <h3>
+      情境 F:跨獨立門市(仍各發簡訊)
+     </h3>
+     <table>
+      <thead>
+       <tr>
+        <th>
+         時間
+        </th>
+        <th>
+         門市
+        </th>
+        <th>
+         會員
+        </th>
+        <th>
+         療程
+        </th>
+        <th>
+         簡訊狀態
+        </th>
+       </tr>
+      </thead>
+      <tbody>
+       <tr>
+        <td>
+         <strong>
+          10:00
+         </strong>
+        </td>
+        <td>
+         三重光澤
+        </td>
+        <td>
+         黃美惠
+        </td>
+        <td>
+         預約A
+        </td>
+        <td>
+         <span class="tag tag-send">
+          ✓ 發送
+         </span>
+        </td>
+       </tr>
+       <tr>
+        <td>
+         <strong>
+          15:00
+         </strong>
+        </td>
+        <td>
+         高雄光澤
+        </td>
+        <td>
+         黃美惠
+        </td>
+        <td>
+         預約B
+        </td>
+        <td>
+         <span class="tag tag-send">
+          ✓ 發送
+         </span>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <div class="warning-box">
+      <p>
+       <strong>
+        ⚠️ 注意:
+       </strong>
+       不同獨立門市且無群組關係 →
+       <strong>
+        各發1封
+       </strong>
+       (共2封)。這是合理的,因為地理位置完全不同(三重 vs 高雄)
+      </p>
+     </div>
+    </div>
+    <h2 id="section-47">
+     跨群組混合情境
+    </h2>
+    <div class="scenario-card">
+     <h3>
+      情境 G:群組 + 獨立門市混合(真實案例)
+     </h3>
+     <table>
+      <thead>
+       <tr>
+        <th>
+         時間
+        </th>
+        <th>
+         門市
+        </th>
+        <th>
+         會員
+        </th>
+        <th>
+         所屬群組/規則
+        </th>
+        <th>
+         簡訊狀態
+        </th>
+       </tr>
+      </thead>
+      <tbody>
+       <tr>
+        <td>
+         <strong>
+          09:00
+         </strong>
+        </td>
+        <td>
+         板橋醫美
+        </td>
+        <td>
+         王先生
+        </td>
+        <td>
+         群組3(板橋)
+        </td>
+        <td>
+         <span class="tag tag-send">
+          ✓ 發送
+         </span>
+        </td>
+       </tr>
+       <tr>
+        <td>
+         11:30
+        </td>
+        <td>
+         板橋岩盤浴
+        </td>
+        <td>
+         王先生
+        </td>
+        <td>
+         群組3(板橋)
+        </td>
+        <td>
+         <span class="tag tag-skip">
+          ✗ 跳過
+         </span>
+        </td>
+       </tr>
+       <tr>
+        <td>
+         <strong>
+          14:00
+         </strong>
+        </td>
+        <td>
+         忠孝岩盤浴
+        </td>
+        <td>
+         王先生
+        </td>
+        <td>
+         群組1(忠孝)
+        </td>
+        <td>
+         <span class="tag tag-send">
+          ✓ 發送
+         </span>
+        </td>
+       </tr>
+       <tr>
+        <td>
+         16:00
+        </td>
+        <td>
+         忠孝光澤
+        </td>
+        <td>
+         王先生
+        </td>
+        <td>
+         群組1(忠孝)
+        </td>
+        <td>
+         <span class="tag tag-skip">
+          ✗ 跳過
+         </span>
+        </td>
+       </tr>
+       <tr>
+        <td>
+         <strong>
+          18:00
+         </strong>
+        </td>
+        <td>
+         三重光澤
+        </td>
+        <td>
+         王先生
+        </td>
+        <td>
+         獨立門市
+        </td>
+        <td>
+         <span class="tag tag-send">
+          ✓ 發送
+         </span>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <div class="info-box">
+      <p>
+       <strong>
+        🔍 判斷邏輯分析:
+       </strong>
+      </p>
+      <ul>
+       <li>
+        1️⃣ 板橋醫美 + 板橋岩盤浴 = 群組3 → 只發1封(09:00)
+       </li>
+       <li>
+        2️⃣ 忠孝岩盤浴 + 忠孝光澤 = 群組1(不同群組)→ 只發1封(14:00)
+       </li>
+       <li>
+        3️⃣ 三重光澤 = 獨立門市(無群組關係)→ 發1封(18:00)
+       </li>
+      </ul>
+      <p>
+       <strong>
+        📊 最終結果:
+       </strong>
+       5個預約發送3封簡訊(節省40%成本)
+      </p>
+     </div>
+    </div>
+   </div>
+   <div class="slide">
+    <span class="slide-number">
+     10
+    </span>
+    <h1 id="ch-7">
+     ✅ 決策總結與實施規劃
+    </h1>
+    <div class="highlight-box">
+     <h2>
+      📋 本次會議已確認的決策
+     </h2>
+     <h3>
+      決策 1:門市群組設定
+     </h3>
+     <p>
+      <strong>
+       ✓ 確認設定 5 個消耗區域群組,共涵蓋 11 個門市
+      </strong>
+     </p>
+     <h3>
+      決策 2:簡訊發送規則
+     </h3>
+     <p>
+      <strong>
+       ✓ 採用兩層判斷機制(群組優先 → 單一門市)
+      </strong>
+     </p>
+     <h3>
+      決策 3:簡訊內容格式
+     </h3>
+     <p>
+      <strong>
+       ✓ 只提最早預約時間
+      </strong>
+     </p>
+     <h3>
+      決策 4:取消/新增預約處理方式(✨ 更新)
+     </h3>
+     <p>
+      <strong>
+       ✓ 在執行前先檢測並確認(讓用戶有反悔機會)
+      </strong>
+     </p>
+    </div>
+    <div class="info-box">
+     <h3>
+      💡 決策理由說明
+     </h3>
+     <ul>
+      <li>
+       <strong>
+        成本優先:
+       </strong>
+       透過群組規劃,最大化簡訊費用節省效益
+      </li>
+      <li>
+       <strong>
+        避免誤操作:
+       </strong>
+       在執行前先檢測並確認,讓用戶有反悔機會
+      </li>
+      <li>
+       <strong>
+        提升效率:
+       </strong>
+       自動檢測機制減少人工判斷時間與遺漏風險
+      </li>
+      <li>
+       <strong>
+        操作一致:
+       </strong>
+       使用現有共用元件,降低學習成本
+      </li>
+      <li>
+       <strong>
+        保持彈性:
+       </strong>
+       用戶在發送介面做最終決定,特殊情況(VIP、重要療程)可妥善處理
+      </li>
+      <li>
+       <strong>
+        風險可控:
+       </strong>
+       每次操作前都先確認影響,降低服務風險
+      </li>
+     </ul>
+    </div>
+    <h2 id="section-50">
+     開發時程規劃
+    </h2>
+    <table>
+     <thead>
+      <tr>
+       <th>
+        階段
+       </th>
+       <th>
+        工作項目
+       </th>
+       <th>
+        預估時間
+       </th>
+       <th>
+        負責單位
+       </th>
+       <th>
+        優先級
+       </th>
+      </tr>
+     </thead>
+     <tbody>
+      <tr>
+       <td>
+        <strong>
+         需求確認
+        </strong>
+       </td>
+       <td>
+        確認門市群組、簡訊格式、補發流程
+       </td>
+       <td>
+        3-5天
+       </td>
+       <td>
+        PM
+       </td>
+       <td>
+        🔴 高
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <strong>
+         系統開發
+        </strong>
+       </td>
+       <td>
+        開發群組設定、簡訊邏輯、提醒介面
+       </td>
+       <td>
+        <strong>
+         1-1.5週
+        </strong>
+       </td>
+       <td>
+        工程團隊
+       </td>
+       <td>
+        🔴 高
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <strong>
+         測試驗證
+        </strong>
+       </td>
+       <td>
+        功能測試、補發測試、使用者驗收
+       </td>
+       <td>
+        <strong>
+         1週
+        </strong>
+       </td>
+       <td>
+        QA團隊
+       </td>
+       <td>
+        🟡 中
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <strong>
+         試運行
+        </strong>
+       </td>
+       <td>
+        小範圍上線、監控數據、收集反饋
+       </td>
+       <td>
+        <strong>
+         1週
+        </strong>
+       </td>
+       <td>
+        全體
+       </td>
+       <td>
+        🟡 中
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <strong>
+         正式上線
+        </strong>
+       </td>
+       <td>
+        全門市部署、員工教育訓練、持續監控
+       </td>
+       <td>
+        持續
+       </td>
+       <td>
+        全體
+       </td>
+       <td>
+        🟢 持續
+       </td>
+      </tr>
+     </tbody>
+    </table>
+    <div class="highlight-box">
+     <h3>
+      ⏱️ 總時程預估
+     </h3>
+     <p>
+      <strong>
+       從開發到試運行完成:約 3-3.5 週
+      </strong>
+     </p>
+     <p>
+      (不含需求確認階段與正式上線後的持續優化)
+     </p>
+    </div>
+    <h2 id="section-51">
+     關鍵監控指標(KPI)
+    </h2>
+    <div class="highlight-box">
+     <p>
+      <strong>
+       📉 簡訊成本:
+      </strong>
+      -35% 目標節省比例
+     </p>
+     <p>
+      <strong>
+       📊 爽約率:
+      </strong>
+      ≤5% 不應上升
+     </p>
+     <p>
+      <strong>
+       ⭐ 補發決策率:
+      </strong>
+      記錄追蹤分析
+     </p>
+    </div>
+    <div class="highlight-box">
+     <h3>
+      📊 預期效益試算(以月均10,000筆預約為例)
+     </h3>
+     <table>
+      <thead>
+       <tr>
+        <th>
+         項目
+        </th>
+        <th>
+         優化前
+        </th>
+        <th>
+         優化後
+        </th>
+        <th>
+         節省
+        </th>
+       </tr>
+      </thead>
+      <tbody>
+       <tr>
+        <td>
+         月預約數
+        </td>
+        <td>
+         10,000 筆
+        </td>
+        <td>
+         10,000 筆
+        </td>
+        <td>
+         -
+        </td>
+       </tr>
+       <tr>
+        <td>
+         簡訊發送數
+        </td>
+        <td>
+         10,000 封
+        </td>
+        <td>
+         6,500 封
+        </td>
+        <td>
+         <strong>
+          3,500 封
+         </strong>
+        </td>
+       </tr>
+       <tr>
+        <td>
+         <strong>
+          簡訊成本(@0.7元/封)
+         </strong>
+        </td>
+        <td>
+         <strong>
+          7,000 元
+         </strong>
+        </td>
+        <td>
+         <strong>
+          4,550 元
+         </strong>
+        </td>
+        <td>
+         <strong>
+          2,450 元/月
+         </strong>
+        </td>
+       </tr>
+       <tr>
+        <td>
+         <strong>
+          年度節省
+         </strong>
+        </td>
+        <td>
+        </td>
+        <td>
+        </td>
+        <td>
+         <strong>
+          約 29,400 元/年
+         </strong>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+    </div>
+    <h2 id="section-52">
+     後續行動清單
+    </h2>
+    <table>
+     <thead>
+      <tr>
+       <th>
+        優先級
+       </th>
+       <th>
+        行動項目
+       </th>
+       <th>
+        負責人
+       </th>
+       <th>
+        期限
+       </th>
+       <th>
+        狀態
+       </th>
+      </tr>
+     </thead>
+     <tbody>
+      <tr>
+       <td>
+        🔴 最高
+       </td>
+       <td>
+        確認5個消耗區域群組設定是否完整正確
+       </td>
+       <td>
+        營運部
+       </td>
+       <td>
+        2天內
+       </td>
+       <td>
+        ⏳ 待辦
+       </td>
+      </tr>
+      <tr>
+       <td>
+        🔴 最高
+       </td>
+       <td>
+        設計補發提醒介面原型
+       </td>
+       <td>
+        PM + UI
+       </td>
+       <td>
+        3天內
+       </td>
+       <td>
+        ⏳ 待辦
+       </td>
+      </tr>
+      <tr>
+       <td>
+        🟡 高
+       </td>
+       <td>
+        開發門市群組設定與管理功能
+       </td>
+       <td>
+        工程團隊
+       </td>
+       <td>
+        1週內
+       </td>
+       <td>
+        ⏳ 待辦
+       </td>
+      </tr>
+      <tr>
+       <td>
+        🟡 高
+       </td>
+       <td>
+        開發次早預約自動提醒機制
+       </td>
+       <td>
+        工程團隊
+       </td>
+       <td>
+        1.5週內
+       </td>
+       <td>
+        ⏳ 待辦
+       </td>
+      </tr>
+      <tr>
+       <td>
+        🟢 中
+       </td>
+       <td>
+        準備使用者教育訓練材料
+       </td>
+       <td>
+        教育訓練組
+       </td>
+       <td>
+        3週內
+       </td>
+       <td>
+        ⏳ 待辦
+       </td>
+      </tr>
+      <tr>
+       <td>
+        🟢 中
+       </td>
+       <td>
+        建立監控數據分析報表(含補發決策追蹤)
+       </td>
+       <td>
+        數據分析
+       </td>
+       <td>
+        4週內
+       </td>
+       <td>
+        ⏳ 待辦
+       </td>
+      </tr>
+     </tbody>
+    </table>
+    <div class="highlight-box">
+     <h3>
+      🚀 開始執行準備
+     </h3>
+     <p>
+      <strong>
+       ✓ 所有決策已確認完成
+      </strong>
+     </p>
+     <p>
+      接下來進入開發與實施階段,預計 3-3.5 週內完成系統建置與測試
+     </p>
+    </div>
+   </div>
+   <div class="slide">
+    <span class="slide-number">
+     11
+    </span>
+    <h1 id="ch-8">
+     謝謝聆聽 🙏
+    </h1>
+    <div class="highlight-box">
+     <p>
+      期待您的寶貴意見與決策
+     </p>
+    </div>
+    <div class="highlight-box">
+     <p>
+      <strong>
+       門市總數:
+      </strong>
+      27
+     </p>
+     <p>
+      <strong>
+       消耗區域群組:
+      </strong>
+      5
+     </p>
+     <p>
+      <strong>
+       預期節省:
+      </strong>
+      35% 簡訊成本
+     </p>
+    </div>
+    <div class="success-box">
+     <p>
+      📧 如有任何問題或建議,請隨時與專案團隊聯繫
+     </p>
+     <p>
+      📊 下次會議將確認最終決策並啟動開發
+     </p>
+    </div>
+   </div>
+   <div class="slide">
+    <span class="slide-number">
+     11
+    </span>
+    <h1 id="ch-8">
+     謝謝聆聽 🙏
+    </h1>
+    <div class="highlight-box">
+     <p>
+      期待您的寶貴意見與決策
+     </p>
+    </div>
+    <div class="highlight-box">
+     <p>
+      <strong>
+       門市總數:
+      </strong>
+      27
+     </p>
+     <p>
+      <strong>
+       消耗區域群組:
+      </strong>
+      5
+     </p>
+     <p>
+      <strong>
+       預期節省:
+      </strong>
+      35% 簡訊成本
+     </p>
+    </div>
+    <div class="success-box">
+     <p>
+      📧 如有任何問題或建議,請隨時與專案團隊聯繫
+     </p>
+     <p>
+      📊 下次會議將確認最終決策並啟動開發
+     </p>
+    </div>
+   </div>
+  </div>
+  <script>
+   function toggleNav() {
+            const nav = document.getElementById('floatingNav');
+            const btn = document.getElementById('toggleBtn');
+            nav.classList.toggle('collapsed');
+            if (nav.classList.contains('collapsed')) {
+                btn.innerHTML = '▶';
+            } else {
+                btn.innerHTML = '◀';
+            }
+        }
+
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('h1[id^="ch-"]');
+            const navLinks = document.querySelectorAll('.nav-link');
+            let currentSectionId = '';
+
+            for (let i = sections.length - 1; i >= 0; i--) {
+                const section = sections[i];
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 60) {
+                    currentSectionId = section.getAttribute('id');
+                    break;
+                }
+            }
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                // Check if the href matches the current section id (e.g. href="#ch-1" matches id="ch-1")
+                if (link.getAttribute('href') === '#' + currentSectionId) {
+                    link.classList.add('active');
+                }
+            });
+        });
+  </script>
+ </body>
+</html>
