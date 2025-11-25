@@ -1912,198 +1912,127 @@
       <h2>
        客戶資格檢查規則
       </h2>
-      <div class="highlight-box">
+      <div class="info-box">
        <p>
         <strong>
-         最終判斷流程 v2.5
+         ⚙️ 最終判斷流程 v2.5
         </strong>
         (預設啟用)
        </p>
        <p>
-        <strong>
-         第一關:黑名單檢查 (絕對優先)
-        </strong>
+        系統會依序執行以下四關檢查，每一關卡都有不同的判斷邏輯和優先級。
+       </p>
+      </div>
+
+      <div class="danger-box">
+       <h3 style="color: #dc3545; margin-top: 0;">
+        🚫 第一關：黑名單檢查 (絕對優先)
+       </h3>
+       <p>
+        <strong>檢查對象：</strong>
+        針對 <code>Type: 標註</code> 的預約
        </p>
        <p>
-        針對
-        <code>
-         Type: 標註
-        </code>
-        的預約,檢查
-        <code>
-         Mark
-        </code>
-        欄位是否包含以下任一關鍵字:
-        <code>
-         無
-        </code>
-        ,
-        <code>
-         拒
-        </code>
-        ,
-        <code>
-         沒
-        </code>
-        ,
-        <code>
-         員工
-        </code>
-        ,
-        <code>
-         醫師
-        </code>
-        ,
-        <code>
-         離職
-        </code>
-        ,
-        <code>
-         暫停
-        </code>
-        ,
-        <code>
-         誤
-        </code>
-        ,
-        <code>
-         簡訊
-        </code>
-        ,
-        <code>
-         澳門
-        </code>
-        ,
-        <code>
-         香港
-        </code>
-        ,
-        <code>
-         大陸
-        </code>
-        ,
-        <code>
-         空號
-        </code>
-        ,
-        <code>
-         非本人
-        </code>
-        ,
-        <code>
-         過世
-        </code>
-        ,
-        <code>
-         往生
-        </code>
-        ,
-        <code>
-         SPY
-        </code>
-        ,
-        <code>
-         孕
-        </code>
-        ,
-        <code>
-         客訴
-        </code>
-        ,
-        <code>
-         歿
-        </code>
-        ,
-        <code>
-         間諜
-        </code>
+        <strong>檢查欄位：</strong>
+        <code>Mark</code> 欄位
        </p>
        <p>
-        → 若符合,直接引導取消發送,流程結束。
+        <strong>黑名單關鍵字：</strong>
+       </p>
+       <p style="line-height: 2;">
+        <code>無</code>
+        <code>拒</code>
+        <code>沒</code>
+        <code>員工</code>
+        <code>醫師</code>
+        <code>離職</code>
+        <code>暫停</code>
+        <code>誤</code>
+        <code>簡訊</code>
+        <code>澳門</code>
+        <code>香港</code>
+        <code>大陸</code>
+        <code>空號</code>
+        <code>非本人</code>
+        <code>過世</code>
+        <code>往生</code>
+        <code>SPY</code>
+        <code>孕</code>
+        <code>客訴</code>
+        <code>歿</code>
+        <code>間諜</code>
+       </p>
+       <p style="margin-top: 15px;">
+        <strong>✋ 判斷結果：</strong>
+        若符合，<strong>直接引導取消發送</strong>，流程結束。
+       </p>
+      </div>
+
+      <div class="warning-box">
+       <h3 style="color: #856404; margin-top: 0;">
+        ⚠️ 第二關：特殊規則檢查 (內含白名單例外)
+       </h3>
+       <p>
+        <strong>檢查對象：</strong>
+        針對 <code>Type: 標註</code> 的預約
        </p>
        <p>
-        <strong>
-         第二關:特殊規則檢查 (內含白名單例外)
-        </strong>
+        <strong>檢查欄位：</strong>
+        <code>Mark</code> 欄位
        </p>
        <p>
-        針對
-        <code>
-         Type: 標註
-        </code>
-        的預約,若
-        <code>
-         Mark
-        </code>
-        欄位符合以下任一規則,則進行白名單例外檢查。
+        <strong>觸發條件（符合任一即檢查）：</strong>
        </p>
        <ul>
-        <li>
-         包含「勿」但
-         <strong>
-          不包含
-         </strong>
-         「勿久等」
-        </li>
-        <li>
-         包含「不」但
-         <strong>
-          不包含
-         </strong>
-         「推/call/摳/電/聯」
-        </li>
+        <li>包含「勿」但<strong>不包含</strong>「勿久等」</li>
+        <li>包含「不」但<strong>不包含</strong>「推/call/摳/電/聯」</li>
        </ul>
-       <p>
-        → 若同時包含白名單關鍵字 (
-        <code>
-         天使
-        </code>
-        ,
-        <code>
-         好友
-        </code>
-        ),則直接通過,流程結束。
+       <p style="margin-top: 15px;">
+        <strong>🌟 白名單例外：</strong>
+        若同時包含 <code>天使</code> 或 <code>好友</code> 關鍵字，則<strong>直接通過</strong>，流程結束。
        </p>
        <p>
-        → 若不含白名單,則引導取消發送,流程結束。
+        <strong>✋ 判斷結果：</strong>
+        若觸發條件但無白名單，則<strong>引導取消發送</strong>，流程結束。
+       </p>
+      </div>
+
+      <div class="info-box">
+       <h3 style="color: #0c5460; margin-top: 0;">
+        ℹ️ 第三關：電訪銷開關檢查
+       </h3>
+       <p>
+        <strong>檢查條件：</strong>
+        僅當<strong>後台開關打開</strong>時執行
        </p>
        <p>
-        <strong>
-         第三關:電訪銷開關檢查
-        </strong>
+        <strong>檢查欄位：</strong>
+        <code>promote</code> 欄位
        </p>
        <p>
-        僅當後台開關打開時,檢查
-        <code>
-         promote
-        </code>
-        欄位是否為
-        <code>
-         0
-        </code>
-        ,
-        <code>
-         10
-        </code>
-        ,
-        <code>
-         20
-        </code>
-        。
+        <strong>過濾值：</strong>
+        <code>0</code>, <code>10</code>, <code>20</code>
+       </p>
+       <p style="margin-top: 15px;">
+        <strong>✋ 判斷結果：</strong>
+        若開關打開且符合條件，則<strong>引導取消發送</strong>，流程結束。
        </p>
        <p>
-        → 若開關打開且符合條件,則引導取消發送,流程結束。
+        <strong>💡 注意：</strong>
+        此開關預設關閉，不檢查此項。
        </p>
-       <p>
-        <strong>
-         第四關:預設通過
-        </strong>
-       </p>
+      </div>
+
+      <div class="success-box">
+       <h3 style="color: #155724; margin-top: 0;">
+        ✅ 第四關：預設通過
+       </h3>
        <p>
         若預約資訊能通過前面所有關卡的檢查。
        </p>
-       <p>
-        → 正常,可發送。
+       <p style="margin-top: 15px;">
+        <strong>✓ 判斷結果：</strong>
+        正常，<strong>可發送簡訊</strong>。
        </p>
       </div>
       <div class="info-box">
@@ -3989,47 +3918,6 @@
      </p>
      <p>
       接下來進入開發與實施階段,預計 3-3.5 週內完成系統建置與測試
-     </p>
-    </div>
-   </div>
-   <div class="slide">
-    <span class="slide-number">
-     11
-    </span>
-    <h1 id="ch-8">
-     謝謝聆聽 🙏
-    </h1>
-    <div class="highlight-box">
-     <p>
-      期待您的寶貴意見與決策
-     </p>
-    </div>
-    <div class="highlight-box">
-     <p>
-      <strong>
-       門市總數:
-      </strong>
-      27
-     </p>
-     <p>
-      <strong>
-       消耗區域群組:
-      </strong>
-      5
-     </p>
-     <p>
-      <strong>
-       預期節省:
-      </strong>
-      35% 簡訊成本
-     </p>
-    </div>
-    <div class="success-box">
-     <p>
-      📧 如有任何問題或建議,請隨時與專案團隊聯繫
-     </p>
-     <p>
-      📊 下次會議將確認最終決策並啟動開發
      </p>
     </div>
    </div>
