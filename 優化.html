@@ -156,7 +156,41 @@
         tr:hover {
             background: #f8f9ff;
         }
-        
+
+        /* 群組顏色標示 */
+        .group-1 {
+            background-color: #e3f2fd !important; /* 淺藍色 - 忠孝區域 */
+        }
+
+        .group-2 {
+            background-color: #e8f5e9 !important; /* 淺綠色 - 羅東區域 */
+        }
+
+        .group-3 {
+            background-color: #f3e5f5 !important; /* 淺紫色 - 板橋區域 */
+        }
+
+        .group-4 {
+            background-color: #fff3e0 !important; /* 淺橙色 - 中壢彤顏區域 */
+        }
+
+        .group-5 {
+            background-color: #fce4ec !important; /* 淺粉色 - 台中區域 */
+        }
+
+        .group-independent {
+            background-color: #f5f5f5 !important; /* 淺灰色 - 獨立門市 */
+        }
+
+        .group-1:hover,
+        .group-2:hover,
+        .group-3:hover,
+        .group-4:hover,
+        .group-5:hover,
+        .group-independent:hover {
+            filter: brightness(0.95);
+        }
+
         .scenario-card {
             background: #f8f9ff;
             border: 2px solid #667eea;
@@ -1155,7 +1189,7 @@
       </tr>
      </thead>
      <tbody>
-      <tr>
+      <tr class="group-1">
        <td>
         忠孝岩盤浴
        </td>
@@ -1169,7 +1203,7 @@
         與忠孝光澤共享最早排程
        </td>
       </tr>
-      <tr>
+      <tr class="group-1">
        <td>
         忠孝光澤
        </td>
@@ -1183,7 +1217,7 @@
         與忠孝岩盤浴共享最早排程
        </td>
       </tr>
-      <tr>
+      <tr class="group-2">
        <td>
         羅東岩盤浴
        </td>
@@ -1197,7 +1231,7 @@
         與羅東光澤共享最早排程
        </td>
       </tr>
-      <tr>
+      <tr class="group-2">
        <td>
         羅東光澤
        </td>
@@ -1211,7 +1245,7 @@
         與羅東岩盤浴共享最早排程
        </td>
       </tr>
-      <tr>
+      <tr class="group-3">
        <td>
         板橋醫美
        </td>
@@ -1225,7 +1259,7 @@
         與板橋岩盤浴共享最早排程
        </td>
       </tr>
-      <tr>
+      <tr class="group-3">
        <td>
         板橋岩盤浴
        </td>
@@ -1239,7 +1273,7 @@
         與板橋醫美共享最早排程
        </td>
       </tr>
-      <tr>
+      <tr class="group-4">
        <td>
         中壢彤顏健保
        </td>
@@ -1253,7 +1287,7 @@
         與中壢彤顏醫美、中壢岩盤浴共享
        </td>
       </tr>
-      <tr>
+      <tr class="group-4">
        <td>
         中壢彤顏醫美
        </td>
@@ -1267,7 +1301,7 @@
         與中壢彤顏健保、中壢岩盤浴共享
        </td>
       </tr>
-      <tr>
+      <tr class="group-4">
        <td>
         中壢岩盤浴
        </td>
@@ -1281,7 +1315,7 @@
         與中壢彤顏健保、中壢彤顏醫美共享
        </td>
       </tr>
-      <tr>
+      <tr class="group-5">
        <td>
         台中光澤診所
        </td>
@@ -1295,7 +1329,7 @@
         與台中岩盤浴共享最早排程
        </td>
       </tr>
-      <tr>
+      <tr class="group-5">
        <td>
         台中岩盤浴
        </td>
@@ -1309,7 +1343,7 @@
         與台中光澤診所共享最早排程
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         南西光澤診所
        </td>
@@ -1323,7 +1357,7 @@
         僅限同一門市優化
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         永和彤顏診所
        </td>
@@ -1337,7 +1371,7 @@
         僅限同一門市優化
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         古亭光澤
        </td>
@@ -1351,7 +1385,7 @@
         僅限同一門市優化
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         大直光澤診所
        </td>
@@ -1365,7 +1399,7 @@
         僅限同一門市優化
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         新竹光澤診所
        </td>
@@ -1379,7 +1413,7 @@
         僅限同一門市優化
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         高雄光澤
        </td>
@@ -1393,7 +1427,7 @@
         僅限同一門市優化
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         八德健保診所
        </td>
@@ -1407,7 +1441,7 @@
         僅限同一門市優化
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         三重光澤
        </td>
@@ -1421,7 +1455,7 @@
         僅限同一門市優化
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         桃園岩盤浴
        </td>
@@ -1435,7 +1469,7 @@
         僅限同一門市優化
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         林口彤顏診所
        </td>
@@ -1449,7 +1483,7 @@
         僅限同一門市優化
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         台北岩盤浴
        </td>
@@ -1463,7 +1497,7 @@
         僅限同一門市優化
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         新莊光澤診所
        </td>
@@ -1477,7 +1511,7 @@
         僅限同一門市優化
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         桃園彤顏健保
        </td>
@@ -1491,7 +1525,7 @@
         僅限同一門市優化
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         三峽光澤診所
        </td>
@@ -1505,7 +1539,7 @@
         僅限同一門市優化
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         三民光澤診所
        </td>
@@ -1519,7 +1553,7 @@
         僅限同一門市優化
        </td>
       </tr>
-      <tr>
+      <tr class="group-independent">
        <td>
         板橋光澤健保
        </td>
@@ -1535,6 +1569,41 @@
       </tr>
      </tbody>
     </table>
+
+    <div class="info-box" style="margin-top: 20px;">
+     <p>
+      <strong>
+       🎨 群組顏色說明:
+      </strong>
+     </p>
+     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 15px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+       <span style="display: inline-block; width: 30px; height: 20px; background-color: #e3f2fd; border: 1px solid #90caf9; border-radius: 4px;"></span>
+       <span>群組1 - 忠孝區域</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+       <span style="display: inline-block; width: 30px; height: 20px; background-color: #e8f5e9; border: 1px solid #81c784; border-radius: 4px;"></span>
+       <span>群組2 - 羅東區域</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+       <span style="display: inline-block; width: 30px; height: 20px; background-color: #f3e5f5; border: 1px solid #ba68c8; border-radius: 4px;"></span>
+       <span>群組3 - 板橋區域</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+       <span style="display: inline-block; width: 30px; height: 20px; background-color: #fff3e0; border: 1px solid #ffb74d; border-radius: 4px;"></span>
+       <span>群組4 - 中壢彤顏區域</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+       <span style="display: inline-block; width: 30px; height: 20px; background-color: #fce4ec; border: 1px solid #f48fb1; border-radius: 4px;"></span>
+       <span>群組5 - 台中區域</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+       <span style="display: inline-block; width: 30px; height: 20px; background-color: #f5f5f5; border: 1px solid #bdbdbd; border-radius: 4px;"></span>
+       <span>獨立門市</span>
+      </div>
+     </div>
+    </div>
+
     <div class="info-box">
      <p>
       <strong>
