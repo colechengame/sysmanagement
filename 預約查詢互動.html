@@ -189,6 +189,12 @@
             color: #9e9e9e;
             cursor: default;
         }
+
+        .status-merged {
+            background: #e0f2f1;
+            color: #00796b;
+            cursor: help;
+        }
         
         /* 懸浮操作按鈕 */
         .sms-hover-actions {
@@ -213,15 +219,17 @@
             pointer-events: auto;
         }
         
-        /* 已送達和已過期狀態不顯示懸浮效果 */
+        /* 已送達、已過期、已合併狀態不顯示懸浮效果 */
         .sms-hover-container:has(.status-delivered):hover .sms-status-block,
-        .sms-hover-container:has(.status-expired):hover .sms-status-block {
+        .sms-hover-container:has(.status-expired):hover .sms-status-block,
+        .sms-hover-container:has(.status-merged):hover .sms-status-block {
             opacity: 1;
             transform: scale(1);
         }
-        
+
         .sms-hover-container:has(.status-delivered),
-        .sms-hover-container:has(.status-expired) {
+        .sms-hover-container:has(.status-expired),
+        .sms-hover-container:has(.status-merged) {
             cursor: default;
         }
         
@@ -431,13 +439,165 @@
             z-index: 1001;
             display: none;
         }
+
+        /* 警告框樣式 */
+        .alert-container {
+            margin-bottom: 20px;
+        }
+
+        .alert-box {
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid;
+            margin-bottom: 12px;
+        }
+
+        .alert-box:last-child {
+            margin-bottom: 0;
+        }
+
+        .alert-danger {
+            background-color: #fee;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+
+        .alert-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .alert-message {
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .alert-appointments {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+        }
+
+        .alert-appointment-item {
+            padding: 6px 10px;
+            margin: 4px 0;
+            border-radius: 3px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-appointment-item.earliest {
+            background: #d4edda;
+            border-left: 3px solid #28a745;
+            font-weight: 600;
+        }
+
+        .alert-appointment-item.replacement {
+            background: #cce5ff;
+            border-left: 3px solid #0066cc;
+            font-weight: 600;
+        }
+
+        .alert-appointment-item.other {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+
+        .alert-footer {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 12px;
+            font-style: italic;
+            color: #666;
+        }
+
+        /* 新的按鈕樣式系統 */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-default {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-default:hover {
+            background: #5a6268;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h2>📋 預約查詢 - 聯絡狀態管理</h2>
+        <h2>📋 預約查詢 - 聯絡狀態管理（情境 1-5 完整版）</h2>
         <div>
-            <div>2025/10/30 ~ 2025/11/01</div>
+            <div>2025/10/30 ~ 2025/11/02</div>
             <div style="font-size: 12px; opacity: 0.9;">當前時間: 2025/10/31 14:00 (模擬)</div>
         </div>
     </div>
@@ -453,6 +613,8 @@
     <div style="background: #fff3cd; padding: 8px 20px; font-size: 11px; border-left: 4px solid #ffc107; margin-bottom: 1px;">
         <strong>💡 操作提示：</strong>
         將鼠標移到「簡訊管理」欄位上，狀態色塊會淡出並顯示操作按鈕
+        | <strong>5 大情境：</strong> ①標準發送 ②客人拒收 ③排程衝突 ④複合風險 ⑤自動補位
+        | <strong>⚠️ 重要：</strong>同日多預約時，僅最早預約可發送，其他顯示「已合併」
     </div>
     
     <div style="background: #e8f4fd; padding: 8px 20px; font-size: 11px; border-left: 4px solid #4a90e2; margin-bottom: 1px;">
@@ -469,6 +631,7 @@
                     <th class="name-col">會員名稱</th>
                     <th class="phone-col">電話</th>
                     <th style="width: 110px;">簡訊管理</th>
+                    <th style="width: 90px;">取消預約</th>
                     <th class="contact-col">聯絡狀況</th>
                     <th class="time-col">時間</th>
                     <th class="treatment-col">療程名稱</th>
@@ -485,40 +648,32 @@
     <div id="smsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>發出簡訊內容</h3>
+                <h3 id="modalTitle">簡訊發送</h3>
                 <span class="close" onclick="closeSmsModal()">&times;</span>
             </div>
             <div class="modal-body">
+                <!-- 警告區域 -->
+                <div id="alertContainer" class="alert-container" style="display: none;"></div>
+
                 <div class="form-group">
                     <label class="form-label">簡訊內容</label>
                     <div style="color: #666; font-size: 12px; margin-bottom: 8px;">
                         預設帶入簡訊模板，每次儲存會覆蓋上次設定。系統將在指定時間自動發送。
                     </div>
-                    <textarea id="smsContent" class="form-control" placeholder="請輸入簡訊內容...">溫馨提醒：明天有預約【新治皮草都堂】10/31(四) 14:40 課程，看診醫師安排，如改約的話以LINE專業醫護師，皮膚的配合。</textarea>
+                    <textarea id="smsContent" class="form-control" placeholder="請輸入簡訊內容...">提醒您：有在【板橋光澤醫學美容】預約，02-0000-0000，請提前30分鐘蒞臨現場報到。</textarea>
                     <div class="char-count">字數限制：<span id="charCount">67</span>/70字</div>
                 </div>
-                
-                <div class="form-group">
-                    <label class="form-label">是否發送簡訊？</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="sendYes" name="sendSms" value="yes" checked>
-                            <label for="sendYes">發送</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="sendNo" name="sendSms" value="no">
-                            <label for="sendNo">不發送</label>
-                        </div>
-                    </div>
-                </div>
-                
+
                 <div class="form-group">
                     <label class="form-label">發送時間</label>
                     <input type="datetime-local" id="sendTime" class="form-control" value="2025-10-31T13:40">
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-primary" onclick="confirmSms()">確認</button>
+                <div class="button-group" id="buttonGroup">
+                    <button class="btn btn-default" onclick="closeSmsModal()">不發送</button>
+                    <button class="btn btn-success" onclick="confirmSms()">確認發送</button>
+                </div>
             </div>
         </div>
     </div>
@@ -538,7 +693,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-primary" style="background: #6c757d; margin-right: 10px;" onclick="closeConfirmModal()">返回</button>
-                <button class="btn-primary" style="background: #dc3545;" onclick="confirmCancelSms()">確認取消</button>
+                <button class="btn-primary" style="background: #dc3545;" onclick="confirmCancel()">確認取消</button>
             </div>
         </div>
     </div>
@@ -552,57 +707,74 @@
         const appointments = [
             // ========== 昨天 2025/10/30 的預約（都已過期）==========
             // 已過期 + 已送達
-            {id: 1, date: '2025/10/30', member: 'GT0000001', name: '【VIP】王小明', phone: '0912345678', time: '09:00', treatment: '★3樓-醫美諮詢', staff: '張醫師', contactStatus: '3', smsStatus: 'delivered'},
+            {id: 1, date: '2025/10/30', member: 'GT0000001', name: '【VIP】王小明', phone: '0912345678', time: '09:00', treatment: '★3樓-醫美諮詢', staff: '張醫師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false},
             // 已過期 + 已送達
-            {id: 2, date: '2025/10/30', member: 'GT0000002', name: '林美麗', phone: '0923456789', time: '10:30', treatment: '雷射除斑', staff: '李護理師', contactStatus: '3', smsStatus: 'delivered'},
+            {id: 2, date: '2025/10/30', member: 'GT0000002', name: '林美麗', phone: '0923456789', time: '10:30', treatment: '雷射除斑', staff: '李護理師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false},
             // 已過期 + 已取消（不可重發）
-            {id: 3, date: '2025/10/30', member: 'GT0000003', name: '陳大華', phone: '0934567890', time: '13:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '2', smsStatus: 'cancelled'},
+            {id: 3, date: '2025/10/30', member: 'GT0000003', name: '陳大華', phone: '0934567890', time: '13:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '2', smsStatus: 'cancelled', noSmsPreference: false},
             // 已過期 + 發送失敗（不可重發）
-            {id: 4, date: '2025/10/30', member: 'GT0000004', name: '劉小芳', phone: '0945678901', time: '14:30', treatment: '電痛衝導入', staff: '王技師', contactStatus: '1', smsStatus: 'failed'},
+            {id: 4, date: '2025/10/30', member: 'GT0000004', name: '劉小芳', phone: '0945678901', time: '14:30', treatment: '電痛衝導入', staff: '王技師', contactStatus: '1', smsStatus: 'failed', noSmsPreference: false},
             // 已過期 + 未發送
-            {id: 5, date: '2025/10/30', member: 'GT0000005', name: '張志明', phone: '0956789012', time: '16:00', treatment: '2樓總店-【醫美】', staff: '電痛衝導入', contactStatus: '', smsStatus: ''},
+            {id: 5, date: '2025/10/30', member: 'GT0000005', name: '張志明', phone: '0956789012', time: '16:00', treatment: '2樓總店-【醫美】', staff: '電痛衝導入', contactStatus: '', smsStatus: '', noSmsPreference: false},
             // 已過期 + 排程中（特殊狀況：來不及取消）
-            {id: 6, date: '2025/10/30', member: 'GT0000006', name: '黃美惠', phone: '0967890123', time: '17:30', treatment: '★5樓-純美療程', staff: '超音波導入', contactStatus: '1', smsStatus: 'scheduled'},
+            {id: 6, date: '2025/10/30', member: 'GT0000006', name: '黃美惠', phone: '0967890123', time: '17:30', treatment: '★5樓-純美療程', staff: '超音波導入', contactStatus: '1', smsStatus: 'scheduled', noSmsPreference: false},
             // 已過期 + 已送達
-            {id: 7, date: '2025/10/30', member: 'GT0000007', name: '吳建宏', phone: '0978901234', time: '19:00', treatment: '雷射除毛', staff: '陳技師', contactStatus: '3', smsStatus: 'delivered'},
+            {id: 7, date: '2025/10/30', member: 'GT0000007', name: '吳建宏', phone: '0978901234', time: '19:00', treatment: '雷射除毛', staff: '陳技師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false},
             
             // ========== 今天 2025/10/31 的預約（14:00前已過期，之後未過期）==========
             // 已過期 + 已送達
-            {id: 8, date: '2025/10/31', member: 'GT0000008', name: '蔡淑女', phone: '0989012345', time: '09:00', treatment: '★3樓-醫美諮詢', staff: '李醫師', contactStatus: '3', smsStatus: 'delivered'},
+            {id: 8, date: '2025/10/31', member: 'GT0000008', name: '蔡淑女', phone: '0989012345', time: '09:00', treatment: '★3樓-醫美諮詢', staff: '李醫師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false},
             // 已過期 + 已送達
-            {id: 9, date: '2025/10/31', member: 'GT0000009', name: '鄭大明', phone: '0990123456', time: '10:30', treatment: '電波拉提', staff: '張技師', contactStatus: '3', smsStatus: 'delivered'},
+            {id: 9, date: '2025/10/31', member: 'GT0000009', name: '鄭大明', phone: '0990123456', time: '10:30', treatment: '電波拉提', staff: '張技師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false},
             // 已過期 + 已取消
-            {id: 10, date: '2025/10/31', member: 'GT0000010', name: '許雅芬', phone: '0901234567', time: '12:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '2', smsStatus: 'cancelled'},
-            // 已過期 + 發送失敗
-            {id: 11, date: '2025/10/31', member: 'GT0000011', name: '【不可約】陳...', phone: '0916795179', time: '13:30', treatment: '★5樓-純美療程', staff: '電痛衝導入', contactStatus: '1', smsStatus: 'failed'},
+            {id: 10, date: '2025/10/31', member: 'GT0000010', name: '許雅芬', phone: '0901234567', time: '12:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '2', smsStatus: 'cancelled', noSmsPreference: false},
+            // 已過期 + 發送失敗（客人拒收設定 - 測試情境2）
+            {id: 11, date: '2025/10/31', member: 'GT0000011', name: '【不可約】陳...', phone: '0916795179', time: '13:30', treatment: '★5樓-純美療程', staff: '電痛衝導入', contactStatus: '1', smsStatus: 'failed', noSmsPreference: true},
             
             // --- 今天 14:00 之後（未過期）---
-            // 未過期 + 未發送（可發送）
-            {id: 12, date: '2025/10/31', member: 'GT0000012', name: '馬小玲', phone: '0912345679', time: '15:00', treatment: '雷射美白', staff: '王護理師', contactStatus: '1', smsStatus: ''},
+            // 未過期 + 未發送（可發送 - 測試情境1標準發送）
+            {id: 12, date: '2025/10/31', member: 'GT0000012', name: '馬小玲', phone: '0912345679', time: '15:00', treatment: '雷射美白', staff: '王護理師', contactStatus: '1', smsStatus: '', noSmsPreference: false},
             // 未過期 + 排程中（可取消）
-            {id: 13, date: '2025/10/31', member: 'GT0000013', name: '周美美', phone: '0923456780', time: '16:00', treatment: '★3樓-醫美諮詢', staff: '陳醫師', contactStatus: '2', smsStatus: 'scheduled'},
+            {id: 13, date: '2025/10/31', member: 'GT0000013', name: '周美美', phone: '0923456780', time: '16:00', treatment: '★3樓-醫美諮詢', staff: '陳醫師', contactStatus: '2', smsStatus: 'scheduled', noSmsPreference: false},
             // 未過期 + 已送達（無操作）
-            {id: 14, date: '2025/10/31', member: 'GT0000014', name: '【VIP】李董', phone: '0934567891', time: '17:00', treatment: '電痛衝導入', staff: '李技師', contactStatus: '3', smsStatus: 'delivered'},
-            // 未過期 + 已取消（可重發）
-            {id: 15, date: '2025/10/31', member: 'GT0000015', name: '趙雅婷', phone: '0945678902', time: '18:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '1', smsStatus: 'cancelled'},
+            {id: 14, date: '2025/10/31', member: 'GT0000014', name: '【VIP】李董', phone: '0934567891', time: '17:00', treatment: '電痛衝導入', staff: '李技師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false},
+            // 未過期 + 已取消（可重發 - 客人拒收設定 - 測試情境2）
+            {id: 15, date: '2025/10/31', member: 'GT0000015', name: '趙雅婷', phone: '0945678902', time: '18:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '1', smsStatus: 'cancelled', noSmsPreference: true},
             // 未過期 + 發送失敗（可重發）
-            {id: 16, date: '2025/10/31', member: 'GT0000016', name: '錢大富', phone: '0956789013', time: '19:00', treatment: '2樓總店-【醫美】', staff: '超音波導入', contactStatus: '2', smsStatus: 'failed'},
+            {id: 16, date: '2025/10/31', member: 'GT0000016', name: '錢大富', phone: '0956789013', time: '19:00', treatment: '2樓總店-【醫美】', staff: '超音波導入', contactStatus: '2', smsStatus: 'failed', noSmsPreference: false},
             
             // ========== 明天 2025/11/01 的預約（都未過期）==========
             // 未過期 + 排程中
-            {id: 17, date: '2025/11/01', member: 'GT0000017', name: '孫小美', phone: '0967890124', time: '09:00', treatment: '雷射除斑', staff: '張護理師', contactStatus: '3', smsStatus: 'scheduled'},
-            // 未過期 + 未發送
-            {id: 18, date: '2025/11/01', member: 'GT0000018', name: '李大偉', phone: '0978901235', time: '10:30', treatment: '★5樓-純美療程', staff: '電痛衝導入', contactStatus: '1', smsStatus: ''},
+            {id: 17, date: '2025/11/01', member: 'GT0000017', name: '孫小美', phone: '0967890124', time: '09:00', treatment: '雷射除斑', staff: '張護理師', contactStatus: '3', smsStatus: 'scheduled', noSmsPreference: false},
+            // 未過期 + 未發送（客人拒收設定 - 測試情境2）
+            {id: 18, date: '2025/11/01', member: 'GT0000018', name: '李大偉', phone: '0978901235', time: '10:30', treatment: '★5樓-純美療程', staff: '電痛衝導入', contactStatus: '1', smsStatus: '', noSmsPreference: true},
             // 未過期 + 已送達
-            {id: 19, date: '2025/11/01', member: 'GT0000019', name: '謝美慧', phone: '0989012346', time: '13:00', treatment: '電波拉提', staff: '王技師', contactStatus: '3', smsStatus: 'delivered'},
+            {id: 19, date: '2025/11/01', member: 'GT0000019', name: '謝美慧', phone: '0989012346', time: '13:00', treatment: '電波拉提', staff: '王技師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false},
             // 未過期 + 未發送
-            {id: 20, date: '2025/11/01', member: 'GT0000020', name: '楊志強', phone: '0990123457', time: '14:30', treatment: '★3樓-醫美諮詢', staff: '李醫師', contactStatus: '', smsStatus: ''},
+            {id: 20, date: '2025/11/01', member: 'GT0000020', name: '楊志強', phone: '0990123457', time: '14:30', treatment: '★3樓-醫美諮詢', staff: '李醫師', contactStatus: '', smsStatus: '', noSmsPreference: false},
             // 未過期 + 已取消
-            {id: 21, date: '2025/11/01', member: 'GT0000021', name: '劉雅雯', phone: '0901234568', time: '16:00', treatment: '雷射美白', staff: 'AB魔', contactStatus: '2', smsStatus: 'cancelled'},
-            // 未過期 + 發送失敗
-            {id: 22, date: '2025/11/01', member: 'GT0000022', name: '【不可約】黃...', phone: '0912345680', time: '17:30', treatment: '★5樓-純美療程', staff: '超音波導入', contactStatus: '1', smsStatus: 'failed'},
+            {id: 21, date: '2025/11/01', member: 'GT0000021', name: '劉雅雯', phone: '0901234568', time: '16:00', treatment: '雷射美白', staff: 'AB魔', contactStatus: '2', smsStatus: 'cancelled', noSmsPreference: false},
+            // 未過期 + 發送失敗（客人拒收設定 - 測試情境2）
+            {id: 22, date: '2025/11/01', member: 'GT0000022', name: '【不可約】黃...', phone: '0912345680', time: '17:30', treatment: '★5樓-純美療程', staff: '超音波導入', contactStatus: '1', smsStatus: 'failed', noSmsPreference: true},
             // 未過期 + 排程中
-            {id: 23, date: '2025/11/01', member: 'GT0000023', name: '鍾小華', phone: '0923456781', time: '19:00', treatment: '★3樓-醫美諮詢', staff: '張醫師', contactStatus: '', smsStatus: 'scheduled'}
+            {id: 23, date: '2025/11/01', member: 'GT0000023', name: '鍾小華', phone: '0923456781', time: '19:00', treatment: '★3樓-醫美諮詢', staff: '張醫師', contactStatus: '', smsStatus: 'scheduled', noSmsPreference: false},
+
+            // ========== 後天 2025/11/02 的預約（情境 3-5 測試數據）==========
+            // 情境 3 測試：同日多預約（會員 M001）
+            {id: 24, date: '2025/11/02', member: 'M001', name: '王大明', phone: '0911111111', time: '09:00', treatment: '雷射除斑', staff: '張醫師', contactStatus: '1', smsStatus: '', noSmsPreference: false},
+            {id: 25, date: '2025/11/02', member: 'M001', name: '王大明', phone: '0911111111', time: '14:00', treatment: '★3樓-醫美諮詢', staff: '李醫師', contactStatus: '1', smsStatus: '', noSmsPreference: false},
+            {id: 26, date: '2025/11/02', member: 'M001', name: '王大明', phone: '0911111111', time: '16:00', treatment: '電波拉提', staff: '陳技師', contactStatus: '', smsStatus: '', noSmsPreference: false},
+
+            // 情境 4 測試：同日多預約 + 拒收設定（會員 M002）
+            {id: 27, date: '2025/11/02', member: 'M002', name: '林小美', phone: '0922222222', time: '10:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '2', smsStatus: '', noSmsPreference: true},
+            {id: 28, date: '2025/11/02', member: 'M002', name: '林小美', phone: '0922222222', time: '15:00', treatment: '雷射美白', staff: '王護理師', contactStatus: '', smsStatus: '', noSmsPreference: true},
+
+            // 情境 5 測試：自動補位（會員 M003）
+            {id: 29, date: '2025/11/02', member: 'M003', name: '張大華', phone: '0933333333', time: '11:00', treatment: '電痛衝導入', staff: '李技師', contactStatus: '3', smsStatus: 'scheduled', noSmsPreference: false},
+            {id: 30, date: '2025/11/02', member: 'M003', name: '張大華', phone: '0933333333', time: '17:00', treatment: '2樓總店-【醫美】', staff: '超音波導入', contactStatus: '1', smsStatus: '', noSmsPreference: false},
+
+            // 其他標準預約（用於對比）
+            {id: 31, date: '2025/11/02', member: 'GT0000024', name: '陳小芬', phone: '0944444444', time: '13:00', treatment: '雷射除毛', staff: '張護理師', contactStatus: '2', smsStatus: '', noSmsPreference: false}
         ];
 
         const contactStatusOptions = [
@@ -614,6 +786,8 @@
 
         let currentAppointmentId = null;
         let pendingCancelId = null;
+        let pendingCancelAppointmentId = null;
+        let pendingCanceledAppointmentId = null; // 用於情境5記錄被取消的預約ID
 
         function getSmsStatusDisplay(smsStatus) {
             const statusMap = {
@@ -637,8 +811,16 @@
         }
 
         function generateActionButtons(appointmentId, smsStatus) {
+            const appointment = appointments.find(apt => apt.id === appointmentId);
             const isExpired = isAppointmentExpired(appointmentId);
-            
+
+            // 🔒 預約已取消的，顯示灰色「已取消」狀態（read only）
+            if (appointment.appointmentStatus === 'cancelled') {
+                return '<div class="sms-hover-container">' +
+                       '<span class="sms-status-block status-expired" style="background: #f5f5f5; color: #9e9e9e;">已取消</span>' +
+                       '</div>';
+            }
+
             // 🔒 時間已過的預約，無論簡訊狀態如何，都不允許任何操作
             if (isExpired) {
                 // 根據簡訊狀態顯示不同的已過期訊息
@@ -654,46 +836,104 @@
                 } else {
                     expiredText = '已過期';
                 }
-                
+
                 return '<div class="sms-hover-container">' +
                        '<span class="sms-status-block status-expired">' + expiredText + '</span>' +
                        '</div>';
             }
-            
-            // ✅ 未過期的預約才顯示操作按鈕
+
+            // 🔍 檢查是否為同日多預約的非最早預約
+            const sameDayApts = getSameDayAppointments(appointment.member, appointment.date, appointment.id);
+            let isEarliest = true;
+
+            if (sameDayApts.length > 0) {
+                // 有同日其他預約，檢查是否為最早
+                const allApts = [appointment].concat(sameDayApts).sort(function(a, b) {
+                    // 時間相同時，選擇ID較小的
+                    const timeCompare = a.time.localeCompare(b.time);
+                    if (timeCompare !== 0) {
+                        return timeCompare;
+                    }
+                    return a.id - b.id;
+                });
+
+                isEarliest = allApts[0].id === appointmentId;
+            }
+
+            // 生成狀態顯示（無論是否最早預約，都顯示原本的簡訊狀態）
             let html = '<div class="sms-hover-container">';
-            
+            let statusClass = '';
+            let statusText = '';
+
             if (smsStatus === '') {
                 // 未發送
-                html += '<span class="sms-status-block status-none">未發送</span>';
-                html += '<div class="sms-hover-actions">';
-                html += '<button class="hover-btn hover-btn-send" onclick="sendSms(' + appointmentId + ')">發送簡訊</button>';
-                html += '</div>';
+                statusClass = 'status-none';
+                statusText = '未發送';
             } else if (smsStatus === 'scheduled') {
                 // 排程中
-                html += '<span class="sms-status-block status-scheduled">排程中</span>';
-                html += '<div class="sms-hover-actions">';
-                html += '<button class="hover-btn hover-btn-cancel" onclick="cancelSms(' + appointmentId + ')">取消</button>';
-                html += '</div>';
+                statusClass = 'status-scheduled';
+                statusText = '排程中';
             } else if (smsStatus === 'delivered') {
                 // 已送達
-                html += '<span class="sms-status-block status-delivered">已送達</span>';
+                statusClass = 'status-delivered';
+                statusText = '已送達';
             } else if (smsStatus === 'cancelled') {
-                // 已取消 - 只有未過期才能重發
-                html += '<span class="sms-status-block status-cancelled">已取消</span>';
-                html += '<div class="sms-hover-actions">';
-                html += '<button class="hover-btn hover-btn-resend" onclick="resendSms(' + appointmentId + ')">重新發送</button>';
-                html += '</div>';
+                // 已取消
+                statusClass = 'status-cancelled';
+                statusText = '已取消';
             } else if (smsStatus === 'failed') {
-                // 發送失敗 - 只有未過期才能重發
-                html += '<span class="sms-status-block status-failed">發送失敗</span>';
-                html += '<div class="sms-hover-actions">';
-                html += '<button class="hover-btn hover-btn-resend" onclick="resendSms(' + appointmentId + ')">重新發送</button>';
-                html += '</div>';
+                // 發送失敗
+                statusClass = 'status-failed';
+                statusText = '發送失敗';
             }
-            
+
+            // 非最早預約：顯示灰色 read-only 狀態
+            if (!isEarliest) {
+                html += '<span class="sms-status-block ' + statusClass + '" style="opacity: 0.5; cursor: default;" title="非最早預約，不可操作">' + statusText + '</span>';
+            } else {
+                // 最早預約：正常顯示，可操作
+                html += '<span class="sms-status-block ' + statusClass + '">' + statusText + '</span>';
+
+                // 根據狀態添加操作按鈕
+                if (smsStatus === '') {
+                    // 未發送：可發送
+                    html += '<div class="sms-hover-actions">';
+                    html += '<button class="hover-btn hover-btn-send" onclick="sendSms(' + appointmentId + ')">發送簡訊</button>';
+                    html += '</div>';
+                } else if (smsStatus === 'scheduled') {
+                    // 排程中：可取消
+                    html += '<div class="sms-hover-actions">';
+                    html += '<button class="hover-btn hover-btn-cancel" onclick="cancelSms(' + appointmentId + ')">取消</button>';
+                    html += '</div>';
+                } else if (smsStatus === 'cancelled' || smsStatus === 'failed') {
+                    // 已取消或失敗：可重新發送
+                    html += '<div class="sms-hover-actions">';
+                    html += '<button class="hover-btn hover-btn-resend" onclick="resendSms(' + appointmentId + ')">重新發送</button>';
+                    html += '</div>';
+                }
+                // 已送達：無操作按鈕
+            }
+
             html += '</div>';
             return html;
+        }
+
+        // 生成「取消預約」按鈕
+        function generateCancelAppointmentButton(appointmentId) {
+            const appointment = appointments.find(apt => apt.id === appointmentId);
+            const isExpired = isAppointmentExpired(appointmentId);
+
+            // 🔒 預約已取消或已過期，不顯示按鈕
+            if (appointment.appointmentStatus === 'cancelled') {
+                return '<span style="color: #9e9e9e; font-size: 11px;">已取消</span>';
+            }
+
+            if (isExpired) {
+                return '<span style="color: #9e9e9e; font-size: 11px;">已過期</span>';
+            }
+
+            // 顯示取消預約按鈕
+            return '<button class="hover-btn hover-btn-cancel" style="font-size: 11px; padding: 4px 8px;" onclick="cancelAppointment(' + appointmentId + ')">取消預約</button>';
         }
 
         function renderTable() {
@@ -719,11 +959,14 @@
                     selectOptions += '<option value="' + option.value + '" ' + selected + ' ' + disabled + ' class="' + option.class + '">' + option.text + '</option>';
                 });
                 
+                const cancelApptHtml = generateCancelAppointmentButton(appointment.id);
+
                 row.innerHTML = '<td>' + appointment.date + '</td>' +
                               '<td>' + appointment.member + '</td>' +
                               '<td>' + appointment.name + '</td>' +
                               '<td>' + appointment.phone + '</td>' +
                               '<td>' + actionHtml + '</td>' +
+                              '<td>' + cancelApptHtml + '</td>' +
                               '<td><select class="contact-select ' + statusClass + '" data-id="' + appointment.id + '" onchange="updateContactStatus(' + appointment.id + ', this.value)">' + selectOptions + '</select></td>' +
                               '<td>' + appointment.time + (isExpired ? ' (已過)' : '') + '</td>' +
                               '<td>' + appointment.treatment + '</td>' +
@@ -735,21 +978,298 @@
             updateStats();
         }
 
+        // 查找同日預約（基於預約狀態，不是簡訊狀態）
+        function getSameDayAppointments(member, date, currentAppointmentId) {
+            return appointments.filter(function(apt) {
+                // 基本條件：同會員、同日期、非當前預約、未過期
+                if (apt.member !== member ||
+                    apt.date !== date ||
+                    apt.id === currentAppointmentId ||
+                    isAppointmentExpired(apt.id)) {
+                    return false;
+                }
+
+                // 排除「預約本身已取消」的（如果有 appointmentStatus 字段）
+                // 注意：這裡只排除「預約取消」，不排除「簡訊取消」
+                if (apt.appointmentStatus === 'cancelled') {
+                    return false;
+                }
+
+                // 簡訊狀態不影響「最早預約」判斷
+                // 即使 smsStatus='cancelled'，只要預約有效，仍然是最早預約
+                return true;
+            }).sort(function(a, b) {
+                // 時間相同時，選擇ID較小的
+                const timeCompare = a.time.localeCompare(b.time);
+                if (timeCompare !== 0) {
+                    return timeCompare;
+                }
+                return a.id - b.id;
+            });
+        }
+
+        // 檢查是否為最早預約
+        function isEarliestAppointment(appointment) {
+            const sameDayApts = getSameDayAppointments(appointment.member, appointment.date, appointment.id);
+            if (sameDayApts.length === 0) return true;
+
+            return sameDayApts.every(function(apt) {
+                return appointment.time < apt.time;
+            });
+        }
+
+        // 檢測發送情境
+        function detectScenario(appointment) {
+            const sameDayApts = getSameDayAppointments(appointment.member, appointment.date, appointment.id);
+            const hasSameDayConflict = sameDayApts.length > 0;
+            const hasNoSmsPreference = appointment.noSmsPreference === true;
+
+            // 情境 4：複合風險（拒收 + 排程衝突）
+            if (hasNoSmsPreference && hasSameDayConflict) {
+                const allAppointments = [appointment].concat(sameDayApts).sort(function(a, b) {
+                    return a.time.localeCompare(b.time);
+                });
+
+                return {
+                    id: 'scenario4',
+                    title: '發送受阻',
+                    alerts: [
+                        {
+                            type: 'danger',
+                            title: '發送受阻',
+                            message: '客人已設定「不要發送簡訊」'
+                        },
+                        {
+                            type: 'warning',
+                            title: '排程衝突',
+                            message: '客人已有複數預約如下：',
+                            appointments: allAppointments.map(function(apt, index) {
+                                return {
+                                    time: apt.time,
+                                    treatment: apt.treatment,
+                                    isEarliest: index === 0,
+                                    isOther: index !== 0
+                                };
+                            }),
+                            footer: '以最早預約簡訊為主，以下開放更新簡訊內容。'
+                        }
+                    ],
+                    buttons: {
+                        cancel: { label: '不發送', style: 'danger' },
+                        confirm: { label: '確認發送', style: 'default' }
+                    }
+                };
+            }
+
+            // 情境 2：客人拒收（無排程衝突）
+            if (hasNoSmsPreference) {
+                return {
+                    id: 'scenario2',
+                    title: '簡訊發送',
+                    alerts: [
+                        {
+                            type: 'danger',
+                            title: '發送受阻',
+                            message: '客人已設定「不要發送簡訊」，強制發送可能引起客訴。'
+                        }
+                    ],
+                    buttons: {
+                        cancel: { label: '不發送', style: 'danger' },
+                        confirm: { label: '確認發送', style: 'default' }
+                    }
+                };
+            }
+
+            // 情境 3：排程衝突（無拒收）
+            if (hasSameDayConflict) {
+                const allAppointments = [appointment].concat(sameDayApts).sort(function(a, b) {
+                    return a.time.localeCompare(b.time);
+                });
+
+                const isEarliest = isEarliestAppointment(appointment);
+
+                return {
+                    id: 'scenario3',
+                    title: '簡訊發送',
+                    alerts: [
+                        {
+                            type: 'warning',
+                            title: '排程衝突',
+                            message: '客人已有複數預約如下：',
+                            appointments: allAppointments.map(function(apt, index) {
+                                return {
+                                    time: apt.time,
+                                    treatment: apt.treatment,
+                                    isEarliest: index === 0,
+                                    isOther: index !== 0,
+                                    isCurrent: apt.id === appointment.id
+                                };
+                            }),
+                            footer: '以最早預約簡訊為主，以下開放更新簡訊內容。'
+                        }
+                    ],
+                    buttons: {
+                        cancel: { label: '不發送', style: 'default' },
+                        confirm: { label: '確認發送', style: 'success' }
+                    }
+                };
+            }
+
+            // 情境 1：標準發送（默認）
+            return {
+                id: 'scenario1',
+                title: '簡訊發送',
+                alerts: [],
+                buttons: {
+                    cancel: { label: '不發送', style: 'default' },
+                    confirm: { label: '確認發送', style: 'success' }
+                }
+            };
+        }
+
+        // 顯示警告框
+        function showAlerts(alerts) {
+            const container = document.getElementById('alertContainer');
+
+            if (!alerts || alerts.length === 0) {
+                container.style.display = 'none';
+                container.innerHTML = '';
+                return;
+            }
+
+            container.style.display = 'block';
+            container.innerHTML = '';
+
+            alerts.forEach(function(alert) {
+                const alertBox = document.createElement('div');
+                alertBox.className = 'alert-box alert-' + alert.type;
+
+                let html = '<div class="alert-title">' + alert.title + '</div>';
+                html += '<div class="alert-message">' + alert.message + '</div>';
+
+                // 如果有預約列表，顯示預約列表
+                if (alert.appointments && alert.appointments.length > 0) {
+                    html += '<div class="alert-appointments">';
+
+                    alert.appointments.forEach(function(apt) {
+                        let itemClass = 'alert-appointment-item';
+                        let prefix = '';
+
+                        if (apt.isEarliest) {
+                            itemClass += ' earliest';
+                            prefix = '✓ ';
+                        } else if (apt.isReplacement) {
+                            itemClass += ' replacement';
+                            prefix = '→ ';
+                        } else if (apt.isOther) {
+                            itemClass += ' other';
+                            prefix = '　';
+                        }
+
+                        let suffix = '';
+                        if (apt.isEarliest) {
+                            suffix = ' <span style="color: #28a745;">← 最早預約（將發送簡訊）</span>';
+                        } else if (apt.isReplacement) {
+                            suffix = ' <span style="color: #0066cc;">← 補位預約（將發送簡訊）</span>';
+                        } else if (apt.clinic) {
+                            suffix = ' ' + apt.clinic;
+                        }
+
+                        html += '<div class="' + itemClass + '">' +
+                               prefix + apt.time + ' - ' + (apt.treatment || '') +
+                               suffix +
+                               '</div>';
+                    });
+
+                    html += '</div>';
+
+                    // 如果有 footer
+                    if (alert.footer) {
+                        html += '<div class="alert-footer">' + alert.footer + '</div>';
+                    }
+                }
+
+                alertBox.innerHTML = html;
+                container.appendChild(alertBox);
+            });
+        }
+
+        // 設置按鈕樣式
+        function setButtonStyles(buttons) {
+            const buttonGroup = document.getElementById('buttonGroup');
+
+            buttonGroup.innerHTML =
+                '<button class="btn btn-' + buttons.cancel.style + '" onclick="closeSmsModal()">' +
+                buttons.cancel.label + '</button>' +
+                '<button class="btn btn-' + buttons.confirm.style + '" onclick="confirmSms()">' +
+                buttons.confirm.label + '</button>';
+        }
+
         function sendSms(appointmentId) {
             if (isAppointmentExpired(appointmentId)) {
                 alert('診療時間已過，無法發送簡訊！');
                 return;
             }
-            
+
             currentAppointmentId = appointmentId;
             const appointment = appointments.find(apt => apt.id === appointmentId);
-            
+
+            // 檢測情境
+            const scenario = detectScenario(appointment);
+
+            // 設置彈窗標題
+            document.getElementById('modalTitle').textContent = scenario.title;
+
+            // 顯示警告（如果有）
+            showAlerts(scenario.alerts);
+
+            // 設置按鈕樣式
+            setButtonStyles(scenario.buttons);
+
+            // 更新簡訊內容
+            const smsTemplate = '提醒您：有在【板橋光澤醫學美容】' +
+                               appointment.date + ' ' + appointment.time +
+                               ' 預約' + appointment.treatment + '，02-0000-0000，請提前30分鐘蒞臨現場報到。';
+            document.getElementById('smsContent').value = smsTemplate;
+
+            // 計算發送時間（預約前1小時）
             const appointmentTime = new Date(appointment.date.replace(/\//g, '-') + 'T' + appointment.time);
             appointmentTime.setHours(appointmentTime.getHours() - 1);
             document.getElementById('sendTime').value = appointmentTime.toISOString().slice(0, 16);
-            
+
             document.getElementById('smsModal').style.display = 'block';
             updateCharCount();
+        }
+
+        // 取消預約（觸發情境5自動補位）
+        function cancelAppointment(appointmentId) {
+            if (isAppointmentExpired(appointmentId)) {
+                alert('診療時間已過，無法取消預約！');
+                return;
+            }
+
+            const appointment = appointments.find(apt => apt.id === appointmentId);
+
+            // 檢查同日是否有其他活躍預約
+            const sameDayApts = getSameDayAppointments(appointment.member, appointment.date, appointment.id);
+
+            if (sameDayApts.length > 0) {
+                // 有其他活躍預約 → 觸發情境 5（自動補位）
+                const nextAppointment = sameDayApts[0]; // 次早預約
+                showReplacementModal(appointment, nextAppointment, sameDayApts);
+            } else {
+                // 無其他活躍預約 → 標準取消預約流程
+                const confirmMsg = '<strong>確定要取消這個預約嗎？</strong><br><br>' +
+                                 '會員：<strong>' + appointment.name + '</strong><br>' +
+                                 '電話：' + appointment.phone + '<br>' +
+                                 '時間：' + appointment.date + ' ' + appointment.time + '<br>' +
+                                 '療程：' + appointment.treatment + '<br><br>' +
+                                 '<span style="color: #c82333; font-size: 13px;">⚠️ 取消預約後，客戶將不會收到簡訊通知，且預約狀態將變更為「已取消」</span>';
+
+                document.getElementById('confirmMessage').innerHTML = confirmMsg;
+                document.getElementById('confirmModal').style.display = 'block';
+                pendingCancelAppointmentId = appointmentId;
+            }
         }
 
         function cancelSms(appointmentId) {
@@ -757,30 +1277,114 @@
                 alert('診療時間已過，無法取消簡訊！');
                 return;
             }
-            
+
             const appointment = appointments.find(apt => apt.id === appointmentId);
-            const confirmMsg = '<strong>確定要取消這筆簡訊嗎？</strong><br><br>' + 
+
+            // 標準取消簡訊流程（不觸發補位）
+            // 注意：這裡只是取消「簡訊」，不是取消「預約」
+            const confirmMsg = '<strong>確定要取消這筆簡訊嗎？</strong><br><br>' +
                              '會員：<strong>' + appointment.name + '</strong><br>' +
                              '電話：' + appointment.phone + '<br>' +
                              '時間：' + appointment.date + ' ' + appointment.time + '<br>' +
-                             '療程：' + appointment.treatment;
-            
+                             '療程：' + appointment.treatment + '<br><br>' +
+                             '<span style="color: #666; font-size: 13px;">⚠️ 取消簡訊後，此預約將不會收到簡訊通知</span>';
+
             document.getElementById('confirmMessage').innerHTML = confirmMsg;
             document.getElementById('confirmModal').style.display = 'block';
             pendingCancelId = appointmentId;
         }
-        
+
+        // 顯示自動補位彈窗（情境 5）
+        function showReplacementModal(canceledAppointment, replacementAppointment, allSameDayApts) {
+            currentAppointmentId = replacementAppointment.id;
+            pendingCanceledAppointmentId = canceledAppointment.id; // 記錄被取消的預約ID
+
+            // 構建情境 5 對象
+            const scenario = {
+                id: 'scenario5',
+                title: '簡訊發送',
+                alerts: [
+                    {
+                        type: 'warning',
+                        title: '自動補位通知',
+                        message: '當天尚有其他預約，系統將自動改以當天最早預約發送簡訊：',
+                        appointments: [replacementAppointment].concat(allSameDayApts.slice(1)).map(function(apt, index) {
+                            return {
+                                time: apt.time,
+                                treatment: apt.treatment,
+                                isReplacement: index === 0,
+                                isOther: index !== 0
+                            };
+                        }),
+                        footer: '系統將自動改以 ' + replacementAppointment.time + ' 預約發送通知簡訊，您可於下方編輯內容。'
+                    }
+                ],
+                buttons: {
+                    cancel: { label: '不發送', style: 'default' },
+                    confirm: { label: '確認發送', style: 'success' }
+                }
+            };
+
+            // 設置彈窗標題
+            document.getElementById('modalTitle').textContent = scenario.title;
+
+            // 顯示警告
+            showAlerts(scenario.alerts);
+
+            // 設置按鈕樣式
+            setButtonStyles(scenario.buttons);
+
+            // 更新簡訊內容（使用補位預約的資訊）
+            const smsTemplate = '提醒您：有在【板橋光澤醫學美容】' +
+                               replacementAppointment.date + ' ' + replacementAppointment.time +
+                               ' 預約' + replacementAppointment.treatment + '，02-0000-0000，請提前30分鐘蒞臨現場報到。';
+            document.getElementById('smsContent').value = smsTemplate;
+
+            // 計算發送時間
+            const appointmentTime = new Date(replacementAppointment.date.replace(/\//g, '-') + 'T' + replacementAppointment.time);
+            appointmentTime.setHours(appointmentTime.getHours() - 1);
+            document.getElementById('sendTime').value = appointmentTime.toISOString().slice(0, 16);
+
+            // 注意：不在此處取消原預約，等用戶確認發送後再在 confirmSms() 中處理
+
+            document.getElementById('smsModal').style.display = 'block';
+            updateCharCount();
+        }
+
         function closeConfirmModal() {
             document.getElementById('confirmModal').style.display = 'none';
             pendingCancelId = null;
+            pendingCancelAppointmentId = null;
         }
-        
+
+        // 通用確認函數，根據情況調用正確的確認函數
+        function confirmCancel() {
+            if (pendingCancelAppointmentId !== null) {
+                confirmCancelAppointment();
+            } else if (pendingCancelId !== null) {
+                confirmCancelSms();
+            }
+        }
+
         function confirmCancelSms() {
             if (pendingCancelId !== null) {
                 updateSmsStatus(pendingCancelId, 'cancelled');
                 showToast('簡訊已取消');
                 renderTable();
                 closeConfirmModal();
+            }
+        }
+
+        function confirmCancelAppointment() {
+            if (pendingCancelAppointmentId !== null) {
+                const appointment = appointments.find(apt => apt.id === pendingCancelAppointmentId);
+                if (appointment) {
+                    appointment.appointmentStatus = 'cancelled';
+                    showToast('預約已取消');
+                    renderTable();
+                }
+                closeConfirmModal();
+                pendingCancelAppointmentId = null;
             }
         }
 
@@ -827,31 +1431,42 @@
         }
 
         function confirmSms() {
-            const sendSmsValue = document.querySelector('input[name="sendSms"]:checked').value;
             const content = document.getElementById('smsContent').value;
             const sendTime = document.getElementById('sendTime').value;
-            
-            if (sendSmsValue === 'yes') {
-                updateSmsStatus(currentAppointmentId, 'scheduled');
-                showToast('簡訊已安排排程，等待發送時間');
-                
-                renderTable();
-                
-                setTimeout(function() {
-                    const sendSuccess = Math.random() > 0.1;
-                    
-                    if (sendSuccess) {
-                        updateSmsStatus(currentAppointmentId, 'delivered');
-                        showToast('簡訊發送成功！');
-                    } else {
-                        updateSmsStatus(currentAppointmentId, 'failed');
-                        showToast('簡訊發送失敗，請檢查網路或重新發送');
-                    }
-                    renderTable();
-                }, 8000);
+
+            if (!content.trim()) {
+                alert('請輸入簡訊內容！');
+                return;
             }
-            
+
+            // 如果是情境5（自動補位），將被取消的預約的 appointmentStatus 設為 'cancelled'
+            if (pendingCanceledAppointmentId !== null) {
+                const canceledApt = appointments.find(apt => apt.id === pendingCanceledAppointmentId);
+                if (canceledApt) {
+                    canceledApt.appointmentStatus = 'cancelled';
+                }
+                pendingCanceledAppointmentId = null; // 清空記錄
+            }
+
+            updateSmsStatus(currentAppointmentId, 'scheduled');
+            showToast('簡訊已安排排程，等待發送時間');
+
+            renderTable();
             closeSmsModal();
+
+            // 模擬發送過程
+            setTimeout(function() {
+                const sendSuccess = Math.random() > 0.1;
+
+                if (sendSuccess) {
+                    updateSmsStatus(currentAppointmentId, 'delivered');
+                    showToast('簡訊發送成功！');
+                } else {
+                    updateSmsStatus(currentAppointmentId, 'failed');
+                    showToast('簡訊發送失敗，請檢查網路或重新發送');
+                }
+                renderTable();
+            }, 8000);
         }
 
         function updateCharCount() {
