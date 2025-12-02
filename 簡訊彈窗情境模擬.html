@@ -482,7 +482,7 @@ function App() {
 
         {/* Right Panel - Preview */}
         <div className="flex-1 overflow-y-auto p-8">
-          <SmsPreview scenario={SCENARIOS[selectedScenario]} />
+          <SmsPreview key={selectedScenario} scenario={SCENARIOS[selectedScenario]} />
         </div>
       </div>
     </div>
