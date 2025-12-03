@@ -4,12 +4,28 @@
     {
       "src": "**/*.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "**/*.md",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/",
-      "dest": "/index.html"
+      "dest": "/prototypes/index.html"
+    },
+    {
+      "src": "/prototypes/(.*)",
+      "dest": "/prototypes/$1"
+    },
+    {
+      "src": "/docs/(.*)",
+      "dest": "/docs/$1"
+    },
+    {
+      "src": "/(.*\\.md)",
+      "dest": "/$1"
     },
     {
       "src": "/(.*)",
