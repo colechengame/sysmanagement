@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡訊設定教學 - 開關與儲存流程</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+            padding: 40px;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            background: #4169E1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .header-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        .settings-panel {
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .preview-panel {
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 12px;
+        }
+
+        .setting-item {
+            margin-bottom: 25px;
+        }
+
+        .setting-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .toggle-wrapper {
+            display: inline-block;
+            position: relative;
+        }
+
+        .toggle-switch {
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: #4169E1;
+        }
+
+        .toggle-slider {
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+            resize: vertical;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #4169E1;
+        }
+
+        textarea.input-field {
+            min-height: 80px;
+        }
+
+        .preview-box {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 200px;
+        }
+
+        .preview-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .preview-content {
+            color: #666;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+
+        .char-count {
+            text-align: right;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #999;
+        }
+
+        .char-count.warning {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        .save-button {
+            background: #4169E1;
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(65, 105, 225, 0.3);
+            margin-top: 20px;
+            display: block;
+            width: 100%;
+        }
+
+        .save-button:hover {
+            background: #3555c7;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(65, 105, 225, 0.4);
+        }
+
+        .save-button:active {
+            transform: translateY(0);
+        }
+
+        .save-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* 動畫提示元素 */
+        .hint-message {
+            position: absolute;
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 12px 20px;
+            color: #856404;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+            z-index: 100;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .hint-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hint-arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid #ffc107;
+            bottom: -10px;
+            left: 20px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+            text-align: center;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: 600;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.3s ease;
+        }
+
+        .success-message.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* 高亮動畫 */
+        .highlight {
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(65, 105, 225, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 20px rgba(65, 105, 225, 0);
+            }
+        }
+
+        .glow {
+            animation: glow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(65, 105, 225, 0.5), 0 0 10px rgba(65, 105, 225, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(65, 105, 225, 0.8), 0 0 30px rgba(65, 105, 225, 0.5);
+            }
+        }
+
+        /* 步驟指示器 */
+        .step-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 250px;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .step-item.active {
+            background: #e3f2fd;
+            border-left: 4px solid #4169E1;
+            padding-left: 12px;
+        }
+
+        .step-item.completed {
+            opacity: 0.6;
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .step-item.active .step-number {
+            background: #4169E1;
+            color: white;
+        }
+
+        .step-item.completed .step-number {
+            background: #28a745;
+            color: white;
+        }
+
+        .step-text {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        /* 控制按鈕 */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: white;
+            border: 2px solid #4169E1;
+            color: #4169E1;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #4169E1;
+            color: white;
+        }
+
+        .control-btn.playing {
+            background: #4169E1;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                </svg>
+            </div>
+            <h1>簡訊設定</h1>
+        </div>
+
+        <div class="content-wrapper">
+            <!-- 左側設定區 -->
+            <div class="settings-panel">
+                <div class="hint-message" id="hint1" style="top: -70px; left: 0;">
+                    <div class="hint-arrow"></div>
+                    請先開啟「發送預約簡訊」開關
+                </div>
+
+                <div class="hint-message" id="hint2" style="top: -70px; left: 0;">
+                    <div class="hint-arrow"></div>
+                    ⚠️ 請記得點擊「儲存」按鈕以套用設定
+                </div>
+
+                <div class="hint-message" id="hint3" style="top: 80px; left: 0;">
+                    <div class="hint-arrow"></div>
+                    💡 此開關會判斷「簡訊勿寄」條件，對應會員維護的「接受電訪/銷」欄位
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>發送預約簡訊</span>
+                        <div class="toggle-wrapper">
+                            <div class="toggle-switch" id="toggleSwitch">
+                                <div class="toggle-slider"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>包含接受電訪/銷</span>
+                        <div class="toggle-wrapper">
+                            <div class="toggle-switch" id="telemarketingToggle">
+                                <div class="toggle-slider"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>簡訊標題</span>
+                    </div>
+                    <input type="text" class="input-field" id="smsTitle"
+                           placeholder="提醒您有預約："
+                           value="提醒您有預約：">
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>門市資訊</span>
+                    </div>
+                    <textarea class="input-field" id="storeInfo"
+                              placeholder="請輸入門市聯絡資訊">02-2XXXX1300</textarea>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>簡訊結尾</span>
+                    </div>
+                    <textarea class="input-field" id="smsFooter"
+                              placeholder="請記得攜帶健保卡至櫃台報到～">請記得攜帶健保卡至櫃台報到～</textarea>
+                </div>
+
+                <button class="save-button" id="saveButton" disabled>
+                    儲存
+                </button>
+
+                <div class="success-message" id="successMessage">
+                    ✓ 簡訊模板已儲存並生效！
+                </div>
+            </div>
+
+            <!-- 右側預覽區 -->
+            <div class="preview-panel">
+                <div class="preview-title">訊息預覽</div>
+                <div class="preview-box">
+                    <div class="preview-content" id="previewContent">
+提醒您有預約：【皮膚光澤保健】12/03(三) 15:49 ,02-2XXXX1300 ,請記得攜帶健保卡至櫃台報到～
+                    </div>
+                    <div class="char-count">
+                        已輸入：<span id="charCount">57</span>字
+                    </div>
+                    <div class="char-count warning">
+                        限制輸入字數：70字
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 步驟指示器 -->
+    <div class="step-indicator">
+        <div class="step-title">教學步驟</div>
+        <div class="step-item" id="step1">
+            <div class="step-number">1</div>
+            <div class="step-text">開啟簡訊發送開關</div>
+        </div>
+        <div class="step-item" id="step2">
+            <div class="step-number">2</div>
+            <div class="step-text">設定「接受電訪/銷」條件（對應會員維護欄位）</div>
+        </div>
+        <div class="step-item" id="step3">
+            <div class="step-number">3</div>
+            <div class="step-text">編輯簡訊模板內容</div>
+        </div>
+        <div class="step-item" id="step4">
+            <div class="step-number">4</div>
+            <div class="step-text">點擊儲存按鈕</div>
+        </div>
+        <div class="step-item" id="step5">
+            <div class="step-number">5</div>
+            <div class="step-text">確認設定已生效</div>
+        </div>
+    </div>
+
+    <!-- 控制按鈕 -->
+    <div class="controls">
+        <button class="control-btn" id="restartBtn">重新播放</button>
+        <button class="control-btn playing" id="playPauseBtn">暫停</button>
+    </div>
+
+    <script>
+        // 元素引用
+        const toggleSwitch = document.getElementById('toggleSwitch');
+        const telemarketingToggle = document.getElementById('telemarketingToggle');
+        const saveButton = document.getElementById('saveButton');
+        const successMessage = document.getElementById('successMessage');
+        const hint1 = document.getElementById('hint1');
+        const hint2 = document.getElementById('hint2');
+        const hint3 = document.getElementById('hint3');
+        const steps = [
+            document.getElementById('step1'),
+            document.getElementById('step2'),
+            document.getElementById('step3'),
+            document.getElementById('step4'),
+            document.getElementById('step5')
+        ];
+        const restartBtn = document.getElementById('restartBtn');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+
+        // 動畫狀態
+        let animationState = {
+            currentStep: 0,
+            isPlaying: true,
+            timeouts: []
+        };
+
+        // 清除所有計時器
+        function clearAllTimeouts() {
+            animationState.timeouts.forEach(timeout => clearTimeout(timeout));
+            animationState.timeouts = [];
+        }
+
+        // 設置步驟狀態
+        function setStepState(stepIndex, state) {
+            steps.forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index < stepIndex) {
+                    step.classList.add('completed');
+                } else if (index === stepIndex) {
+                    step.classList.add('active');
+                }
+            });
+        }
+
+        // 動畫序列
+        function startAnimation() {
+            clearAllTimeouts();
+            animationState.isPlaying = true;
+            playPauseBtn.textContent = '暫停';
+            playPauseBtn.classList.add('playing');
+
+            // 重置狀態
+            toggleSwitch.classList.remove('active');
+            telemarketingToggle.classList.remove('active');
+            saveButton.disabled = true;
+            successMessage.classList.remove('show');
+            hint1.classList.remove('show');
+            hint2.classList.remove('show');
+            hint3.classList.remove('show');
+            toggleSwitch.classList.remove('highlight', 'glow');
+            telemarketingToggle.classList.remove('highlight', 'glow');
+            saveButton.classList.remove('highlight', 'glow');
+            setStepState(0, 'active');
+
+            // 步驟 1: 顯示提示1 - 開啟開關
+            animationState.timeouts.push(setTimeout(() => {
+                if (!animationState.isPlaying) return;
+                hint1.classList.add('show');
+                toggleSwitch.classList.add('glow');
+                setStepState(0, 'active');
+            }, 1000));
+
+            // 步驟 2: 開啟簡訊發送開關
+            animationState.timeouts.push(setTimeout(() => {
+                if (!animationState.isPlaying) return;
+                toggleSwitch.classList.add('active');
+                toggleSwitch.classList.remove('glow');
+                hint1.classList.remove('show');
+            }, 3000));
+
+            // 步驟 3: 顯示提示3 - 說明電訪/銷開關
+            animationState.timeouts.push(setTimeout(() => {
+                if (!animationState.isPlaying) return;
+                hint3.classList.add('show');
+                telemarketingToggle.classList.add('glow');
+                setStepState(1, 'active');
+            }, 4000));
+
+            // 步驟 4: 隱藏提示3，進入編輯模板階段
+            animationState.timeouts.push(setTimeout(() => {
+                if (!animationState.isPlaying) return;
+                hint3.classList.remove('show');
+                telemarketingToggle.classList.remove('glow');
+                setStepState(2, 'active');
+            }, 7000));
+
+            // 步驟 5: 顯示提示2 - 記得儲存
+            animationState.timeouts.push(setTimeout(() => {
+                if (!animationState.isPlaying) return;
+                saveButton.disabled = false;
+                hint2.classList.add('show');
+                saveButton.classList.add('glow');
+                setStepState(3, 'active');
+            }, 8000));
+
+            // 步驟 6: 點擊儲存
+            animationState.timeouts.push(setTimeout(() => {
+                if (!animationState.isPlaying) return;
+                saveButton.classList.remove('glow');
+                saveButton.classList.add('highlight');
+                hint2.classList.remove('show');
+            }, 10000));
+
+            // 步驟 7: 顯示成功訊息
+            animationState.timeouts.push(setTimeout(() => {
+                if (!animationState.isPlaying) return;
+                saveButton.classList.remove('highlight');
+                successMessage.classList.add('show');
+                setStepState(4, 'active');
+            }, 11000));
+
+            // 步驟 8: 完成所有步驟
+            animationState.timeouts.push(setTimeout(() => {
+                if (!animationState.isPlaying) return;
+                setStepState(5, 'completed');
+            }, 12000));
+
+            // 步驟 8: 自動重新播放
+            animationState.timeouts.push(setTimeout(() => {
+                if (!animationState.isPlaying) return;
+                startAnimation();
+            }, 12000));
+        }
+
+        // 暫停/繼續
+        function togglePlayPause() {
+            if (animationState.isPlaying) {
+                animationState.isPlaying = false;
+                clearAllTimeouts();
+                playPauseBtn.textContent = '繼續';
+                playPauseBtn.classList.remove('playing');
+            } else {
+                startAnimation();
+            }
+        }
+
+        // 重新播放
+        function restart() {
+            startAnimation();
+        }
+
+        // 手動點擊開關
+        toggleSwitch.addEventListener('click', () => {
+            toggleSwitch.classList.toggle('active');
+            saveButton.disabled = !toggleSwitch.classList.contains('active');
+        });
+
+        // 手動點擊電訪/銷開關
+        telemarketingToggle.addEventListener('click', () => {
+            telemarketingToggle.classList.toggle('active');
+        });
+
+        // 手動點擊儲存
+        saveButton.addEventListener('click', () => {
+            if (!saveButton.disabled) {
+                successMessage.classList.add('show');
+                setTimeout(() => {
+                    successMessage.classList.remove('show');
+                }, 3000);
+            }
+        });
+
+        // 控制按鈕事件
+        restartBtn.addEventListener('click', restart);
+        playPauseBtn.addEventListener('click', togglePlayPause);
+
+        // 開始動畫
+        setTimeout(startAnimation, 500);
+    </script>
+</body>
+</html>
