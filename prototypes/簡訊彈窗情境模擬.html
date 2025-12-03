@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>簡訊彈窗情境模擬</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.8;
+      }
+    }
+
+    .animate-slideIn {
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .animate-pulse-gentle {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* 深色模式變量 */
+    .dark-mode {
+      --bg-primary: #000000;
+      --bg-secondary: #0a1929;
+      --bg-modal: #0d1b2a;
+      --bg-sidebar: #0a1929;
+      --border-primary: #1e88e5;
+      --border-secondary: #263238;
+      --text-primary: #ffffff;
+      --text-secondary: #b0bec5;
+      --text-muted: #78909c;
+      --danger-bg: #4a1a1a;
+      --danger-border: #ef5350;
+      --danger-text: #ffcdd2;
+      --warning-bg: #4a3a1a;
+      --warning-border: #ffa726;
+      --warning-text: #ffe0b2;
+      --success-bg: #1a4a1a;
+      --success-border: #66bb6a;
+      --success-text: #a5d6a7;
+      --info-bg: #1a2a4a;
+      --info-border: #42a5f5;
+      --info-text: #90caf9;
+      --input-bg: #1a2634;
+      --input-border: #37474f;
+      --card-hover: #1a2a3a;
+      --btn-success-bg: #2e7d32;
+      --btn-success-hover: #388e3c;
+      --btn-danger-bg: #c62828;
+      --btn-danger-hover: #d32f2f;
+      --btn-default-bg: #455a64;
+      --btn-default-hover: #546e7a;
+      --btn-default-text: #eceff1;
+    }
+
+    /* 淺色模式變量 */
+    .light-mode {
+      --bg-primary: #f5f5f5;
+      --bg-secondary: #ffffff;
+      --bg-modal: #ffffff;
+      --bg-sidebar: #ffffff;
+      --border-primary: #e0e0e0;
+      --border-secondary: #e0e0e0;
+      --text-primary: #212121;
+      --text-secondary: #757575;
+      --text-muted: #9e9e9e;
+      --danger-bg: #ffebee;
+      --danger-border: #ef5350;
+      --danger-text: #c62828;
+      --warning-bg: #fff3e0;
+      --warning-border: #ffa726;
+      --warning-text: #e65100;
+      --success-bg: #e8f5e9;
+      --success-border: #66bb6a;
+      --success-text: #2e7d32;
+      --info-bg: #e3f2fd;
+      --info-border: #42a5f5;
+      --info-text: #1565c0;
+      --input-bg: #ffffff;
+      --input-border: #e0e0e0;
+      --card-hover: #f5f5f5;
+      --btn-success-bg: #4caf50;
+      --btn-success-hover: #66bb6a;
+      --btn-danger-bg: #f44336;
+      --btn-danger-hover: #ef5350;
+      --btn-default-bg: #e0e0e0;
+      --btn-default-hover: #d5d5d5;
+      --btn-default-text: #616161;
+    }
+
+    /* 夜間模式切換按鈕 */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: var(--bg-modal);
+      border: 2px solid var(--border-primary);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Spin animation for loading */
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+const { useState } = React;
+
+const SCENARIOS = {
+  scenario1: {
+    id: 'scenario1',
+    title: '簡訊發送',
+    type: 'send',
+    alerts: [],
+    smsContent: '提醒您：有在【板橋光澤醫學美容】12/05（四） 10:30，02-0000-0000，請提前30分鐘蒞臨現場報到。',
+    smsTime: '2025-12-04T18:00',
+    editable: true,
+    buttons: [
+      { label: '不發送', style: 'default' },
+      { label: '確認發送', style: 'success' }
+    ],
+    description: '情境 1：標準發送'
+  },
+  scenario2: {
+    id: 'scenario2',
+    title: '簡訊發送',
+    type: 'send',
+    guidance: 'danger',
+    alerts: [
+      { type: 'danger', text: ['發送受阻', '客人已設定「不要發送簡訊」，強制發送可能引起客訴。'] }
+    ],
+    smsContent: '提醒您：有在【板橋光澤醫學美容】12/05（四） 10:30，02-0000-0000，請提前30分鐘蒞臨現場報到。',
+    smsTime: '2025-12-04T18:00',
+    editable: true,
+    buttons: [
+      { label: '不發送', style: 'danger' },
+      { label: '確認發送', style: 'default' }
+    ],
+    description: '情境 2：客人拒收'
+  },
+  scenario3: {
+    id: 'scenario3',
+    title: '簡訊發送',
+    type: 'send',
+    alerts: [
+      {
+        type: 'warning',
+        text: ['排程衝突', '客人已有複數預約如下：'],
+        appointments: [
+          { date: '2025-12-05', time: '10:00', clinic: '← 最早預約（將發送簡訊）', isEarliest: true },
+          { date: '2025-12-05', time: '10:00', isOther: true },
+          { date: '2025-12-05', time: '14:00', isOther: true }
+        ],
+        footer: '以最早預約簡訊為主，以下開放更新簡訊內容。'
+      }
+    ],
+    smsContent: '提醒您：有在【板橋光澤醫學美容】2025-12-05 10:00，02-0000-0000，請提前30分鐘蒞臨現場報到。',
+    smsTime: '2025-12-04T18:00',
+    editable: true,
+    buttons: [
+      { label: '不發送', style: 'default' },
+      { label: '確認發送', style: 'success' }
+    ],
+    description: '情境 3：最早排程主簡訊新增或調整'
+  },
+  scenario4: {
+    id: 'scenario4',
+    title: '發送受阻',
+    type: 'send',
+    guidance: 'danger',
+    alerts: [
+      { type: 'danger', text: ['發送受阻', '客人已設定「不要發送簡訊」'] },
+      {
+        type: 'warning',
+        text: ['排程衝突', '客人已有複數預約如下：'],
+        appointments: [
+          { date: '2025-12-05', time: '10:30', clinic: '← 最早預約（將發送簡訊）', isEarliest: true },
+          { date: '2025-12-05', time: '14:00', isOther: true }
+        ],
+        footer: '以最早預約簡訊為主，以下開放更新簡訊內容。'
+      }
+    ],
+    smsContent: '【合併通知】陳先生您好，系統已為您保留 12/05 10:30 的最早時段預約。',
+    smsTime: '2025-12-04T18:00',
+    editable: true,
+    buttons: [
+      { label: '不發送', style: 'danger' },
+      { label: '確認發送', style: 'default' }
+    ],
+    description: '情境 4：複合風險'
+  },
+  scenario5: {
+    id: 'scenario5',
+    title: '簡訊發送',
+    type: 'send',
+    alerts: [
+      {
+        type: 'warning',
+        text: ['自動補位通知', '當天尚有其他預約，系統將自動改以當天最早預約發送簡訊：'],
+        appointments: [
+          { date: '2025-12-05', time: '14:00', clinic: '（補位預約，將發送簡訊）', isReplacement: true },
+          { date: '2025-12-05', time: '18:00', isOther: true }
+        ],
+        footer: '系統將自動改以 12/05 14:00 預約發送通知簡訊，您可於下方編輯內容。'
+      }
+    ],
+    smsContent: '提醒您：有在【板橋光澤醫學美容】2025-12-05 14:00，02-0000-0000，請提前30分鐘蒞臨現場報到。',
+    smsTime: '2025-12-04T18:00',
+    editable: true,
+    buttons: [
+      { label: '不發送', style: 'default' },
+      { label: '確認發送', style: 'success' }
+    ],
+    description: '情境 5：自動補位'
+  }
+};
+
+function SmsPreview({ scenario, isDarkMode }) {
+  const [smsContent, setSmsContent] = useState(scenario.smsContent);
+  const [smsTime, setSmsTime] = useState(scenario.smsTime);
+  const [feedback, setFeedback] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const getButtonStyle = (style) => {
+    const baseStyle = {
+      flex: 1,
+      padding: '12px 24px',
+      borderRadius: '8px',
+      fontWeight: '500',
+      transition: 'all 0.3s ease',
+      cursor: 'pointer',
+      border: 'none',
+      fontSize: '15px'
+    };
+
+    switch(style) {
+      case 'success':
+        return {
+          ...baseStyle,
+          background: 'var(--btn-success-bg)',
+          color: '#ffffff'
+        };
+      case 'danger':
+        return {
+          ...baseStyle,
+          background: 'var(--btn-danger-bg)',
+          color: '#ffffff'
+        };
+      default:
+        return {
+          ...baseStyle,
+          background: 'var(--btn-default-bg)',
+          color: 'var(--btn-default-text)'
+        };
+    }
+  };
+
+  const getAlertStyle = (type) => {
+    const baseStyle = {
+      padding: '16px',
+      borderRadius: '8px',
+      borderLeft: '4px solid'
+    };
+
+    switch(type) {
+      case 'danger':
+        return {
+          ...baseStyle,
+          background: 'var(--danger-bg)',
+          borderLeftColor: 'var(--danger-border)',
+          color: 'var(--danger-text)'
+        };
+      case 'warning':
+        return {
+          ...baseStyle,
+          background: 'var(--warning-bg)',
+          borderLeftColor: 'var(--warning-border)',
+          color: 'var(--warning-text)'
+        };
+      default:
+        return {
+          ...baseStyle,
+          background: 'var(--info-bg)',
+          borderLeftColor: 'var(--info-border)',
+          color: 'var(--info-text)'
+        };
+    }
+  };
+
+  const getFeedbackStyle = (type) => {
+    const baseStyle = {
+      borderRadius: '8px',
+      borderLeft: '4px solid'
+    };
+
+    switch(type) {
+      case 'success':
+        return {
+          ...baseStyle,
+          background: 'var(--success-bg)',
+          borderLeftColor: 'var(--success-border)',
+          color: 'var(--success-text)'
+        };
+      case 'warning':
+        return {
+          ...baseStyle,
+          background: 'var(--warning-bg)',
+          borderLeftColor: 'var(--warning-border)',
+          color: 'var(--warning-text)'
+        };
+      case 'cancel':
+      case 'info':
+        return {
+          ...baseStyle,
+          background: 'var(--info-bg)',
+          borderLeftColor: 'var(--info-border)',
+          color: 'var(--info-text)'
+        };
+      default:
+        return {
+          ...baseStyle,
+          background: 'var(--info-bg)',
+          borderLeftColor: 'var(--info-border)',
+          color: 'var(--info-text)'
+        };
+    }
+  };
+
+  const handleButtonClick = (button) => {
+    setIsProcessing(true);
+
+    // 模擬處理時間
+    setTimeout(() => {
+      let feedbackMessage = {
+        type: '',
+        text: '',
+        icon: ''
+      };
+
+      // 根據按鈕標籤設定回饋訊息
+      if (button.label.includes('確認發送')) {
+        feedbackMessage = {
+          type: 'success',
+          text: scenario.id === 'scenario2'
+            ? '✓ 簡訊已成功排程發送！原排程已取消。'
+            : '✓ 簡訊已成功排程發送！',
+          icon: '📤'
+        };
+      } else if (button.label.includes('確認更新')) {
+        feedbackMessage = {
+          type: 'success',
+          text: '✓ 已建立新預約，並更新既有預約的簡訊內容',
+          icon: '📤'
+        };
+      } else if (button.label.includes('不更新')) {
+        feedbackMessage = {
+          type: 'info',
+          text: '✗ 已建立新預約，簡訊維持原設定',
+          icon: '📋'
+        };
+      } else if (button.label.includes('不發送')) {
+        feedbackMessage = {
+          type: button.style === 'danger' ? 'info' : 'cancel',
+          text: '✗ 已取消發送簡訊',
+          icon: '🚫'
+        };
+      } else if (button.label.includes('確認取消')) {
+        if (button.label.includes('補位')) {
+          feedbackMessage = {
+            type: 'success',
+            text: '✓ 已取消原排程，補位預約簡訊已成功排程發送！',
+            icon: '🔄'
+          };
+        } else {
+          feedbackMessage = {
+            type: 'warning',
+            text: '✓ 已取消排程簡訊',
+            icon: '🚫'
+          };
+        }
+      } else if (button.label.includes('不取消')) {
+        feedbackMessage = {
+          type: 'info',
+          text: '✗ 維持原排程',
+          icon: '📋'
+        };
+      } else {
+        feedbackMessage = {
+          type: 'info',
+          text: `已點擊：${button.label}`,
+          icon: '✓'
+        };
+      }
+
+      setFeedback(feedbackMessage);
+      setIsProcessing(false);
+
+      // 3秒後自動清除回饋訊息
+      setTimeout(() => {
+        setFeedback(null);
+      }, 3000);
+    }, 500);
+  };
+
+  return (
+    <div style={{
+      background: 'var(--bg-modal)',
+      borderRadius: '16px',
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+      overflow: 'hidden',
+      maxWidth: '672px',
+      margin: '0 auto',
+      border: `1px solid var(--border-secondary)`
+    }}>
+      {/* Header */}
+      <div style={{
+        background: 'linear-gradient(to right, #7c3aed, #2563eb)',
+        padding: '16px 24px'
+      }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#ffffff' }}>{scenario.title}</h2>
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: '24px' }}>
+        {/* Alerts */}
+        {scenario.alerts.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+            {scenario.alerts.map((alert, idx) => (
+              <div key={idx} style={getAlertStyle(alert.type)}>
+                <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
+                  {alert.type === 'warning' && <span style={{ fontSize: '20px', marginTop: '2px' }}>⚡</span>}
+                  {alert.type === 'danger' && <span style={{ fontSize: '20px', marginTop: '2px' }}>⚠️</span>}
+                  {(!['warning', 'danger'].includes(alert.type)) && (
+                    <svg style={{ width: '20px', height: '20px', marginTop: '2px', flexShrink: 0 }} fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  <div style={{ flex: 1 }}>
+                    {Array.isArray(alert.text) ? (
+                      <div>
+                        <p style={{ fontSize: '12px', fontWeight: 'bold' }}>{alert.text[0]}</p>
+                        {alert.text.slice(1).map((line, i) => (
+                          <p key={i} style={{ fontSize: '14px', fontWeight: '500', marginTop: '4px' }}>{line}</p>
+                        ))}
+                      </div>
+                    ) : (
+                      <p style={{ fontWeight: '500', fontSize: '14px' }}>{alert.text}</p>
+                    )}
+                    {alert.appointments && (
+                      <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {alert.appointments.map((apt, i) => (
+                          <div key={i} style={{
+                            fontSize: '12px',
+                            padding: '8px',
+                            borderRadius: '4px',
+                            display: 'flex',
+                            alignItems: 'baseline',
+                            background: apt.isCurrent ? 'rgba(255, 255, 255, 0.5)' :
+                                        apt.isCancel ? 'rgba(255, 0, 0, 0.1)' :
+                                        apt.isReplacement ? 'var(--success-bg)' :
+                                        apt.isExisting ? 'var(--info-bg)' :
+                                        apt.isEarliest ? 'var(--success-bg)' :
+                                        apt.isOld ? 'rgba(128, 128, 128, 0.1)' :
+                                        'rgba(255, 255, 255, 0.3)',
+                            border: apt.isCurrent ? '1px solid var(--warning-border)' : 'none',
+                            textDecoration: apt.isCancel ? 'line-through' : 'none',
+                            fontWeight: (apt.isReplacement || apt.isExisting || apt.isEarliest) ? '500' : 'normal'
+                          }}>
+                            <span style={{ marginRight: '8px' }}>•</span>
+                            <span>
+                              {apt.date} {apt.time} {apt.clinic && ` ${apt.clinic}`}
+                              {apt.isCurrent && <span style={{ marginLeft: '8px', color: 'var(--warning-text)' }}>← 當前</span>}
+                              {apt.isCancel && <span style={{ marginLeft: '8px', color: 'var(--danger-text)' }}>✗ 即將取消</span>}
+                              {apt.isReplacement && <span style={{ marginLeft: '8px', color: 'var(--success-text)' }}>✓ 補位</span>}
+                              {apt.isExisting && <span style={{ marginLeft: '8px', color: 'var(--info-text)' }}>✓ 既有</span>}
+                              {apt.isEarliest && <span style={{ marginLeft: '8px', color: 'var(--success-text)' }}>✓ 最早</span>}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {alert.footer && (
+                      <p style={{ marginTop: '8px', fontSize: '14px', fontWeight: 'bold' }}>{alert.footer}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* SMS Preview */}
+        <div style={{
+          background: 'var(--input-bg)',
+          border: `1px solid var(--input-border)`,
+          borderRadius: '12px',
+          padding: '20px',
+          marginBottom: '24px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <svg style={{ width: '20px', height: '20px', color: 'var(--text-secondary)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+            <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>簡訊內容預覽</span>
+            {scenario.editable && (
+              <span style={{
+                marginLeft: 'auto',
+                fontSize: '12px',
+                background: 'var(--info-bg)',
+                color: 'var(--info-text)',
+                padding: '4px 8px',
+                borderRadius: '12px',
+                border: `1px solid var(--info-border)`
+              }}>可編輯</span>
+            )}
+          </div>
+          {scenario.editable ? (
+            <textarea
+              value={smsContent}
+              onChange={(e) => setSmsContent(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: `1px solid var(--input-border)`,
+                borderRadius: '8px',
+                fontSize: '14px',
+                resize: 'none',
+                background: 'var(--bg-modal)',
+                color: 'var(--text-primary)',
+                outline: 'none'
+              }}
+              rows="3"
+            />
+          ) : (
+            <p style={{
+              fontSize: '14px',
+              color: 'var(--text-primary)',
+              lineHeight: '1.6',
+              background: 'var(--bg-modal)',
+              padding: '12px',
+              borderRadius: '8px'
+            }}>{smsContent}</p>
+          )}
+        </div>
+
+        {/* SMS Send Time */}
+        <div style={{ marginBottom: '24px' }}>
+          <label style={{
+            display: 'block',
+            fontSize: '14px',
+            fontWeight: '500',
+            color: 'var(--text-primary)',
+            marginBottom: '8px'
+          }}>
+            📅 簡訊發送時間
+          </label>
+          {scenario.editable ? (
+            <input
+              type="datetime-local"
+              value={smsTime}
+              onChange={(e) => setSmsTime(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px 16px',
+                border: `1px solid var(--input-border)`,
+                borderRadius: '8px',
+                background: 'var(--input-bg)',
+                color: 'var(--text-primary)',
+                outline: 'none',
+                fontSize: '14px'
+              }}
+            />
+          ) : (
+            <div style={{
+              padding: '10px 16px',
+              background: 'var(--input-bg)',
+              border: `1px solid var(--input-border)`,
+              borderRadius: '8px',
+              color: 'var(--text-primary)'
+            }}>
+              {new Date(smsTime).toLocaleString('zh-TW')}
+            </div>
+          )}
+        </div>
+
+        {/* Feedback Message */}
+        {feedback && (
+          <div style={{
+            ...getFeedbackStyle(feedback.type),
+            padding: '16px',
+            borderRadius: '8px',
+            borderLeft: '4px solid',
+            fontWeight: '500',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            animation: 'slideIn 0.3s ease-out',
+            marginBottom: '16px'
+          }}>
+            <span style={{ fontSize: '24px' }}>{feedback.icon}</span>
+            <span style={{ flex: 1 }}>{feedback.text}</span>
+            <button
+              onClick={() => setFeedback(null)}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                opacity: 0.5,
+                transition: 'opacity 0.3s ease',
+                color: 'inherit',
+                fontSize: '18px'
+              }}
+              onMouseEnter={(e) => e.target.style.opacity = '1'}
+              onMouseLeave={(e) => e.target.style.opacity = '0.5'}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div style={{ display: 'flex', gap: '16px' }}>
+          {scenario.buttons.map((btn, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleButtonClick(btn)}
+              disabled={isProcessing}
+              style={{
+                ...getButtonStyle(btn.style),
+                opacity: isProcessing ? '0.5' : '1',
+                transform: 'scale(1)',
+                cursor: isProcessing ? 'not-allowed' : 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                if (!isProcessing) {
+                  e.target.style.transform = 'scale(1.05)';
+                  e.target.style.background = btn.style === 'success' ? 'var(--btn-success-hover)' :
+                                               btn.style === 'danger' ? 'var(--btn-danger-hover)' :
+                                               'var(--btn-default-hover)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isProcessing) {
+                  e.target.style.transform = 'scale(1)';
+                  e.target.style.background = btn.style === 'success' ? 'var(--btn-success-bg)' :
+                                               btn.style === 'danger' ? 'var(--btn-danger-bg)' :
+                                               'var(--btn-default-bg)';
+                }
+              }}
+            >
+              {isProcessing ? (
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <svg style={{ animation: 'spin 1s linear infinite', height: '20px', width: '20px' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  處理中...
+                </span>
+              ) : (
+                btn.label
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [selectedScenario, setSelectedScenario] = useState('scenario1');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  return (
+    <div className={isDarkMode ? 'dark-mode' : 'light-mode'} style={{ minHeight: '100vh', background: 'var(--bg-primary)', transition: 'all 0.3s ease' }}>
+      {/* 夜間模式切換按鈕 */}
+      <button
+        className="theme-toggle"
+        onClick={toggleDarkMode}
+        aria-label="切換夜間模式"
+      >
+        <span style={{ fontSize: '24px', color: 'var(--text-primary)' }}>
+          {isDarkMode ? '☀️' : '🌙'}
+        </span>
+      </button>
+
+      <div className="flex h-screen">
+        {/* Left Sidebar - Scenario List */}
+        <div style={{
+          width: '320px',
+          background: 'var(--bg-sidebar)',
+          borderRight: `1px solid var(--border-secondary)`,
+          overflowY: 'auto'
+        }}>
+          <div style={{
+            padding: '24px',
+            borderBottom: `1px solid var(--border-secondary)`,
+            background: 'linear-gradient(to right, #7c3aed, #2563eb)'
+          }}>
+            <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#ffffff' }}>簡訊彈窗情境</h1>
+            <p style={{ fontSize: '14px', color: '#e9d5ff', marginTop: '4px' }}>點擊查看預覽</p>
+          </div>
+
+          <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {Object.values(SCENARIOS).map((scenario) => (
+              <div
+                key={scenario.id}
+                onClick={() => setSelectedScenario(scenario.id)}
+                style={{
+                  padding: '16px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  border: selectedScenario === scenario.id
+                    ? `2px solid var(--border-primary)`
+                    : `2px solid var(--border-secondary)`,
+                  background: selectedScenario === scenario.id
+                    ? 'var(--card-hover)'
+                    : 'var(--bg-modal)',
+                  boxShadow: selectedScenario === scenario.id
+                    ? '0 4px 6px rgba(0, 0, 0, 0.1)'
+                    : 'none'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <h3 style={{ fontWeight: '600', color: 'var(--text-primary)', fontSize: '14px' }}>{scenario.title}</h3>
+                  <span style={{
+                    padding: '4px 8px',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    background: (scenario.guidance === 'danger') ? 'var(--danger-bg)' : 'var(--success-bg)',
+                    color: (scenario.guidance === 'danger') ? 'var(--danger-text)' : 'var(--success-text)',
+                    border: `1px solid ${(scenario.guidance === 'danger') ? 'var(--danger-border)' : 'var(--success-border)'}`
+                  }}>
+                    {scenario.type === 'send' ? '發送' : '取消'}
+                  </span>
+                </div>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{scenario.description}</p>
+
+                {/* Alert badges */}
+                {scenario.alerts.length > 0 && (
+                  <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                    {scenario.alerts.map((alert, idx) => (
+                      <span key={idx} style={{
+                        fontSize: '12px',
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        background: alert.type === 'danger' ? 'var(--danger-bg)' : 'var(--warning-bg)',
+                        color: alert.type === 'danger' ? 'var(--danger-text)' : 'var(--warning-text)',
+                        border: `1px solid ${alert.type === 'danger' ? 'var(--danger-border)' : 'var(--warning-border)'}`
+                      }}>
+                        {alert.type === 'danger' ? '⚠️ 危險' : '⚡ 警告'}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right Panel - Preview */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
+          <SmsPreview key={selectedScenario} scenario={SCENARIOS[selectedScenario]} isDarkMode={isDarkMode} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
