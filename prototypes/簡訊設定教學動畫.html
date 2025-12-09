@@ -80,6 +80,9 @@
             padding: 20px;
             background: #f5f5f5;
             border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         .setting-item {
@@ -402,16 +405,10 @@
 
         /* 步驟指示器 */
         .step-indicator {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
             background: white;
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            min-width: 250px;
-            max-width: 280px;
-            z-index: 50;
         }
 
         .step-title {
@@ -616,28 +613,28 @@
                         限制輸入字數：70字
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- 步驟指示器 -->
-    <div class="step-indicator">
-        <div class="step-title">教學步驟</div>
-        <div class="step-item" id="step1">
-            <div class="step-number">1</div>
-            <div class="step-text">開啟簡訊發送開關</div>
-        </div>
-        <div class="step-item" id="step2">
-            <div class="step-number">2</div>
-            <div class="step-text">設定「接受電訪/銷」條件（對應會員維護欄位）</div>
-        </div>
-        <div class="step-item" id="step3">
-            <div class="step-number">3</div>
-            <div class="step-text">編輯簡訊模板內容</div>
-        </div>
-        <div class="step-item" id="step4">
-            <div class="step-number">4</div>
-            <div class="step-text">點擊儲存並確認設定已生效</div>
+                <!-- 步驟指示器 -->
+                <div class="step-indicator">
+                    <div class="step-title">教學步驟</div>
+                    <div class="step-item" id="step1">
+                        <div class="step-number">1</div>
+                        <div class="step-text">開啟簡訊發送開關</div>
+                    </div>
+                    <div class="step-item" id="step2">
+                        <div class="step-number">2</div>
+                        <div class="step-text">設定「接受電訪/銷」條件（對應會員維護欄位）</div>
+                    </div>
+                    <div class="step-item" id="step3">
+                        <div class="step-number">3</div>
+                        <div class="step-text">編輯簡訊模板內容</div>
+                    </div>
+                    <div class="step-item" id="step4">
+                        <div class="step-number">4</div>
+                        <div class="step-text">點擊儲存並確認設定已生效</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
