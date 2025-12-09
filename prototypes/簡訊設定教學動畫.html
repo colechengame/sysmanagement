@@ -425,6 +425,12 @@
             padding: 8px;
             border-radius: 6px;
             transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .step-item:hover {
+            background: #f0f0f0;
+            transform: translateX(3px);
         }
 
         .step-item.active {
@@ -433,8 +439,16 @@
             padding-left: 12px;
         }
 
+        .step-item.active:hover {
+            background: #d1e7fd;
+        }
+
         .step-item.completed {
             opacity: 0.6;
+        }
+
+        .step-item.completed:hover {
+            opacity: 0.8;
         }
 
         .step-number {
@@ -616,20 +630,20 @@
 
                 <!-- 步驟指示器 -->
                 <div class="step-indicator">
-                    <div class="step-title">教學步驟</div>
-                    <div class="step-item" id="step1">
+                    <div class="step-title">教學步驟（點擊可跳轉）</div>
+                    <div class="step-item" id="step1" onclick="jumpToStep(0)">
                         <div class="step-number">1</div>
                         <div class="step-text">開啟簡訊發送開關</div>
                     </div>
-                    <div class="step-item" id="step2">
+                    <div class="step-item" id="step2" onclick="jumpToStep(1)">
                         <div class="step-number">2</div>
                         <div class="step-text">設定「接受電訪/銷」條件（對應會員維護欄位）</div>
                     </div>
-                    <div class="step-item" id="step3">
+                    <div class="step-item" id="step3" onclick="jumpToStep(2)">
                         <div class="step-number">3</div>
                         <div class="step-text">編輯簡訊模板內容</div>
                     </div>
-                    <div class="step-item" id="step4">
+                    <div class="step-item" id="step4" onclick="jumpToStep(3)">
                         <div class="step-number">4</div>
                         <div class="step-text">點擊儲存並確認設定已生效</div>
                     </div>
@@ -885,6 +899,62 @@
         // 重新播放
         function restart() {
             startAnimation();
+        }
+
+        // 跳轉到指定步驟
+        function jumpToStep(stepIndex) {
+            clearAllTimeouts();
+            animationState.isPlaying = false;
+            playPauseBtn.textContent = '繼續';
+            playPauseBtn.classList.remove('playing');
+
+            // 重置所有狀態
+            toggleSwitch.classList.remove('active', 'highlight', 'glow');
+            telemarketingToggle.classList.remove('active', 'highlight', 'glow');
+            saveButton.classList.remove('highlight', 'glow');
+            saveButton.disabled = true;
+            successMessage.classList.remove('show');
+            hint1.classList.remove('show');
+            hint2.classList.remove('show');
+            hint3.classList.remove('show');
+            editTemplateHint.classList.remove('show');
+            editTemplateOverlay.classList.remove('show');
+            previewBox.classList.remove('updating');
+            inputFields.forEach(field => field.classList.remove('editing-highlight'));
+            inputFields[0].value = '提醒您有預約：';
+            inputFields[1].value = '02-2XXXX1300';
+            inputFields[2].value = '請記得攜帶健保卡至櫃台報到～';
+            updatePreview();
+
+            // 執行到指定步驟
+            if (stepIndex === 0) {
+                // 步驟 1: 開啟簡訊發送開關
+                setStepState(0, 'active');
+                hint1.classList.add('show');
+                toggleSwitch.classList.add('glow');
+            } else if (stepIndex === 1) {
+                // 步驟 2: 設定「接受電訪/銷」條件
+                toggleSwitch.classList.add('active');
+                setStepState(1, 'active');
+                hint3.classList.add('show');
+                telemarketingToggle.classList.add('glow');
+            } else if (stepIndex === 2) {
+                // 步驟 3: 編輯簡訊模板內容
+                toggleSwitch.classList.add('active');
+                setStepState(2, 'active');
+                editTemplateOverlay.classList.add('show');
+                editTemplateHint.classList.add('show');
+                inputFields[0].classList.add('editing-highlight');
+            } else if (stepIndex === 3) {
+                // 步驟 4: 點擊儲存並確認設定已生效
+                toggleSwitch.classList.add('active');
+                inputFields[1].value = '02-2XXXX1300，提前30分鐘蒞臨現場報到';
+                updatePreview();
+                saveButton.disabled = false;
+                setStepState(3, 'active');
+                hint2.classList.add('show');
+                saveButton.classList.add('glow');
+            }
         }
 
         // 手動點擊開關
