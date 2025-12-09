@@ -146,6 +146,21 @@
             border-color: #4169E1;
         }
 
+        .input-field.editing-highlight {
+            border-color: #2196F3;
+            background: #e3f2fd;
+            animation: input-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes input-pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(33, 150, 243, 0);
+            }
+        }
+
         textarea.input-field {
             min-height: 80px;
         }
@@ -156,6 +171,23 @@
             border-radius: 12px;
             padding: 20px;
             min-height: 200px;
+            transition: all 0.3s ease;
+        }
+
+        .preview-box.updating {
+            border-color: #4CAF50;
+            background: #f1f8f4;
+            animation: preview-update 0.6s ease;
+        }
+
+        @keyframes preview-update {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+            }
         }
 
         .preview-title {
@@ -235,6 +267,77 @@
             line-height: 1.6;
         }
 
+        /* 編輯模板背景遮罩 */
+        .edit-template-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 140;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .edit-template-overlay.show {
+            opacity: 1;
+        }
+
+        /* 編輯模板特別說明框 */
+        .edit-template-hint {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 3px solid #2196F3;
+            border-radius: 12px;
+            padding: 20px 24px;
+            color: #0d47a1;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 8px 24px rgba(33, 150, 243, 0.3);
+            z-index: 150;
+            opacity: 0;
+            transition: all 0.4s ease;
+            pointer-events: none;
+            max-width: 500px;
+            line-height: 1.8;
+            white-space: normal;
+        }
+
+        .edit-template-hint.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .edit-template-hint .hint-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #1976D2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .edit-template-hint .hint-content {
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.8;
+        }
+
+        .edit-template-hint .hint-list {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+
+        .edit-template-hint .hint-list li {
+            margin-bottom: 8px;
+        }
+
         .hint-message.show {
             opacity: 1;
             transform: translateY(0);
@@ -301,12 +404,14 @@
         .step-indicator {
             position: fixed;
             top: 20px;
-            right: 20px;
+            left: 20px;
             background: white;
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             min-width: 250px;
+            max-width: 280px;
+            z-index: 50;
         }
 
         .step-title {
@@ -426,6 +531,21 @@
                     💡 簡訊勿寄判斷：系統預設檢查會員維護「標註」欄位關鍵字，若需額外判斷「接受電訪/銷」欄位設定，請開啟此開關
                 </div>
 
+                <div class="edit-template-hint" id="editTemplateHint">
+                    <div class="hint-title">
+                        ✏️ 編輯簡訊模板內容
+                    </div>
+                    <div class="hint-content">
+                        <strong>重要提示：</strong>
+                        <ul class="hint-list">
+                            <li>📝 可自訂「簡訊標題」、「門市資訊」和「簡訊結尾」</li>
+                            <li>👁️ 右側會即時預覽完整簡訊內容</li>
+                            <li>⚠️ 注意字數限制 70 字（含系統自動插入的預約資訊）</li>
+                            <li>💾 編輯完成後務必點擊「儲存」按鈕</li>
+                        </ul>
+                    </div>
+                </div>
+
                 <div class="setting-item">
                     <div class="setting-label">
                         <span>發送預約簡訊</span>
@@ -517,13 +637,12 @@
         </div>
         <div class="step-item" id="step4">
             <div class="step-number">4</div>
-            <div class="step-text">點擊儲存按鈕</div>
-        </div>
-        <div class="step-item" id="step5">
-            <div class="step-number">5</div>
-            <div class="step-text">確認設定已生效</div>
+            <div class="step-text">點擊儲存並確認設定已生效</div>
         </div>
     </div>
+
+    <!-- 編輯模板遮罩層 -->
+    <div class="edit-template-overlay" id="editTemplateOverlay"></div>
 
     <!-- 控制按鈕 -->
     <div class="controls">
@@ -540,27 +659,49 @@
         const hint1 = document.getElementById('hint1');
         const hint2 = document.getElementById('hint2');
         const hint3 = document.getElementById('hint3');
+        const editTemplateHint = document.getElementById('editTemplateHint');
+        const editTemplateOverlay = document.getElementById('editTemplateOverlay');
+        const inputFields = [
+            document.getElementById('smsTitle'),
+            document.getElementById('storeInfo'),
+            document.getElementById('smsFooter')
+        ];
+        const previewBox = document.querySelector('.preview-box');
+        const previewContent = document.getElementById('previewContent');
+        const charCount = document.getElementById('charCount');
         const steps = [
             document.getElementById('step1'),
             document.getElementById('step2'),
             document.getElementById('step3'),
-            document.getElementById('step4'),
-            document.getElementById('step5')
+            document.getElementById('step4')
         ];
         const restartBtn = document.getElementById('restartBtn');
         const playPauseBtn = document.getElementById('playPauseBtn');
+
+        // 更新預覽內容
+        function updatePreview() {
+            const title = inputFields[0].value;
+            const storeInfo = inputFields[1].value;
+            const footer = inputFields[2].value;
+            const preview = `${title}【皮膚光澤保健】12/03(三) 15:49 ,${storeInfo} ,${footer}`;
+            previewContent.textContent = preview;
+            charCount.textContent = preview.length;
+        }
 
         // 動畫狀態
         let animationState = {
             currentStep: 0,
             isPlaying: true,
-            timeouts: []
+            timeouts: [],
+            intervals: []
         };
 
         // 清除所有計時器
         function clearAllTimeouts() {
             animationState.timeouts.forEach(timeout => clearTimeout(timeout));
+            animationState.intervals.forEach(interval => clearInterval(interval));
             animationState.timeouts = [];
+            animationState.intervals = [];
         }
 
         // 設置步驟狀態
@@ -590,9 +731,18 @@
             hint1.classList.remove('show');
             hint2.classList.remove('show');
             hint3.classList.remove('show');
+            editTemplateHint.classList.remove('show');
+            editTemplateOverlay.classList.remove('show');
             toggleSwitch.classList.remove('highlight', 'glow');
             telemarketingToggle.classList.remove('highlight', 'glow');
             saveButton.classList.remove('highlight', 'glow');
+            previewBox.classList.remove('updating');
+            inputFields.forEach(field => field.classList.remove('editing-highlight'));
+            // 重置輸入框內容
+            inputFields[0].value = '提醒您有預約：';
+            inputFields[1].value = '02-2XXXX1300';
+            inputFields[2].value = '請記得攜帶健保卡至櫃台報到～';
+            updatePreview();
             setStepState(0, 'active');
 
             // 步驟 1: 顯示提示1 - 開啟開關
@@ -619,13 +769,73 @@
                 setStepState(1, 'active');
             }, 4000));
 
-            // 步驟 4: 隱藏提示3，進入編輯模板階段
+            // 步驟 4: 隱藏提示3，顯示編輯模板特別說明和遮罩層
             animationState.timeouts.push(setTimeout(() => {
                 if (!animationState.isPlaying) return;
                 hint3.classList.remove('show');
                 telemarketingToggle.classList.remove('glow');
+                editTemplateOverlay.classList.add('show');
+                editTemplateHint.classList.add('show');
                 setStepState(2, 'active');
             }, 7000));
+
+            // 步驟 4.5: 高亮第一個輸入框並顯示預覽更新
+            animationState.timeouts.push(setTimeout(() => {
+                if (!animationState.isPlaying) return;
+                inputFields[0].classList.add('editing-highlight');
+                previewBox.classList.add('updating');
+                setTimeout(() => {
+                    previewBox.classList.remove('updating');
+                }, 600);
+            }, 8000));
+
+            // 步驟 4.6: 切換到第二個輸入框（門市資訊）並開始修改
+            animationState.timeouts.push(setTimeout(() => {
+                if (!animationState.isPlaying) return;
+                inputFields[0].classList.remove('editing-highlight');
+                inputFields[1].classList.add('editing-highlight');
+
+                // 模擬打字效果修改門市資訊
+                const newStoreInfo = '02-2XXXX1300，提前30分鐘蒞臨現場報到';
+                let currentText = inputFields[1].value;
+                let targetIndex = 0;
+
+                const typingInterval = setInterval(() => {
+                    if (!animationState.isPlaying || targetIndex >= newStoreInfo.length) {
+                        clearInterval(typingInterval);
+                        return;
+                    }
+                    currentText = newStoreInfo.substring(0, targetIndex + 1);
+                    inputFields[1].value = currentText;
+                    updatePreview();
+                    previewBox.classList.add('updating');
+                    setTimeout(() => {
+                        previewBox.classList.remove('updating');
+                    }, 200);
+                    targetIndex++;
+                }, 100);
+
+                animationState.intervals.push(typingInterval);
+            }, 9500));
+
+            // 步驟 4.7: 切換到第三個輸入框
+            animationState.timeouts.push(setTimeout(() => {
+                if (!animationState.isPlaying) return;
+                inputFields[1].classList.remove('editing-highlight');
+                inputFields[2].classList.add('editing-highlight');
+                previewBox.classList.add('updating');
+                setTimeout(() => {
+                    previewBox.classList.remove('updating');
+                }, 600);
+            }, 12500));
+
+            // 步驟 4.8: 完成編輯，移除所有高亮和遮罩層
+            animationState.timeouts.push(setTimeout(() => {
+                if (!animationState.isPlaying) return;
+                inputFields[2].classList.remove('editing-highlight');
+                editTemplateHint.classList.remove('show');
+                editTemplateOverlay.classList.remove('show');
+            }, 14000));
 
             // 步驟 5: 顯示提示2 - 記得儲存
             animationState.timeouts.push(setTimeout(() => {
@@ -634,7 +844,7 @@
                 hint2.classList.add('show');
                 saveButton.classList.add('glow');
                 setStepState(3, 'active');
-            }, 8000));
+            }, 14500));
 
             // 步驟 6: 點擊儲存
             animationState.timeouts.push(setTimeout(() => {
@@ -642,27 +852,25 @@
                 saveButton.classList.remove('glow');
                 saveButton.classList.add('highlight');
                 hint2.classList.remove('show');
-            }, 10000));
+            }, 16500));
 
-            // 步驟 7: 顯示成功訊息
+            // 步驟 7: 顯示成功訊息並完成所有步驟
             animationState.timeouts.push(setTimeout(() => {
                 if (!animationState.isPlaying) return;
                 saveButton.classList.remove('highlight');
                 successMessage.classList.add('show');
-                setStepState(4, 'active');
-            }, 11000));
-
-            // 步驟 8: 完成所有步驟
-            animationState.timeouts.push(setTimeout(() => {
-                if (!animationState.isPlaying) return;
-                setStepState(5, 'completed');
-            }, 12000));
+                // 設置所有步驟為完成狀態
+                steps.forEach(step => {
+                    step.classList.remove('active');
+                    step.classList.add('completed');
+                });
+            }, 17500));
 
             // 步驟 8: 自動重新播放
             animationState.timeouts.push(setTimeout(() => {
                 if (!animationState.isPlaying) return;
                 startAnimation();
-            }, 12000));
+            }, 20000));
         }
 
         // 暫停/繼續
