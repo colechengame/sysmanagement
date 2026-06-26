@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NPOS 預約簡訊模板</title>
+<style>
+  :root{
+    --bg:#F4F6F5;--surface:#FFFFFF;--surface-2:#FBFCFB;
+    --ink:#16201D;--muted:#5E6B65;--faint:#8A958F;
+    --line:#E4E9E6;--line-strong:#D3DAD6;
+    --jade:#0E8B6F;--jade-deep:#0A6B56;--jade-wash:#E7F3EF;
+    --gold:#C98A14;--gold-wash:#FBF1DA;--danger:#C24A3E;--danger-wash:#FBEAE7;
+    --shadow:0 1px 2px rgba(22,32,29,.04),0 8px 28px rgba(22,32,29,.07);
+    --shadow-drawer:-12px 0 40px rgba(22,32,29,.16);
+    --radius:14px;--radius-sm:10px;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5;font-size:14px}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  textarea,input{font-family:inherit}
+  ::selection{background:var(--jade-wash)}
+  :focus-visible{outline:2px solid var(--jade);outline-offset:2px}
+
+  /* ---------- Top bar ---------- */
+  .topbar{height:60px;display:flex;align-items:center;gap:18px;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--jade),var(--jade-deep));display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;letter-spacing:-.5px}
+  .brand-name{font-weight:650;font-size:15px;letter-spacing:-.2px}
+  .brand-sub{font-size:11px;color:var(--faint);font-weight:500}
+  .nav-tabs{display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--line);padding:3px;border-radius:10px}
+  .nav-tab{font-size:13px;font-weight:600;color:var(--muted);padding:6px 14px;border-radius:7px;transition:.14s}
+  .nav-tab.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(22,32,29,.08)}
+  .topbar-spacer{flex:1}
+  .shared-note{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);font-weight:500;background:var(--surface-2);border:1px solid var(--line);padding:6px 12px;border-radius:999px}
+  .shared-note .dot{width:7px;height:7px;border-radius:50%;background:var(--jade)}
+
+  .view{display:none}
+  .view.active{display:block}
+
+  /* ---------- Appointment view ---------- */
+  .stage{max-width:1120px;margin:0 auto;padding:28px 24px 80px;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:24px;align-items:start}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .panel-head{padding:18px 22px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+  .panel-title{font-size:13px;font-weight:650}
+  .panel-eyebrow{font-size:11px;color:var(--faint);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px}
+  .panel-body{padding:20px 22px}
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden}
+  .field{background:var(--surface);padding:13px 15px}
+  .field.full{grid-column:1 / -1}
+  .field-label{font-size:11px;color:var(--faint);font-weight:600;margin-bottom:3px}
+  .field-value{font-size:14px;font-weight:550;color:var(--ink)}
+  .field-value.mono{font-family:var(--mono);font-size:13px;letter-spacing:.2px}
+  .shift-pill{display:inline-block;font-size:11px;font-weight:650;padding:2px 9px;border-radius:999px;background:var(--jade-wash);color:var(--jade-deep)}
+  .applied-row{margin-top:18px}
+  .applied-chip{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:550;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);padding:8px 14px;border-radius:10px}
+  .applied-chip b{color:var(--ink);font-weight:650}
+  .applied-chip.empty{color:var(--faint)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:13.5px;font-weight:600;padding:11px 18px;border-radius:10px;transition:all .14s ease;white-space:nowrap;border:1px solid transparent}
+  .btn-primary{background:var(--jade);color:#fff}
+  .btn-primary:hover{background:var(--jade-deep)}
+  .btn-primary:active{transform:translateY(1px)}
+  .btn-ghost{background:var(--surface);color:var(--ink);border-color:var(--line-strong)}
+  .btn-ghost:hover{background:var(--surface-2);border-color:var(--faint)}
+  .btn-block{width:100%}
+  .btn svg{width:16px;height:16px}
+
+  .preview-panel .panel-body{padding:0}
+  .phone{margin:20px;background:linear-gradient(180deg,#EEF2F0,#E6ECE9);border-radius:22px;padding:18px 16px 20px;border:1px solid var(--line-strong);min-height:300px;display:flex;flex-direction:column}
+  .phone-bar{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--faint);font-weight:600;padding:0 4px 14px}
+  .sms-sender{align-self:center;font-size:11px;color:var(--muted);font-weight:600;background:rgba(255,255,255,.7);padding:4px 12px;border-radius:999px;margin-bottom:14px}
+  .bubble-wrap{flex:1;display:flex;align-items:flex-start}
+  .bubble{background:#fff;border-radius:4px 16px 16px 16px;padding:14px 16px;font-size:13.5px;line-height:1.65;color:var(--ink);white-space:pre-wrap;box-shadow:0 1px 1px rgba(22,32,29,.06);max-width:100%;word-break:break-word}
+  .bubble .tok{background:var(--jade-wash);color:var(--jade-deep);border-radius:4px;padding:0 3px;font-weight:600}
+  .bubble .raw{background:var(--gold-wash);color:var(--gold);border-radius:4px;padding:0 3px;font-weight:600}
+  .preview-empty{margin:auto;text-align:center;color:var(--faint);padding:30px 16px}
+  .preview-empty svg{width:36px;height:36px;opacity:.5;margin-bottom:10px}
+  .preview-empty p{font-size:13px;font-weight:500;line-height:1.6}
+  .manual-hint{margin:0 20px 12px;font-size:11.5px;color:var(--gold);background:var(--gold-wash);border:1px solid #f0e2bf;padding:8px 11px;border-radius:9px;line-height:1.5;display:none}
+  .manual-hint.show{display:block}
+  .sms-meta{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;border-top:1px solid var(--line);font-size:11.5px;color:var(--faint);font-weight:550}
+  .sms-meta b{color:var(--muted);font-weight:650}
+  .send-wrap{padding:0 22px 20px}
+
+  /* ---------- Drawer ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(22,32,29,.28);opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s;z-index:40}
+  .scrim.open{opacity:1;visibility:visible}
+  .drawer{position:fixed;top:0;right:0;height:100%;width:440px;max-width:92vw;background:var(--surface);box-shadow:var(--shadow-drawer);transform:translateX(100%);transition:transform .26s cubic-bezier(.4,0,.2,1);z-index:50;display:flex;flex-direction:column}
+  .drawer.open{transform:translateX(0)}
+  .drawer-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+  .drawer-head-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+  .drawer-title{font-size:15px;font-weight:680;letter-spacing:-.2px}
+  .x-btn{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--muted)}
+  .x-btn:hover{background:var(--surface-2);color:var(--ink)}
+  .x-btn svg{width:18px;height:18px}
+  .drawer-note{font-size:11.5px;color:var(--faint);font-weight:500;display:flex;align-items:center;gap:6px}
+  .drawer-note .dot{width:6px;height:6px;border-radius:50%;background:var(--jade)}
+  .search-row{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center}
+  .search-box{flex:1;position:relative;display:flex;align-items:center}
+  .search-box svg{position:absolute;left:11px;width:15px;height:15px;color:var(--faint)}
+  .search-box input{width:100%;font-size:13px;color:var(--ink);padding:9px 12px 9px 33px;border:1px solid var(--line-strong);border-radius:9px;background:var(--surface-2)}
+  .search-box input:focus{outline:none;border-color:var(--jade);background:#fff;box-shadow:0 0 0 3px var(--jade-wash)}
+  .add-btn{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:650;color:var(--jade-deep);background:var(--jade-wash);padding:9px 13px;border-radius:9px;white-space:nowrap}
+  .add-btn:hover{background:#dbeee8}
+  .add-btn svg{width:14px;height:14px}
+  .drawer-scroll{flex:1;overflow-y:auto;padding:6px 14px 24px}
+  .group{margin-top:14px}
+  .group-head{display:flex;align-items:center;gap:7px;padding:6px 6px 8px}
+  .group-title{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--faint)}
+  .group-count{font-size:11px;font-weight:650;color:var(--faint);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:0 7px}
+  .group-icon{width:14px;height:14px;color:var(--faint)}
+  .group-empty{font-size:12px;color:var(--faint);padding:4px 8px 8px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 14px;margin-bottom:9px;transition:border-color .14s,box-shadow .14s}
+  .card:hover{border-color:var(--line-strong);box-shadow:var(--shadow)}
+  .card.active{border-color:var(--jade);box-shadow:0 0 0 3px var(--jade-wash)}
+  .card-top{display:flex;align-items:flex-start;gap:8px}
+  .star{flex:none;width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--faint);margin:-3px -3px 0 0;transition:.14s}
+  .star:hover{background:var(--surface-2)}
+  .star svg{width:17px;height:17px}
+  .star.pinned{color:var(--gold)}
+  .card-name{font-size:13.5px;font-weight:650;flex:1}
+  .card-desc{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+  .card-meta{font-size:10.5px;color:var(--faint);margin-top:6px;font-family:var(--mono)}
+  .card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:11px}
+  .card-tag{font-size:10.5px;font-weight:600;color:var(--faint);font-family:var(--mono)}
+  .apply-btn{font-size:12.5px;font-weight:650;color:var(--jade-deep);padding:6px 14px;border-radius:8px;border:1px solid var(--jade);background:var(--surface)}
+  .apply-btn:hover{background:var(--jade);color:#fff}
+  .apply-btn.current{background:var(--jade-wash);border-color:var(--jade-wash);color:var(--jade-deep);cursor:default}
+  .form-wrap{position:absolute;inset:0;background:var(--surface);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .24s ease;z-index:5}
+  .form-wrap.open{transform:translateX(0)}
+  .form-head{padding:18px 20px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .back-btn{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--muted)}
+  .back-btn:hover{background:var(--surface-2);color:var(--ink)}
+  .back-btn svg{width:18px;height:18px}
+  .form-scroll{flex:1;overflow-y:auto;padding:18px 20px}
+  .form-group{margin-bottom:16px}
+  .form-label{display:block;font-size:12px;font-weight:650;margin-bottom:6px}
+  .form-label .req{color:var(--danger)}
+  .form-input,.form-textarea{width:100%;font-size:13px;color:var(--ink);padding:10px 12px;border:1px solid var(--line-strong);border-radius:9px;background:var(--surface-2);resize:vertical}
+  .form-textarea{min-height:120px;line-height:1.6}
+  .form-input:focus,.form-textarea:focus{outline:none;border-color:var(--jade);background:#fff;box-shadow:0 0 0 3px var(--jade-wash)}
+  .param-hint{font-size:11.5px;color:var(--faint);margin:8px 0 7px;font-weight:500}
+  .param-row{display:flex;flex-wrap:wrap;gap:6px}
+  .param-btn{font-size:11.5px;font-weight:600;font-family:var(--mono);color:var(--jade-deep);background:var(--jade-wash);border:1px solid transparent;padding:5px 9px;border-radius:7px}
+  .param-btn:hover{background:#dbeee8}
+  .form-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px}
+  .form-err{font-size:12px;color:var(--danger);font-weight:550;margin-top:8px;display:none}
+  .form-err.show{display:block}
+
+  /* ---------- Builder (3 columns) ---------- */
+  .builder{max-width:1280px;margin:0 auto;padding:22px 24px 90px}
+  .builder-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+  .builder-bar h1{font-size:18px;font-weight:700;letter-spacing:-.3px}
+  .builder-bar p{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .scenario-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .scenario-label{font-size:11.5px;color:var(--faint);font-weight:600}
+  .scenario-btn{font-size:12px;font-weight:600;color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);padding:7px 12px;border-radius:9px}
+  .scenario-btn:hover{border-color:var(--jade);color:var(--jade-deep)}
+  .builder-grid{display:grid;grid-template-columns:240px minmax(0,1fr) 360px;gap:16px;align-items:start}
+  .bd-col{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .bd-col-head{padding:14px 16px;border-bottom:1px solid var(--line)}
+  .bd-col-head .t{font-size:13px;font-weight:680}
+  .bd-col-head .s{font-size:11px;color:var(--faint);margin-top:2px}
+  .bd-col-body{padding:14px 16px}
+
+  /* param panel */
+  .pp-group{margin-bottom:16px}
+  .pp-group:last-child{margin-bottom:0}
+  .pp-title{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:9px}
+  .pp-title .src{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:999px}
+  .src-sys{background:var(--jade-wash);color:var(--jade-deep)}
+  .src-man{background:var(--gold-wash);color:var(--gold)}
+  .pchip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;font-family:var(--mono);padding:6px 10px;border-radius:8px;margin:0 6px 6px 0;border:1px solid var(--line-strong);background:var(--surface-2);color:var(--ink);user-select:none;touch-action:none;transition:.12s}
+  .pchip:hover{border-color:var(--jade);color:var(--jade-deep);background:#fff}
+  .pchip.man{border-style:dashed}
+  .pchip .d{width:6px;height:6px;border-radius:50%;flex:none}
+  .pchip .d.sys{background:var(--jade)}
+  .pchip .d.man{background:var(--gold)}
+  .blk-chip{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:600;padding:9px 11px;border-radius:9px;margin-bottom:7px;border:1px solid var(--line-strong);background:var(--surface-2)}
+  .blk-chip:hover{border-color:var(--jade);background:#fff}
+  .blk-chip span.plus{color:var(--jade);font-weight:700;font-size:15px}
+  .pp-foot{font-size:11px;color:var(--faint);line-height:1.6;margin-top:4px}
+
+  /* editor */
+  .ed-names{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:14px}
+  .ed-input{width:100%;font-size:13px;padding:10px 12px;border:1px solid var(--line-strong);border-radius:9px;background:var(--surface-2)}
+  .ed-input:focus{outline:none;border-color:var(--jade);background:#fff;box-shadow:0 0 0 3px var(--jade-wash)}
+  .ed-input.lg{font-size:14px;font-weight:650}
+  .blocks{position:relative}
+  .bd-block{border:1px solid var(--line);border-radius:11px;margin-bottom:10px;background:var(--surface);transition:opacity .15s,box-shadow .15s,border-color .15s}
+  .bd-block.disabled{opacity:.5}
+  .bd-block.drop-target{border-color:var(--jade);box-shadow:0 0 0 3px var(--jade-wash)}
+  .bd-block-head{display:flex;align-items:center;gap:8px;padding:9px 10px 9px 6px;border-bottom:1px solid var(--line)}
+  .bd-handle{width:26px;height:30px;display:grid;place-items:center;color:var(--faint);cursor:grab;touch-action:none;border-radius:6px}
+  .bd-handle:hover{background:var(--surface-2);color:var(--muted)}
+  .bd-handle:active{cursor:grabbing}
+  .bd-handle svg{width:15px;height:15px}
+  .bd-block-label{flex:1;font-size:12.5px;font-weight:680}
+  .bd-block-actions{display:flex;align-items:center;gap:3px}
+  .bd-mini{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;color:var(--faint)}
+  .bd-mini:hover{background:var(--surface-2);color:var(--ink)}
+  .bd-mini:disabled{opacity:.3;cursor:not-allowed}
+  .bd-mini svg{width:15px;height:15px}
+  .bd-mini.del:hover{background:var(--danger-wash);color:var(--danger)}
+  .switch{position:relative;width:34px;height:20px;border-radius:999px;background:var(--line-strong);transition:.16s;flex:none}
+  .switch.on{background:var(--jade)}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.16s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .switch.on::after{transform:translateX(14px)}
+  .bd-ta{width:100%;border:none;background:transparent;font-size:13px;line-height:1.65;padding:11px 12px;resize:vertical;min-height:54px;color:var(--ink);display:block}
+  .bd-ta:focus{outline:none;background:var(--jade-wash);border-radius:0 0 11px 11px}
+  .drop-line{height:3px;background:var(--jade);border-radius:2px;margin:0 0 10px}
+  .drag-ghost{position:fixed;z-index:999;pointer-events:none;transform:translate(8px,8px);font-size:12px;font-weight:600;font-family:var(--mono);color:#fff;background:var(--jade-deep);padding:6px 10px;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+  .ed-empty{text-align:center;color:var(--faint);font-size:12.5px;padding:24px 10px;border:1px dashed var(--line-strong);border-radius:11px}
+
+  /* preview col */
+  .pv-sample{font-size:11px;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);padding:9px 11px;border-radius:9px;line-height:1.6;margin-bottom:14px}
+  .pv-sample b{color:var(--ink);font-weight:600}
+  .pv-phone{background:linear-gradient(180deg,#EEF2F0,#E6ECE9);border-radius:18px;padding:14px 13px 16px;border:1px solid var(--line-strong);min-height:150px}
+  .pv-sender{align-self:center;display:block;text-align:center;font-size:11px;color:var(--muted);font-weight:600;margin-bottom:12px}
+  .pv-bubble{background:#fff;border-radius:4px 14px 14px 14px;padding:13px 15px;font-size:13px;line-height:1.65;white-space:pre-wrap;word-break:break-word;box-shadow:0 1px 1px rgba(22,32,29,.06)}
+  .pv-bubble .tok{background:var(--jade-wash);color:var(--jade-deep);border-radius:4px;padding:0 3px;font-weight:600}
+  .pv-bubble .man{background:var(--gold-wash);color:var(--gold);border-radius:4px;padding:0 3px;font-weight:600;border:1px dashed #e6cd8e}
+  .pv-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .stat{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .stat .n{font-size:18px;font-weight:720;letter-spacing:-.5px}
+  .stat .l{font-size:10.5px;color:var(--faint);font-weight:600;margin-top:1px}
+  .pv-warn{margin-top:12px;font-size:11.5px;color:var(--gold);background:var(--gold-wash);border:1px solid #f0e2bf;padding:9px 11px;border-radius:9px;line-height:1.55;display:none}
+  .pv-warn.show{display:block}
+  .pv-warn b{font-weight:680}
+  .builder-save{margin-top:14px;display:flex;gap:10px}
+
+  @media (max-width:1080px){
+    .builder-grid{grid-template-columns:1fr;}
+  }
+  @media (max-width:880px){
+    .stage{grid-template-columns:1fr;padding-top:20px}
+    .field-grid{grid-template-columns:1fr}
+    .field.full{grid-column:auto}
+    .shared-note{display:none}
+    .nav-tabs{order:3}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">NP</div>
+    <div>
+      <div class="brand-name">NPOS 預約簡訊</div>
+      <div class="brand-sub">模板參數化 · 共用模板</div>
+    </div>
+  </div>
+  <nav class="nav-tabs">
+    <button class="nav-tab active" data-view="viewAppt">預約操作</button>
+    <button class="nav-tab" data-view="viewBuilder">模板設定</button>
+  </nav>
+  <div class="topbar-spacer"></div>
+  <div class="shared-note"><span class="dot"></span>模板全系統共用，釘選與最近使用為個人偏好</div>
+</header>
+
+<main>
+<!-- ============ APPOINTMENT VIEW ============ -->
+<div class="view active" id="viewAppt">
+  <div class="stage">
+    <section class="panel" aria-label="預約操作">
+      <div class="panel-head">
+        <div><div class="panel-eyebrow">Appointment</div><div class="panel-title">預約操作頁</div></div>
+        <button class="btn btn-primary" id="openDrawer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          選擇簡訊模板
+        </button>
+      </div>
+      <div class="panel-body">
+        <div class="field-grid">
+          <div class="field"><div class="field-label">會員姓名</div><div class="field-value" id="f-name"></div></div>
+          <div class="field"><div class="field-label">門市名稱</div><div class="field-value" id="f-store"></div></div>
+          <div class="field"><div class="field-label">預約日期</div><div class="field-value mono" id="f-date"></div></div>
+          <div class="field"><div class="field-label">預約時間</div><div class="field-value mono" id="f-time"></div></div>
+          <div class="field"><div class="field-label">班別</div><div class="field-value"><span class="shift-pill" id="f-shift"></span></div></div>
+          <div class="field"><div class="field-label">醫師姓名</div><div class="field-value" id="f-doctor"></div></div>
+          <div class="field full"><div class="field-label">門市地址</div><div class="field-value" id="f-addr"></div></div>
+          <div class="field full"><div class="field-label">門市電話</div><div class="field-value mono" id="f-phone"></div></div>
+        </div>
+        <div class="applied-row"><div class="applied-chip empty" id="appliedChip">尚未套用模板</div></div>
+      </div>
+    </section>
+
+    <section class="panel preview-panel" aria-label="簡訊預覽">
+      <div class="panel-head"><div><div class="panel-eyebrow">Preview</div><div class="panel-title">簡訊預覽</div></div></div>
+      <div class="panel-body">
+        <div class="phone">
+          <div class="phone-bar"><span>19:42</span><span>NPOS</span></div>
+          <div class="sms-sender">Dr.Shine 京都堂</div>
+          <div class="bubble-wrap" id="bubbleWrap">
+            <div class="preview-empty" id="previewEmpty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <p>選擇簡訊模板後<br>此處會即時帶入預約資料</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="manual-hint" id="apptManualHint"></div>
+      <div class="sms-meta"><span id="metaTemplate">未選擇模板</span><span>字數 <b id="charCount">0</b> · 則數 <b id="segCount">0</b></span></div>
+      <div class="send-wrap"><button class="btn btn-primary btn-block" id="sendBtn" disabled style="opacity:.5;cursor:not-allowed">發送簡訊</button></div>
+    </section>
+  </div>
+</div>
+
+<!-- ============ BUILDER VIEW ============ -->
+<div class="view" id="viewBuilder">
+  <div class="builder">
+    <div class="builder-bar">
+      <div>
+        <h1>簡訊模板設定</h1>
+        <p>用參數與區塊組合預約簡訊模板，儲存後成為全系統共用模板。</p>
+      </div>
+      <div class="scenario-row">
+        <span class="scenario-label">情境範例</span>
+        <button class="scenario-btn" data-scenario="general">一般預約</button>
+        <button class="scenario-btn" data-scenario="tcm">中醫門診</button>
+        <button class="scenario-btn" data-scenario="new">新客預約</button>
+      </div>
+    </div>
+
+    <div class="builder-grid">
+      <!-- LEFT: param panel -->
+      <div class="bd-col">
+        <div class="bd-col-head"><div class="t">可用參數</div><div class="s">點擊插入，或拖曳至區塊</div></div>
+        <div class="bd-col-body">
+          <div class="pp-group">
+            <div class="pp-title">系統帶入 <span class="src src-sys">自動</span></div>
+            <div id="sysParams"></div>
+          </div>
+          <div class="pp-group">
+            <div class="pp-title">手動輸入 <span class="src src-man">發送前填</span></div>
+            <div id="manParams"></div>
+          </div>
+          <div class="pp-group">
+            <div class="pp-title">常用區塊</div>
+            <div id="blockPresets"></div>
+            <div class="pp-foot">點擊區塊即加入編輯區，可重複加入後再調整內容。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER: editor -->
+      <div class="bd-col">
+        <div class="bd-col-head"><div class="t">模板編輯器</div><div class="s">輸入文字、插入參數、拖曳排序、啟用／停用區塊</div></div>
+        <div class="bd-col-body">
+          <div class="ed-names">
+            <input class="ed-input lg" id="bdName" placeholder="模板名稱，例如：醫美－療程預約提醒">
+            <input class="ed-input" id="bdDesc" placeholder="用途說明（一句話描述何時使用）">
+          </div>
+          <div class="blocks" id="editorBlocks"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: preview -->
+      <div class="bd-col">
+        <div class="bd-col-head"><div class="t">即時預覽</div><div class="s">已套用範例資料</div></div>
+        <div class="bd-col-body">
+          <div class="pv-sample" id="pvSample"></div>
+          <div class="pv-phone">
+            <span class="pv-sender">Dr.Shine 京都堂</span>
+            <div class="pv-bubble" id="pvBubble"></div>
+          </div>
+          <div class="pv-stats">
+            <div class="stat"><div class="n" id="pvChars">0</div><div class="l">字數</div></div>
+            <div class="stat"><div class="n" id="pvSegs">0</div><div class="l">預估簡訊則數</div></div>
+          </div>
+          <div class="pv-warn" id="pvWarn"></div>
+          <div class="builder-save">
+            <button class="btn btn-ghost" id="bdReset">清空</button>
+            <button class="btn btn-primary btn-block" id="bdSave">儲存為共用模板</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+
+<!-- DRAWER -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="簡訊模板面板">
+  <div class="drawer-head">
+    <div class="drawer-head-top">
+      <div class="drawer-title">選擇簡訊模板</div>
+      <button class="x-btn" id="closeDrawer" aria-label="關閉"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="drawer-note"><span class="dot"></span>模板共用，釘選與最近使用為個人偏好</div>
+  </div>
+  <div class="search-row">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="搜尋模板名稱或用途…">
+    </div>
+    <button class="add-btn" id="openForm">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      新增模板
+    </button>
+  </div>
+  <div class="drawer-scroll" id="drawerScroll"></div>
+
+  <div class="form-wrap" id="formWrap">
+    <div class="form-head">
+      <button class="back-btn" id="formBack" aria-label="返回"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+      <div class="drawer-title">快速新增模板</div>
+    </div>
+    <div class="form-scroll">
+      <div class="form-group"><label class="form-label">模板名稱 <span class="req">*</span></label><input type="text" class="form-input" id="tName" placeholder="例如：醫美－術後回診提醒"></div>
+      <div class="form-group"><label class="form-label">用途說明</label><input type="text" class="form-input" id="tDesc" placeholder="一句話描述何時使用"></div>
+      <div class="form-group">
+        <label class="form-label">模板內容 <span class="req">*</span></label>
+        <textarea class="form-textarea" id="tBody" placeholder="輸入內容，點下方插入參數"></textarea>
+        <div class="param-hint">點擊插入參數：</div>
+        <div class="param-row" id="paramRow"></div>
+      </div>
+      <div class="form-err" id="formErr">請填寫模板名稱與內容。</div>
+    </div>
+    <div class="form-foot"><button class="btn btn-ghost" id="formCancel">取消</button><button class="btn btn-primary btn-block" id="formSave">儲存並套用</button></div>
+  </div>
+</aside>
+
+<div class="toast" id="toast" style="position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;font-size:13px;font-weight:550;padding:11px 18px;border-radius:11px;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;visibility:hidden;transition:.22s;z-index:80;display:flex;align-items:center;gap:9px">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#5fd6b3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M20 6 9 17l-5-5"/></svg><span id="toastMsg"></span>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  /* ---------- storage (graceful fallback) ---------- */
+  var mem={};
+  var store={get:function(k){try{return localStorage.getItem(k);}catch(e){return mem[k]||null;}},
+             set:function(k,v){try{localStorage.setItem(k,v);}catch(e){mem[k]=v;}}};
+  var KEY={pins:"npos_pins",recent:"npos_recent",last:"npos_last",custom:"npos_custom"};
+  function loadJSON(k,d){try{var v=store.get(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+  function saveJSON(k,v){store.set(k,JSON.stringify(v));}
+  function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+  /* ---------- data ---------- */
+  var appt={"會員姓名":"林雅婷","門市名稱":"京都堂 台北中山館","預約日期":"2026/07/03（五）","預約時間":"19:30","班別":"晚診","醫師姓名":"陳冠宇 醫師","門市地址":"台北市中山區南京東路二段 101 號 3 樓","門市電話":"02-2521-7788"};
+  var SYS=[["會員姓名","會員的姓名"],["門市名稱","預約門市名稱"],["預約日期","預約日期"],["預約時間","預約時間"],["班別","午診／晚診等班別"],["醫師姓名","看診醫師"],["門市地址","門市完整地址"],["門市電話","門市聯絡電話"]];
+  var MAN=[["注意事項","發送前由人員手動填寫"],["其他備註","發送前由人員手動填寫"]];
+  var manualKeys=MAN.map(function(m){return m[0];});
+
+  var builtin=[
+    {id:"b1",name:"數位客服－新客預約",desc:"首次來店客戶的歡迎與預約確認",scenario:"預約簡訊",creator:"系統內建",created:"2026/05/01",
+     body:"親愛的{{會員姓名}}您好，歡迎首次蒞臨{{門市名稱}}！\n您的預約已確認：{{預約日期}} {{預約時間}}（{{班別}}），由{{醫師姓名}}為您服務。\n門市地址：{{門市地址}}\n如需改期請來電{{門市電話}}。"},
+    {id:"b2",name:"中醫－午診提醒",desc:"中醫午診時段的當日預約提醒",scenario:"預約簡訊",creator:"系統內建",created:"2026/05/01",
+     body:"{{會員姓名}}您好，提醒您今日{{預約時間}}於{{門市名稱}}有{{班別}}預約，由{{醫師姓名}}看診。\n地址：{{門市地址}}\n洽詢專線{{門市電話}}，請準時報到。"},
+    {id:"b3",name:"中醫－晚診提醒",desc:"中醫晚診時段的下班後提醒",scenario:"預約簡訊",creator:"系統內建",created:"2026/05/01",
+     body:"{{會員姓名}}您好，您於{{預約日期}} {{預約時間}}的{{班別}}預約即將開始（{{醫師姓名}}）。\n門市：{{門市名稱}}\n{{門市地址}}\n如需協助請撥{{門市電話}}。"},
+    {id:"b4",name:"醫美－療程預約提醒",desc:"醫美療程前的注意事項與報到提醒",scenario:"預約簡訊",creator:"系統內建",created:"2026/05/01",
+     body:"{{會員姓名}}您好，您的療程預約為{{預約日期}} {{預約時間}}，{{門市名稱}}{{醫師姓名}}為您服務。\n請於療程前卸妝並提早 10 分鐘抵達。\n地址：{{門市地址}}｜電話{{門市電話}}"},
+    {id:"b5",name:"一般預約提醒",desc:"通用預約確認，適用各門市",scenario:"預約簡訊",creator:"系統內建",created:"2026/05/01",
+     body:"{{會員姓名}}您好，提醒您於{{門市名稱}}的預約：{{預約日期}} {{預約時間}}（{{班別}}）。\n如需異動請來電{{門市電話}}。"}
+  ];
+
+  /* block presets for builder */
+  var PRESETS=[
+    {label:"開頭問候",body:"親愛的{{會員姓名}}您好，"},
+    {label:"預約資訊",body:"提醒您已預約{{門市名稱}}。\n日期：{{預約日期}}\n時間：{{預約時間}}"},
+    {label:"班別資訊",body:"看診班別：{{班別}}（{{醫師姓名}}）"},
+    {label:"門市地址",body:"門市地址：{{門市地址}}"},
+    {label:"報到提醒",body:"首次來店請提前 10 分鐘報到。"},
+    {label:"注意事項",body:"{{注意事項}}"},
+    {label:"其他備註",body:"{{其他備註}}"},
+    {label:"結尾文字",body:"如需異動請來電{{門市電話}}。"}
+  ];
+
+  /* ---------- shared state ---------- */
+  var custom=loadJSON(KEY.custom,[]);
+  var pins=loadJSON(KEY.pins,[]);
+  var recent=loadJSON(KEY.recent,[]);
+  var lastId=store.get(KEY.last)||null;
+  var search="";
+  function allTemplates(){return builtin.concat(custom);}
+  function byId(id){var a=allTemplates();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
+  function todayStr(){var d=new Date();return d.getFullYear()+"/"+("0"+(d.getMonth()+1)).slice(-2)+"/"+("0"+d.getDate()).slice(-2);}
+  function smsSegments(len){if(len===0)return 0;if(len<=70)return 1;return Math.ceil(len/67);}
+
+  /* ---------- view switch ---------- */
+  var tabs=document.querySelectorAll(".nav-tab"),views=document.querySelectorAll(".view");
+  tabs.forEach(function(t){t.addEventListener("click",function(){
+    tabs.forEach(function(x){x.classList.remove("active");});
+    t.classList.add("active");
+    var v=t.getAttribute("data-view");
+    views.forEach(function(x){x.classList.toggle("active",x.id===v);});
+    if(v==="viewBuilder"){renderBuilder();updateBuilderPreview();}
+  });});
+
+  /* ---------- appointment render ---------- */
+  document.getElementById("f-name").textContent=appt["會員姓名"];
+  document.getElementById("f-store").textContent=appt["門市名稱"];
+  document.getElementById("f-date").textContent=appt["預約日期"];
+  document.getElementById("f-time").textContent=appt["預約時間"];
+  document.getElementById("f-shift").textContent=appt["班別"];
+  document.getElementById("f-doctor").textContent=appt["醫師姓名"];
+  document.getElementById("f-addr").textContent=appt["門市地址"];
+  document.getElementById("f-phone").textContent=appt["門市電話"];
+
+  function resolvedText(body){
+    return body.replace(/\{\{(.+?)\}\}/g,function(m,k){
+      if(appt[k]!==undefined)return appt[k];
+      if(manualKeys.indexOf(k)>-1)return "〔"+k+"〕";
+      return m;
+    });
+  }
+  function apptPreviewHTML(body){
+    var out="",re=/\{\{(.+?)\}\}/g,last=0,m;
+    while((m=re.exec(body))){
+      out+=esc(body.slice(last,m.index));var k=m[1];
+      if(appt[k]!==undefined)out+='<span class="tok">'+esc(appt[k])+'</span>';
+      else if(manualKeys.indexOf(k)>-1)out+='<span class="raw">〔'+esc(k)+'〕</span>';
+      else out+='<span class="raw">'+esc(m[0])+'</span>';
+      last=re.lastIndex;
+    }
+    out+=esc(body.slice(last));return out;
+  }
+  function manualInBody(body){
+    return manualKeys.filter(function(k){return body.indexOf("{{"+k+"}}")>-1;});
+  }
+
+  function applyTemplate(id,opts){
+    opts=opts||{};var t=byId(id);if(!t)return;
+    lastId=id;store.set(KEY.last,id);
+    recent=recent.filter(function(x){return x!==id;});recent.unshift(id);recent=recent.slice(0,5);saveJSON(KEY.recent,recent);
+    document.getElementById("bubbleWrap").innerHTML='<div class="bubble">'+apptPreviewHTML(t.body)+'</div>';
+    var chip=document.getElementById("appliedChip");chip.className="applied-chip";chip.innerHTML='已套用 <b>'+esc(t.name)+'</b>';
+    document.getElementById("metaTemplate").textContent=t.name;
+    var rt=resolvedText(t.body);
+    document.getElementById("charCount").textContent=rt.length;
+    document.getElementById("segCount").textContent=smsSegments(rt.length);
+    var send=document.getElementById("sendBtn");send.disabled=false;send.style.opacity="1";send.style.cursor="pointer";
+    var man=manualInBody(t.body),hint=document.getElementById("apptManualHint");
+    if(man.length){hint.classList.add("show");hint.textContent="此模板含發送前手動輸入欄位："+man.join("、")+"，將於發送前由人員填寫。";}
+    else hint.classList.remove("show");
+    renderList();
+    if(!opts.silent)toast("已套用「"+t.name+"」並帶入預約資料");
+  }
+  if(lastId&&byId(lastId))applyTemplate(lastId,{silent:true});
+
+  /* ---------- drawer list ---------- */
+  function matches(t){if(!search)return true;var q=search.toLowerCase();return t.name.toLowerCase().indexOf(q)>-1||(t.desc||"").toLowerCase().indexOf(q)>-1;}
+  function starSVG(f){return '<svg viewBox="0 0 24 24" fill="'+(f?"currentColor":"none")+'" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.9l-5.8 3.05 1.1-6.47L2.6 9.9l6.5-.95z"/></svg>';}
+  function cardHTML(t){
+    var pinned=pins.indexOf(t.id)>-1,current=t.id===lastId,isCustom=t.id.indexOf("c")===0;
+    return '<div class="card'+(current?' active':'')+'" data-id="'+t.id+'"><div class="card-top"><div style="flex:1"><div class="card-name">'+esc(t.name)+'</div>'+
+      (t.desc?'<div class="card-desc">'+esc(t.desc)+'</div>':'')+
+      (isCustom?'<div class="card-meta">'+esc(t.creator||"—")+' · '+esc(t.created||"")+'</div>':'')+
+      '</div><button class="star'+(pinned?' pinned':'')+'" data-pin="'+t.id+'" aria-label="釘選">'+starSVG(pinned)+'</button></div>'+
+      '<div class="card-foot"><span class="card-tag">'+(isCustom?"自訂模板":"系統模板")+'</span>'+
+      '<button class="apply-btn'+(current?' current':'')+'" data-apply="'+t.id+'">'+(current?"目前套用":"套用")+'</button></div></div>';
+  }
+  function section(title,icon,list){
+    var h='<div class="group"><div class="group-head"><svg class="group-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">'+icon+'</svg><span class="group-title">'+title+'</span><span class="group-count">'+list.length+'</span></div>';
+    h+= list.length===0 ? '<div class="group-empty">'+(search?"無符合的模板":"目前沒有項目")+'</div>' : list.map(cardHTML).join("");
+    return h+'</div>';
+  }
+  function renderList(){
+    var all=allTemplates().filter(matches);
+    var pinnedList=all.filter(function(t){return pins.indexOf(t.id)>-1;});
+    var recentList=recent.map(byId).filter(function(t){return t&&matches(t)&&pins.indexOf(t.id)<0;});
+    var used=pinnedList.map(function(t){return t.id;}).concat(recentList.map(function(t){return t.id;}));
+    var allList=all.filter(function(t){return used.indexOf(t.id)<0;});
+    var I={pin:'<path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.9l-5.8 3.05 1.1-6.47L2.6 9.9l6.5-.95z"/>',recent:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',all:'<path d="M4 6h16M4 12h16M4 18h16"/>'};
+    document.getElementById("drawerScroll").innerHTML=section("釘選模板",I.pin,pinnedList)+section("最近使用",I.recent,recentList)+section("全部模板",I.all,allList);
+  }
+  document.getElementById("drawerScroll").addEventListener("click",function(e){
+    var p=e.target.closest("[data-pin]");
+    if(p){var id=p.getAttribute("data-pin");if(pins.indexOf(id)>-1)pins=pins.filter(function(x){return x!==id;});else pins.unshift(id);saveJSON(KEY.pins,pins);renderList();return;}
+    var a=e.target.closest("[data-apply]");if(a)applyTemplate(a.getAttribute("data-apply"));
+  });
+  document.getElementById("searchInput").addEventListener("input",function(e){search=e.target.value.trim();renderList();});
+
+  /* ---------- drawer open/close ---------- */
+  var scrim=document.getElementById("scrim"),drawer=document.getElementById("drawer");
+  function openDrawer(){renderList();scrim.classList.add("open");drawer.classList.add("open");}
+  function closeDrawer(){scrim.classList.remove("open");drawer.classList.remove("open");closeForm();}
+  document.getElementById("openDrawer").addEventListener("click",openDrawer);
+  document.getElementById("closeDrawer").addEventListener("click",closeDrawer);
+  scrim.addEventListener("click",closeDrawer);
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeDrawer();});
+
+  /* ---------- quick add form ---------- */
+  var formWrap=document.getElementById("formWrap");
+  function openForm(){["tName","tDesc","tBody"].forEach(function(id){document.getElementById(id).value="";});document.getElementById("formErr").classList.remove("show");formWrap.classList.add("open");document.getElementById("tName").focus();}
+  function closeForm(){formWrap.classList.remove("open");}
+  document.getElementById("openForm").addEventListener("click",openForm);
+  document.getElementById("formBack").addEventListener("click",closeForm);
+  document.getElementById("formCancel").addEventListener("click",closeForm);
+  var allParamKeys=SYS.map(function(s){return s[0];}).concat(manualKeys);
+  document.getElementById("paramRow").innerHTML=allParamKeys.map(function(k){return '<button class="param-btn" data-param="'+k+'">{{'+k+'}}</button>';}).join("");
+  document.getElementById("paramRow").addEventListener("click",function(e){var b=e.target.closest("[data-param]");if(!b)return;var ta=document.getElementById("tBody"),tok="{{"+b.getAttribute("data-param")+"}}",s=ta.selectionStart,en=ta.selectionEnd,v=ta.value;ta.value=v.slice(0,s)+tok+v.slice(en);ta.focus();ta.selectionStart=ta.selectionEnd=s+tok.length;});
+  document.getElementById("formSave").addEventListener("click",function(){
+    var name=document.getElementById("tName").value.trim(),desc=document.getElementById("tDesc").value.trim(),body=document.getElementById("tBody").value.trim();
+    if(!name||!body){document.getElementById("formErr").classList.add("show");return;}
+    var id="c"+Date.now();custom.push({id:id,name:name,desc:desc||"自訂模板",body:body,creator:"Cole 鄭楷錚",created:todayStr(),enabled:true,scenario:"預約簡訊"});saveJSON(KEY.custom,custom);
+    closeForm();applyTemplate(id);toast("已新增「"+name+"」並套用");
+  });
+
+  /* ---------- send ---------- */
+  document.getElementById("sendBtn").addEventListener("click",function(){if(this.disabled)return;var t=byId(lastId);if(!t)return;toast("已發送簡訊給 "+appt["會員姓名"]+"（"+resolvedText(t.body).length+" 字）");});
+
+  /* =================================================================
+     BUILDER
+  ================================================================= */
+  var uid=0;
+  function mkBlock(label,body){return {id:"bk"+(++uid),label:label,body:body,enabled:true};}
+  var builderBlocks=[mkBlock("開頭問候","親愛的{{會員姓名}}您好，"),mkBlock("預約資訊","提醒您已預約{{門市名稱}}。\n日期：{{預約日期}}\n時間：{{預約時間}}"),mkBlock("注意事項","{{注意事項}}"),mkBlock("其他備註","{{其他備註}}")];
+  var activeTa=null;
+
+  /* left param panel render */
+  function pchipHTML(k,d,man){return '<span class="pchip'+(man?' man':'')+'" data-token="{{'+k+'}}" title="'+esc(d)+'"><span class="d '+(man?'man':'sys')+'"></span>{{'+k+'}}</span>';}
+  document.getElementById("sysParams").innerHTML=SYS.map(function(s){return pchipHTML(s[0],s[1],false);}).join("");
+  document.getElementById("manParams").innerHTML=MAN.map(function(s){return pchipHTML(s[0],s[1],true);}).join("");
+  document.getElementById("blockPresets").innerHTML=PRESETS.map(function(p){return '<div class="blk-chip" data-preset="'+esc(p.label)+'">'+esc(p.label)+'<span class="plus">+</span></div>';}).join("");
+
+  document.getElementById("blockPresets").addEventListener("click",function(e){
+    var el=e.target.closest("[data-preset]");if(!el)return;
+    var label=el.getAttribute("data-preset"),pre=null;
+    for(var i=0;i<PRESETS.length;i++)if(PRESETS[i].label===label)pre=PRESETS[i];
+    builderBlocks.push(mkBlock(pre.label,pre.body));renderBuilder();updateBuilderPreview();
+    toast("已加入區塊「"+label+"」");
+  });
+
+  /* editor render */
+  var editorBlocksEl=document.getElementById("editorBlocks");
+  function gripSVG(){return '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';}
+  function renderBuilder(){
+    if(builderBlocks.length===0){editorBlocksEl.innerHTML='<div class="ed-empty">尚無內容區塊。<br>從左側「常用區塊」點擊加入，或載入上方情境範例。</div>';return;}
+    var h="";
+    builderBlocks.forEach(function(b,i){
+      h+='<div class="bd-block'+(b.enabled?'':' disabled')+'" data-bid="'+b.id+'">'+
+        '<div class="bd-block-head">'+
+          '<button class="bd-handle" data-handle="'+b.id+'" aria-label="拖曳排序">'+gripSVG()+'</button>'+
+          '<span class="bd-block-label">'+esc(b.label)+'</span>'+
+          '<div class="bd-block-actions">'+
+            '<button class="bd-mini" data-up="'+b.id+'" '+(i===0?'disabled':'')+' aria-label="上移"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg></button>'+
+            '<button class="bd-mini" data-down="'+b.id+'" '+(i===builderBlocks.length-1?'disabled':'')+' aria-label="下移"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>'+
+            '<button class="switch'+(b.enabled?' on':'')+'" data-toggle="'+b.id+'" role="switch" aria-checked="'+b.enabled+'" aria-label="啟用區塊"></button>'+
+            '<button class="bd-mini del" data-del="'+b.id+'" aria-label="刪除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>'+
+          '</div>'+
+        '</div>'+
+        '<textarea class="bd-ta" data-bid="'+b.id+'" placeholder="輸入文字，或從左側插入參數">'+esc(b.body)+'</textarea>'+
+      '</div>';
+    });
+    editorBlocksEl.innerHTML=h;
+  }
+  function blockById(id){for(var i=0;i<builderBlocks.length;i++)if(builderBlocks[i].id===id)return builderBlocks[i];return null;}
+  function idxById(id){for(var i=0;i<builderBlocks.length;i++)if(builderBlocks[i].id===id)return i;return -1;}
+
+  /* editor events (delegation) */
+  editorBlocksEl.addEventListener("input",function(e){var ta=e.target.closest(".bd-ta");if(!ta)return;var b=blockById(ta.getAttribute("data-bid"));if(b){b.body=ta.value;updateBuilderPreview();}});
+  editorBlocksEl.addEventListener("focusin",function(e){var ta=e.target.closest(".bd-ta");if(ta)activeTa=ta;});
+  editorBlocksEl.addEventListener("click",function(e){
+    var t;
+    if((t=e.target.closest("[data-toggle]"))){var b=blockById(t.getAttribute("data-toggle"));b.enabled=!b.enabled;t.classList.toggle("on",b.enabled);t.setAttribute("aria-checked",b.enabled);t.closest(".bd-block").classList.toggle("disabled",!b.enabled);updateBuilderPreview();return;}
+    if((t=e.target.closest("[data-del]"))){var id=t.getAttribute("data-del");builderBlocks=builderBlocks.filter(function(x){return x.id!==id;});renderBuilder();updateBuilderPreview();return;}
+    if((t=e.target.closest("[data-up]"))){var i=idxById(t.getAttribute("data-up"));if(i>0){var x=builderBlocks.splice(i,1)[0];builderBlocks.splice(i-1,0,x);renderBuilder();updateBuilderPreview();}return;}
+    if((t=e.target.closest("[data-down]"))){var j=idxById(t.getAttribute("data-down"));if(j<builderBlocks.length-1){var y=builderBlocks.splice(j,1)[0];builderBlocks.splice(j+1,0,y);renderBuilder();updateBuilderPreview();}return;}
+  });
+
+  /* ---- block drag reorder (pointer) ---- */
+  editorBlocksEl.addEventListener("pointerdown",function(e){
+    var handle=e.target.closest("[data-handle]");if(!handle)return;
+    e.preventDefault();
+    var fromIdx=idxById(handle.getAttribute("data-handle"));
+    var line=document.createElement("div");line.className="drop-line";
+    var targetIdx=fromIdx;
+    function cards(){return Array.prototype.slice.call(editorBlocksEl.querySelectorAll(".bd-block"));}
+    function move(ev){
+      var cs=cards(),y=ev.clientY,tgt=cs.length;
+      for(var i=0;i<cs.length;i++){var r=cs[i].getBoundingClientRect();if(y<r.top+r.height/2){tgt=i;break;}}
+      targetIdx=tgt;
+      if(tgt>=cs.length)editorBlocksEl.appendChild(line);else editorBlocksEl.insertBefore(line,cs[tgt]);
+    }
+    function up(){
+      document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);
+      if(line.parentNode)line.parentNode.removeChild(line);
+      var to=targetIdx;var insertAt=to>fromIdx?to-1:to;
+      if(insertAt!==fromIdx&&insertAt>=0){var it=builderBlocks.splice(fromIdx,1)[0];builderBlocks.splice(insertAt,0,it);}
+      renderBuilder();updateBuilderPreview();
+    }
+    document.addEventListener("pointermove",move);document.addEventListener("pointerup",up);
+  });
+
+  /* ---- param chip: click insert + drag drop ---- */
+  function insertToken(ta,tok){var s=ta.selectionStart,en=ta.selectionEnd,v=ta.value;ta.value=v.slice(0,s)+tok+v.slice(en);var b=blockById(ta.getAttribute("data-bid"));if(b)b.body=ta.value;ta.focus();ta.selectionStart=ta.selectionEnd=s+tok.length;updateBuilderPreview();}
+  function clickInsert(tok){
+    var ta=activeTa&&document.body.contains(activeTa)?activeTa:editorBlocksEl.querySelector(".bd-ta");
+    if(!ta){toast("請先加入內容區塊");return;}
+    insertToken(ta,tok);
+  }
+  function taAtPoint(x,y){var el=document.elementFromPoint(x,y);return el?el.closest(".bd-ta"):null;}
+  function bindParamDrag(container){
+    container.addEventListener("pointerdown",function(e){
+      var chip=e.target.closest(".pchip");if(!chip)return;
+      e.preventDefault();
+      var tok=chip.getAttribute("data-token"),sx=e.clientX,sy=e.clientY,moved=false,ghost=null,lastTa=null;
+      function move(ev){
+        if(!moved){if(Math.abs(ev.clientX-sx)+Math.abs(ev.clientY-sy)<6)return;moved=true;ghost=document.createElement("div");ghost.className="drag-ghost";ghost.textContent=tok;document.body.appendChild(ghost);}
+        ghost.style.left=ev.clientX+"px";ghost.style.top=ev.clientY+"px";
+        var ta=taAtPoint(ev.clientX,ev.clientY);
+        if(lastTa&&lastTa!==ta)lastTa.closest(".bd-block").classList.remove("drop-target");
+        if(ta)ta.closest(".bd-block").classList.add("drop-target");
+        lastTa=ta;
+      }
+      function up(ev){
+        document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);
+        if(ghost)ghost.remove();
+        if(lastTa)lastTa.closest(".bd-block").classList.remove("drop-target");
+        if(moved){var ta=taAtPoint(ev.clientX,ev.clientY);if(ta){var pos=ta.value.length;ta.selectionStart=ta.selectionEnd=pos;insertToken(ta,tok);toast("已插入 "+tok);}}
+        else{clickInsert(tok);}
+      }
+      document.addEventListener("pointermove",move);document.addEventListener("pointerup",up);
+    });
+  }
+  bindParamDrag(document.getElementById("sysParams"));
+  bindParamDrag(document.getElementById("manParams"));
+
+  /* ---- builder preview ---- */
+  function enabledBlocks(){return builderBlocks.filter(function(b){return b.enabled;});}
+  function rawContent(){return enabledBlocks().map(function(b){return b.body;}).join("\n\n").replace(/\n{3,}/g,"\n\n").trim();}
+  function builderPreviewHTML(text,manualFound){
+    var out="",re=/\{\{(.+?)\}\}/g,last=0,m;
+    while((m=re.exec(text))){
+      out+=esc(text.slice(last,m.index));var k=m[1];
+      if(appt[k]!==undefined)out+='<span class="tok">'+esc(appt[k])+'</span>';
+      else if(manualKeys.indexOf(k)>-1){out+='<span class="man">〔'+esc(k)+'〕</span>';if(manualFound.indexOf(k)<0)manualFound.push(k);}
+      else out+='<span class="man">'+esc(m[0])+'</span>';
+      last=re.lastIndex;
+    }
+    out+=esc(text.slice(last));return out;
+  }
+  function updateBuilderPreview(){
+    var raw=rawContent(),manualFound=[];
+    var bubble=document.getElementById("pvBubble");
+    if(!raw){bubble.innerHTML='<span style="color:#9aa39e">（尚無啟用的內容區塊）</span>';}
+    else bubble.innerHTML=builderPreviewHTML(raw,manualFound);
+    var plain=resolvedText(raw);
+    document.getElementById("pvChars").textContent=plain.length;
+    document.getElementById("pvSegs").textContent=smsSegments(plain.length);
+    var warn=document.getElementById("pvWarn");
+    if(manualFound.length){warn.classList.add("show");warn.innerHTML='<b>發送前手動輸入：</b>'+manualFound.join("、")+'。此欄位非系統自動帶入，需由人員於發送前填寫。';}
+    else warn.classList.remove("show");
+  }
+  document.getElementById("pvSample").innerHTML='會員 <b>'+esc(appt["會員姓名"])+'</b>／<b>'+esc(appt["門市名稱"])+'</b>／'+esc(appt["預約日期"])+' '+esc(appt["預約時間"])+'（'+esc(appt["班別"])+'）';
+
+  /* scenario presets */
+  function loadScenario(name){
+    if(name==="general")builderBlocks=[mkBlock("開頭問候","親愛的{{會員姓名}}您好，"),mkBlock("預約資訊","提醒您已預約{{門市名稱}}，日期：{{預約日期}}，時間：{{預約時間}}。"),mkBlock("結尾文字","如需異動請來電{{門市電話}}。")];
+    else if(name==="tcm")builderBlocks=[mkBlock("開頭問候","親愛的{{會員姓名}}您好，"),mkBlock("預約資訊","提醒您已預約{{門市名稱}}{{預約日期}}{{班別}}門診，請依現場叫號順序看診。")];
+    else if(name==="new")builderBlocks=[mkBlock("開頭問候","親愛的{{會員姓名}}您好，"),mkBlock("預約資訊","您已預約{{門市名稱}}。\n日期：{{預約日期}}\n時間：{{預約時間}}\n地址：{{門市地址}}"),mkBlock("報到提醒","首次來店請提前 10 分鐘報到。"),mkBlock("其他備註","{{其他備註}}")];
+    var nameMap={general:"一般預約提醒",tcm:"中醫門診提醒",new:"新客預約提醒"};
+    document.getElementById("bdName").value=nameMap[name]||"";
+    renderBuilder();updateBuilderPreview();toast("已載入情境範例");
+  }
+  document.querySelectorAll(".scenario-btn").forEach(function(b){b.addEventListener("click",function(){loadScenario(b.getAttribute("data-scenario"));});});
+
+  document.getElementById("bdReset").addEventListener("click",function(){builderBlocks=[];document.getElementById("bdName").value="";document.getElementById("bdDesc").value="";renderBuilder();updateBuilderPreview();});
+
+  /* save builder template → shared list */
+  document.getElementById("bdSave").addEventListener("click",function(){
+    var name=document.getElementById("bdName").value.trim(),desc=document.getElementById("bdDesc").value.trim(),body=rawContent();
+    if(!name){toast("請先輸入模板名稱");document.getElementById("bdName").focus();return;}
+    if(!body){toast("請至少啟用一個有內容的區塊");return;}
+    var id="c"+Date.now();
+    custom.push({id:id,name:name,desc:desc||"預約簡訊模板",body:body,creator:"Cole 鄭楷錚",created:todayStr(),enabled:true,scenario:"預約簡訊"});
+    saveJSON(KEY.custom,custom);
+    renderList();
+    toast("已儲存「"+name+"」為共用模板，可於預約頁套用");
+  });
+
+  /* initial builder render */
+  renderBuilder();updateBuilderPreview();
+
+  /* ---------- toast ---------- */
+  var toastTimer;
+  function toast(msg){var el=document.getElementById("toast");document.getElementById("toastMsg").textContent=msg;el.style.opacity="1";el.style.visibility="visible";el.style.transform="translateX(-50%) translateY(0)";clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.style.opacity="0";el.style.visibility="hidden";el.style.transform="translateX(-50%) translateY(20px)";},2600);}
+
+})();
+</script>
+</body>
+</html>
