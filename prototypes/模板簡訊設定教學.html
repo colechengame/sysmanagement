@@ -1,467 +1,389 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>模板簡訊設定教學 - 參數化模板與共用模板</title>
-    <style>
-        :root{
-            --jade:#0E8B6F;--jade-deep:#0A6B56;--jade-wash:#E7F3EF;
-            --gold:#C98A14;--gold-wash:#FBF1DA;--gold-line:#e6cd8e;
-            --ink:#16201D;--muted:#5E6B65;--faint:#8A958F;
-            --line:#E4E9E6;--line-strong:#D3DAD6;--surface:#fff;--surface-2:#FBFCFB;
-        }
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{
-            font-family:'Microsoft JhengHei',-apple-system,"PingFang TC",sans-serif;
-            background:linear-gradient(135deg,#0E8B6F 0%,#0A6B56 100%);
-            min-height:100vh;display:flex;align-items:center;justify-content:center;
-            padding:20px;color:var(--ink);
-        }
-        .container{
-            background:var(--surface);border-radius:16px;
-            box-shadow:0 20px 60px rgba(0,0,0,.3);
-            max-width:1200px;width:100%;padding:36px 40px 40px;position:relative;
-        }
-        .header{display:flex;align-items:center;margin-bottom:6px;padding-bottom:18px;border-bottom:2px solid #f0f0f0}
-        .header-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--jade),var(--jade-deep));border-radius:9px;display:flex;align-items:center;justify-content:center;margin-right:14px;flex-shrink:0}
-        .header-icon svg{width:24px;height:24px;fill:#fff}
-        .header h1{font-size:26px;color:#222;font-weight:700;letter-spacing:-.3px}
-        .header .sub{font-size:13px;color:var(--faint);font-weight:500;margin-top:2px}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>簡訊模板設定（NPOS 模擬）</title>
+<style>
+  :root{
+    --blue:#2563EB;--blue-deep:#1D4ED8;--blue-wash:#EAF1FE;
+    --side:#26313f;--side-2:#2f3c4d;--side-text:#c2ccd6;--side-active:#3b86f7;
+    --ink:#1f2933;--muted:#5b6770;--faint:#8a949c;
+    --line:#e3e7eb;--line-strong:#cfd6dc;--surface:#fff;--surface-2:#f5f7f9;
+    --danger:#dc3545;--danger-wash:#fdecec;--ok:#198754;
+    --gold:#C98A14;
+    --mono:ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:'Microsoft JhengHei',-apple-system,"PingFang TC",sans-serif;background:var(--surface-2);color:var(--ink);font-size:14px;line-height:1.5}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,textarea,select{font-family:inherit}
 
-        .content-wrapper{display:grid;grid-template-columns:1fr 1fr;gap:34px;margin-top:26px}
+  .app{display:grid;grid-template-columns:188px 1fr;grid-template-rows:52px 1fr;height:100vh;grid-template-areas:"side top" "side main"}
+  .side{grid-area:side;background:var(--side);color:var(--side-text);overflow-y:auto;font-size:13px}
+  .side-brand{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .side-brand .logo{width:30px;height:30px;border-radius:7px;background:#eef2f6;color:#1f6feb;display:grid;place-items:center;font-weight:800;font-size:11px}
+  .side-brand b{font-size:13px;color:#fff;font-weight:700}
+  .side-brand span{font-size:11px;color:#9fb0c0;display:block}
+  .side-group{padding:7px 14px 4px;font-size:11px;color:#7d8b99;font-weight:700;letter-spacing:.5px;margin-top:4px}
+  .side-item{padding:7px 14px 7px 30px;color:var(--side-text);cursor:pointer;transition:.15s}
+  .side-item:hover{background:var(--side-2);color:#fff}
+  .side-item.active{background:var(--side-active);color:#fff;font-weight:600}
+  .top{grid-area:top;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 18px}
+  .top .np{font-weight:800;color:#1f6feb;font-size:17px;letter-spacing:.5px}
+  .top .title{font-weight:600}
+  .top .ver{font-size:11px;color:#fff;background:var(--ok);border-radius:5px;padding:2px 7px;font-weight:600}
+  .top .vnum{font-size:11px;color:var(--faint)}
+  .top .sp{flex:1}
+  .top .user{display:flex;align-items:center;gap:9px}
+  .top .user .av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#5b86e5,#36d1dc)}
+  .top .user .nm{font-size:13px;font-weight:600;line-height:1.2}
+  .top .user .dp{font-size:11px;color:var(--faint)}
 
-        /* ---------- 左側操作示範 ---------- */
-        .demo-panel{padding:20px;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;position:relative}
-        .demo-eyebrow{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
+  .main{grid-area:main;overflow:auto;padding:18px 22px 50px}
+  .page-h{margin-bottom:14px}
+  .page-h h1{font-size:20px;font-weight:700}
+  .page-h p{font-size:13px;color:var(--muted);margin-top:2px}
 
-        .demo-section{border:1px solid var(--line);border-radius:11px;background:#fff;padding:14px;margin-bottom:14px;transition:box-shadow .3s ease,border-color .3s ease,opacity .3s ease}
-        .demo-section.dim{opacity:.45}
-        .demo-section .sec-title{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .card-h{padding:13px 16px;border-bottom:1px solid var(--line);font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
+  .card-b{padding:16px}
 
-        /* 預約資料卡 */
-        .appt-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:9px;overflow:hidden}
-        .appt-cell{background:#fff;padding:8px 11px}
-        .appt-cell .l{font-size:10px;color:var(--faint);font-weight:600}
-        .appt-cell .v{font-size:13px;font-weight:600;color:var(--ink);margin-top:1px}
-        .shift{display:inline-block;font-size:10px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--jade-wash);color:var(--jade-deep)}
+  /* global toggles */
+  .glob{margin-bottom:16px}
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px dashed var(--line)}
+  .toggle-row:last-child{border-bottom:none}
+  .toggle-row .tl{font-weight:600}
+  .toggle-row .ts{font-size:12px;color:var(--faint);margin-top:2px}
+  .switch{width:50px;height:27px;border-radius:999px;background:#cfd6dc;position:relative;flex:none;transition:.2s;cursor:pointer}
+  .switch.on{background:var(--blue)}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .switch.on::after{transform:translateX(23px)}
 
-        /* 選擇模板按鈕 */
-        .btn-tpl{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:650;color:#fff;background:var(--jade);padding:10px 16px;border:none;border-radius:10px;cursor:pointer;transition:background .2s}
-        .btn-tpl:hover{background:var(--jade-deep)}
-        .btn-tpl svg{width:16px;height:16px}
+  /* layout: list+editor | preview */
+  .grid{display:grid;grid-template-columns:300px minmax(0,1fr) 360px;gap:16px;align-items:start}
+  @media (max-width:1100px){.grid{grid-template-columns:1fr}}
 
-        /* 模板卡片 */
-        .tpl-cards{display:flex;flex-direction:column;gap:8px}
-        .tpl-card{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;transition:border-color .25s,box-shadow .25s}
-        .tpl-card.active{border-color:var(--jade);box-shadow:0 0 0 3px var(--jade-wash)}
-        .tc-top{display:flex;align-items:flex-start;gap:8px}
-        .tc-name{font-size:13px;font-weight:650;flex:1}
-        .tc-tag{font-size:10px;font-weight:700;color:var(--faint);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:1px 8px}
-        .tc-desc{font-size:11.5px;color:var(--muted);margin-top:3px}
-        .tc-foot{display:flex;align-items:center;justify-content:space-between;margin-top:9px}
-        .star{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;color:var(--faint);transition:.2s}
-        .star svg{width:16px;height:16px}
-        .star.pinned{color:var(--gold)}
-        .apply-btn{font-size:12px;font-weight:650;color:var(--jade-deep);padding:5px 13px;border-radius:7px;border:1px solid var(--jade);background:#fff}
-        .apply-btn.current{background:var(--jade-wash);border-color:var(--jade-wash);color:var(--jade-deep)}
+  /* template list */
+  .list-tools{display:flex;gap:8px;margin-bottom:10px}
+  .search{flex:1;position:relative;display:flex;align-items:center}
+  .search input{width:100%;font-size:13px;padding:8px 10px 8px 30px;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface-2)}
+  .search input:focus{outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px var(--blue-wash)}
+  .search svg{position:absolute;left:9px;width:14px;height:14px;color:var(--faint)}
+  .add-btn{font-size:12.5px;font-weight:650;color:#fff;background:var(--blue);border-radius:8px;padding:8px 12px;white-space:nowrap}
+  .add-btn:hover{background:var(--blue-deep)}
+  .group-t{font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--faint);text-transform:uppercase;margin:12px 4px 6px}
+  .t-card{border:1px solid var(--line);border-radius:9px;padding:10px 11px;margin-bottom:8px;background:#fff;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+  .t-card:hover{border-color:var(--line-strong)}
+  .t-card.active{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-wash)}
+  .t-card.off{opacity:.55}
+  .t-top{display:flex;align-items:flex-start;gap:7px}
+  .t-name{font-size:13px;font-weight:650;flex:1}
+  .t-desc{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .t-meta{font-size:10.5px;color:var(--faint);margin-top:5px;font-family:var(--mono)}
+  .star{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;color:var(--faint)}
+  .star:hover{background:var(--surface-2)}
+  .star.pinned{color:var(--gold)}
+  .star svg{width:16px;height:16px}
+  .t-tag{font-size:10px;font-weight:700;color:var(--faint);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:1px 7px}
 
-        /* 模板設定（區塊與參數） */
-        .param-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-        .pchip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;font-family:ui-monospace,Menlo,Consolas,monospace;padding:5px 9px;border-radius:7px;border:1px solid var(--line-strong);background:var(--surface-2);color:var(--ink)}
-        .pchip.man{border-style:dashed}
-        .pchip .d{width:6px;height:6px;border-radius:50%}
-        .pchip .d.sys{background:var(--jade)}
-        .pchip .d.man{background:var(--gold)}
-        .blk{border:1px solid var(--line);border-radius:9px;margin-bottom:8px;background:#fff;transition:box-shadow .25s,border-color .25s}
-        .blk-head{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--line)}
-        .blk-label{flex:1;font-size:12px;font-weight:680}
-        .switch{width:32px;height:19px;border-radius:999px;background:var(--jade);position:relative;flex:none}
-        .switch::after{content:"";position:absolute;top:2px;left:15px;width:15px;height:15px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2)}
-        .blk-body{font-size:12px;line-height:1.6;padding:8px 10px;color:var(--muted);white-space:pre-wrap}
-        .blk.editing{border-color:var(--jade);box-shadow:0 0 0 3px var(--jade-wash)}
-        .blk.editing .blk-body{background:var(--jade-wash);color:var(--ink)}
+  /* editor */
+  .ed-field{margin-bottom:13px}
+  .ed-field label{display:block;font-size:12.5px;font-weight:650;margin-bottom:5px}
+  .ed-input,.ed-area{width:100%;padding:9px 11px;border:1px solid var(--line-strong);border-radius:8px;font-size:13.5px;background:#fff}
+  .ed-input:focus,.ed-area:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-wash)}
+  .ed-area{min-height:130px;resize:vertical;line-height:1.65}
+  .param-hint{font-size:11.5px;color:var(--faint);margin:9px 0 6px;font-weight:600}
+  .param-row{display:flex;flex-wrap:wrap;gap:6px}
+  .pchip{font-size:11.5px;font-weight:600;font-family:var(--mono);color:var(--blue-deep);background:var(--blue-wash);border:1px solid transparent;padding:5px 9px;border-radius:7px;display:inline-flex;align-items:center;gap:5px}
+  .pchip:hover{background:#dbe7fb}
+  .pchip .d{width:6px;height:6px;border-radius:50%}
+  .pchip .d.sys{background:var(--blue)}
+  .ed-foot{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .btn{font-size:13.5px;font-weight:650;padding:9px 16px;border-radius:8px}
+  .btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue-deep)}
+  .btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line-strong)}.btn-ghost:hover{background:var(--surface-2)}
+  .btn-danger{background:#fff;color:var(--danger);border:1px solid #f0bcbc}.btn-danger:hover{background:var(--danger-wash)}
+  .ed-enable{display:flex;align-items:center;gap:8px;margin-left:auto;font-size:12.5px;color:var(--muted)}
 
-        .btn-save{display:block;width:100%;background:var(--jade);color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:650;cursor:pointer;margin-top:4px;transition:background .2s}
-        .btn-save:hover{background:var(--jade-deep)}
+  /* preview */
+  .pv-sample{font-size:11.5px;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:10px 11px;line-height:1.6;margin-bottom:14px}
+  .pv-sample b{color:var(--ink)}
+  .phone{background:linear-gradient(180deg,#eef2f6,#e6ecf2);border-radius:18px;padding:14px 13px 16px;border:1px solid var(--line-strong)}
+  .phone-bar{display:flex;justify-content:space-between;font-size:11px;color:var(--faint);font-weight:600;padding:0 4px 12px}
+  .sms-sender{display:block;width:max-content;margin:0 auto 12px;font-size:11px;color:var(--muted);font-weight:600;background:rgba(255,255,255,.7);padding:4px 12px;border-radius:999px}
+  .bubble{background:#fff;border-radius:4px 16px 16px 16px;padding:13px 15px;font-size:13.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word;box-shadow:0 1px 1px rgba(0,0,0,.05);min-height:90px}
+  .bubble .tok{background:var(--blue-wash);color:var(--blue-deep);border-radius:4px;padding:0 3px;font-weight:600}
+  .bubble .ph{color:var(--faint)}
+  .pv-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .stat{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:9px 12px;text-align:center}
+  .stat .n{font-size:18px;font-weight:720}.stat .n.over{color:var(--danger)}
+  .stat .l{font-size:10.5px;color:var(--faint);font-weight:600;margin-top:1px}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:11.5px;color:var(--muted);margin-top:12px}
+  .legend .k{display:inline-flex;align-items:center;gap:6px}
+  .legend .sw{width:14px;height:14px;border-radius:4px}
+  .legend .sw.sys{background:var(--blue-wash);border:1px solid var(--blue)}
 
-        /* 高亮 */
-        .glow{animation:glow 1.5s ease-in-out infinite}
-        @keyframes glow{0%,100%{box-shadow:0 0 5px rgba(14,139,111,.5),0 0 10px rgba(14,139,111,.3)}50%{box-shadow:0 0 18px rgba(14,139,111,.85),0 0 28px rgba(14,139,111,.5)}}
-        .highlight{animation:pulse 1s ease-in-out infinite}
-        @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(14,139,111,.7)}50%{box-shadow:0 0 0 16px rgba(14,139,111,0)}}
-
-        /* ---------- 右側預覽 ---------- */
-        .preview-panel{display:flex;flex-direction:column;gap:18px}
-        .phone{background:linear-gradient(180deg,#EEF2F0,#E6ECE9);border-radius:20px;padding:16px 15px 18px;border:1px solid var(--line-strong)}
-        .phone-bar{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--faint);font-weight:600;padding:0 4px 12px}
-        .sms-sender{display:block;text-align:center;font-size:11px;color:var(--muted);font-weight:600;background:rgba(255,255,255,.7);padding:4px 12px;border-radius:999px;margin:0 auto 12px;width:max-content}
-        .bubble{background:#fff;border-radius:4px 16px 16px 16px;padding:14px 16px;font-size:13.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word;box-shadow:0 1px 1px rgba(22,32,29,.06);min-height:120px;transition:box-shadow .3s,transform .3s}
-        .bubble.updating{box-shadow:0 0 0 3px var(--jade-wash);transform:scale(1.01)}
-        .bubble .tok{background:var(--jade-wash);color:var(--jade-deep);border-radius:4px;padding:0 3px;font-weight:600}
-        .bubble .man{background:var(--gold-wash);color:var(--gold);border-radius:4px;padding:0 3px;font-weight:600;border:1px dashed var(--gold-line)}
-        .bubble .ph{color:var(--faint)}
-
-        .meta-row{display:flex;gap:10px}
-        .stat{flex:1;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;text-align:center}
-        .stat .n{font-size:18px;font-weight:720;letter-spacing:-.5px;color:var(--ink)}
-        .stat .l{font-size:10.5px;color:var(--faint);font-weight:600;margin-top:1px}
-        .legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:11.5px;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-        .legend .k{display:inline-flex;align-items:center;gap:6px}
-        .legend .sw{width:14px;height:14px;border-radius:4px}
-        .legend .sw.sys{background:var(--jade-wash);border:1px solid var(--jade)}
-        .legend .sw.man{background:var(--gold-wash);border:1px dashed var(--gold-line)}
-        .manual-note{font-size:11.5px;color:var(--gold);background:var(--gold-wash);border:1px solid var(--gold-line);border-radius:9px;padding:9px 11px;line-height:1.55;opacity:0;max-height:0;overflow:hidden;transition:opacity .3s,max-height .3s,padding .3s}
-        .manual-note.show{opacity:1;max-height:80px}
-
-        /* 步驟指示器 */
-        .step-indicator{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:0 4px 12px rgba(0,0,0,.06)}
-        .step-title{font-weight:650;color:#333;margin-bottom:12px;font-size:15px}
-        .step-item{display:flex;align-items:center;margin-bottom:9px;padding:7px 8px;border-radius:7px;transition:all .3s;cursor:pointer}
-        .step-item:last-child{margin-bottom:0}
-        .step-item:hover{background:#f0f4f2;transform:translateX(3px)}
-        .step-item.active{background:var(--jade-wash);border-left:4px solid var(--jade);padding-left:10px}
-        .step-item.completed{opacity:.6}
-        .step-number{width:26px;height:26px;border-radius:50%;background:#e0e0e0;color:#666;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-right:11px;flex-shrink:0}
-        .step-item.active .step-number{background:var(--jade);color:#fff}
-        .step-item.completed .step-number{background:var(--jade-deep);color:#fff}
-        .step-text{font-size:13px;color:#555;line-height:1.4}
-
-        /* 提示泡泡 */
-        .hint{position:absolute;background:var(--gold-wash);border:2px solid var(--gold);border-radius:9px;padding:11px 16px;color:#7a5409;font-weight:600;font-size:13px;box-shadow:0 4px 14px rgba(201,138,20,.28);z-index:100;opacity:0;transform:translateY(-8px);transition:all .3s;pointer-events:none;line-height:1.5;max-width:300px}
-        .hint.show{opacity:1;transform:translateY(0)}
-        .hint .arrow{position:absolute;width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent}
-        .hint .arrow.down{border-top:9px solid var(--gold);bottom:-9px;left:24px}
-        .hint .arrow.up{border-bottom:9px solid var(--gold);top:-9px;left:24px}
-
-        .success{background:#d6f0e7;border:2px solid var(--jade);color:var(--jade-deep);text-align:center;padding:13px;border-radius:9px;font-weight:650;opacity:0;transform:scale(.92);transition:all .3s;font-size:14px}
-        .success.show{opacity:1;transform:scale(1)}
-
-        .controls{position:fixed;bottom:20px;right:20px;display:flex;gap:10px;z-index:200}
-        .control-btn{background:#fff;border:2px solid var(--jade);color:var(--jade-deep);padding:9px 18px;border-radius:9px;font-weight:650;cursor:pointer;transition:.2s;font-size:13px}
-        .control-btn:hover{background:var(--jade);color:#fff}
-        .control-btn.playing{background:var(--jade);color:#fff}
-
-        @media (max-width:880px){
-            .content-wrapper{grid-template-columns:1fr}
-            .container{padding:24px 20px}
-        }
-        @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-    </style>
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2933;color:#fff;font-size:13px;font-weight:550;padding:11px 18px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;visibility:hidden;transition:.22s;z-index:90}
+  .toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="header-icon">
-                <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
-            </div>
-            <div>
-                <h1>模板簡訊設定教學</h1>
-                <div class="sub">參數化模板 · 共用模板 · 套用即帶入預約資料</div>
-            </div>
-        </div>
+<div class="app">
+  <aside class="side">
+    <div class="side-brand"><div class="logo">光澤</div><div><b>三重光澤</b><span>光澤</span></div></div>
+    <div class="side-group">📋 預約</div>
+    <div class="side-item" id="goAppt">預約操作 ↗</div>
+    <div class="side-item">預約查詢</div>
+    <div class="side-group">🛠 設定</div>
+    <div class="side-item active">簡訊模板設定</div>
+  </aside>
 
-        <div class="content-wrapper">
-            <!-- 左：操作示範 -->
-            <div class="demo-panel">
-                <div class="demo-eyebrow">操作示範</div>
+  <header class="top">
+    <span class="np">NPOS</span><span class="title">簡訊模板設定</span>
+    <span class="ver">正式</span><span class="vnum">v2.48.0</span>
+    <span class="sp"></span>
+    <div class="user"><div class="av"></div><div><div class="nm">鄭楷錚</div><div class="dp">資訊軟體開發課-台灣</div></div></div>
+  </header>
 
-                <!-- 提示泡泡 -->
-                <div class="hint" id="hint1" style="top:54px;right:14px"><div class="arrow down" style="left:auto;right:24px"></div>① 點「選擇簡訊模板」開啟模板面板</div>
-                <div class="hint" id="hint2" style="top:206px;left:14px"><div class="arrow up"></div>② 釘選常用模板、點「套用」即帶入預約資料</div>
-                <div class="hint" id="hint3" style="top:206px;left:14px"><div class="arrow up"></div>③ 系統參數自動帶入（綠），手動參數發送前填（金）</div>
-                <div class="hint" id="hint4" style="bottom:70px;left:14px"><div class="arrow down"></div>④ 用區塊＋參數自訂模板，右側即時預覽</div>
-                <div class="hint" id="hint5" style="bottom:8px;left:50%;transform:translateX(-50%)"><div class="arrow down" style="left:50%;transform:translateX(-50%)"></div>⑤ 儲存為共用模板，全系統皆可套用</div>
-
-                <!-- 預約資料卡 -->
-                <div class="demo-section" id="secAppt">
-                    <div class="sec-title">📋 預約資料（系統帶入來源）</div>
-                    <div class="appt-grid">
-                        <div class="appt-cell"><div class="l">會員姓名</div><div class="v">林雅婷</div></div>
-                        <div class="appt-cell"><div class="l">門市名稱</div><div class="v">京都堂 台北中山館</div></div>
-                        <div class="appt-cell"><div class="l">預約日期</div><div class="v">2026/07/03（五）</div></div>
-                        <div class="appt-cell"><div class="l">預約時間</div><div class="v">19:30</div></div>
-                        <div class="appt-cell"><div class="l">班別</div><div class="v"><span class="shift">晚診</span></div></div>
-                        <div class="appt-cell"><div class="l">門市電話</div><div class="v">02-2521-7788</div></div>
-                    </div>
-                </div>
-
-                <!-- 選擇模板按鈕 -->
-                <div class="demo-section" id="secBtn">
-                    <button class="btn-tpl" id="openTplBtn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        選擇簡訊模板
-                    </button>
-                </div>
-
-                <!-- 模板清單 -->
-                <div class="demo-section dim" id="secList">
-                    <div class="sec-title">💬 簡訊模板（共用 · 釘選為個人偏好）</div>
-                    <div class="tpl-cards">
-                        <div class="tpl-card" id="card1">
-                            <div class="tc-top">
-                                <div style="flex:1">
-                                    <div class="tc-name">中醫－晚診提醒</div>
-                                    <div class="tc-desc">中醫晚診時段的下班後提醒</div>
-                                </div>
-                                <button class="star" id="star1" aria-label="釘選">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.9l-5.8 3.05 1.1-6.47L2.6 9.9l6.5-.95z"/></svg>
-                                </button>
-                            </div>
-                            <div class="tc-foot"><span class="tc-tag">系統模板</span><button class="apply-btn" id="apply1">套用</button></div>
-                        </div>
-                        <div class="tpl-card" id="card2">
-                            <div class="tc-top">
-                                <div style="flex:1">
-                                    <div class="tc-name">醫美－療程預約提醒</div>
-                                    <div class="tc-desc">醫美療程前的注意事項與報到提醒</div>
-                                </div>
-                                <button class="star" aria-label="釘選">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.9l-5.8 3.05 1.1-6.47L2.6 9.9l6.5-.95z"/></svg>
-                                </button>
-                            </div>
-                            <div class="tc-foot"><span class="tc-tag">系統模板</span><button class="apply-btn">套用</button></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 模板設定（區塊組合） -->
-                <div class="demo-section dim" id="secBuilder">
-                    <div class="sec-title">🧩 模板設定（區塊＋參數組合）</div>
-                    <div class="param-row">
-                        <span class="pchip"><span class="d sys"></span>{{會員姓名}}</span>
-                        <span class="pchip"><span class="d sys"></span>{{預約時間}}</span>
-                        <span class="pchip man"><span class="d man"></span>{{注意事項}}</span>
-                    </div>
-                    <div class="blk" id="blk1">
-                        <div class="blk-head"><span class="blk-label">開頭問候</span><span class="switch"></span></div>
-                        <div class="blk-body">親愛的{{會員姓名}}您好，</div>
-                    </div>
-                    <div class="blk" id="blk2">
-                        <div class="blk-head"><span class="blk-label">報到提醒</span><span class="switch"></span></div>
-                        <div class="blk-body" id="blk2body">看診班別：{{班別}}（{{醫師姓名}}）</div>
-                    </div>
-                    <button class="btn-save" id="saveBtn">儲存為共用模板</button>
-                    <div class="success" id="successMsg" style="margin-top:12px">✓ 已儲存為共用模板，預約頁即可套用發送！</div>
-                </div>
-            </div>
-
-            <!-- 右：預覽與步驟 -->
-            <div class="preview-panel">
-                <div class="phone">
-                    <div class="phone-bar"><span>19:42</span><span>NPOS</span></div>
-                    <span class="sms-sender">Dr.Shine 京都堂</span>
-                    <div class="bubble" id="bubble"><span class="ph">選擇模板後，此處即時帶入預約資料…</span></div>
-                </div>
-
-                <div class="meta-row">
-                    <div class="stat"><div class="n" id="charCount">0</div><div class="l">字數</div></div>
-                    <div class="stat"><div class="n" id="segCount">0</div><div class="l">預估簡訊則數</div></div>
-                </div>
-
-                <div class="legend">
-                    <span class="k"><span class="sw sys"></span>系統參數（自動帶入）</span>
-                    <span class="k"><span class="sw man"></span>手動參數（發送前填）</span>
-                </div>
-                <div class="manual-note" id="manualNote"></div>
-
-                <div class="step-indicator">
-                    <div class="step-title">教學步驟（點擊可跳轉）</div>
-                    <div class="step-item" id="step1" onclick="jumpToStep(0)"><div class="step-number">1</div><div class="step-text">開啟模板面板</div></div>
-                    <div class="step-item" id="step2" onclick="jumpToStep(1)"><div class="step-number">2</div><div class="step-text">套用模板並帶入預約資料</div></div>
-                    <div class="step-item" id="step3" onclick="jumpToStep(2)"><div class="step-number">3</div><div class="step-text">辨識系統參數與手動參數</div></div>
-                    <div class="step-item" id="step4" onclick="jumpToStep(3)"><div class="step-number">4</div><div class="step-text">用區塊與參數自訂模板</div></div>
-                    <div class="step-item" id="step5" onclick="jumpToStep(4)"><div class="step-number">5</div><div class="step-text">儲存為共用模板</div></div>
-                </div>
-            </div>
-        </div>
+  <main class="main">
+    <div class="page-h">
+      <h1>簡訊模板設定</h1>
+      <p>設定發送條件並維護全系統共用的預約簡訊模板。模板可參數化（系統自動帶入預約資料），釘選為個人偏好；儲存後可於「預約操作」的發送簡訊彈窗直接套用。</p>
     </div>
 
-    <div class="controls">
-        <button class="control-btn" id="restartBtn">重新播放</button>
-        <button class="control-btn playing" id="playPauseBtn">暫停</button>
+    <!-- 全域開關 -->
+    <div class="card glob">
+      <div class="card-h">⚙️ 發送條件設定</div>
+      <div class="card-b">
+        <div class="toggle-row">
+          <div><div class="tl">發送預約簡訊</div><div class="ts">關閉後將不會發送任何預約提醒簡訊</div></div>
+          <div class="switch on" id="swMain" role="switch" aria-checked="true"></div>
+        </div>
+        <div class="toggle-row">
+          <div><div class="tl">包含「接受電訪/銷」</div><div class="ts">系統預設依會員「標註」關鍵字判斷；開啟後另檢查會員維護「接受電訪/銷」欄位</div></div>
+          <div class="switch" id="swTele" role="switch" aria-checked="false"></div>
+        </div>
+      </div>
     </div>
 
-    <script>
-    (function(){
-        "use strict";
-        /* ---------- 範例預約資料 ---------- */
-        var appt={"會員姓名":"林雅婷","門市名稱":"京都堂 台北中山館","預約日期":"2026/07/03（五）","預約時間":"19:30","班別":"晚診","醫師姓名":"陳冠宇 醫師","門市電話":"02-2521-7788"};
-        var manualKeys=["注意事項","其他備註"];
+    <div class="grid">
+      <!-- 左：模板清單 -->
+      <div class="card">
+        <div class="card-h">💬 模板清單</div>
+        <div class="card-b">
+          <div class="list-tools">
+            <div class="search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" id="searchInput" placeholder="搜尋名稱或用途…">
+            </div>
+            <button class="add-btn" id="addBtn">＋ 新增</button>
+          </div>
+          <div id="listScroll"></div>
+        </div>
+      </div>
 
-        /* 兩個示範模板的內容 */
-        var TPL_BASE="親愛的{{會員姓名}}您好，提醒您已預約{{門市名稱}}。\n日期：{{預約日期}} {{預約時間}}（{{班別}}）\n{{注意事項}}\n如需異動請來電{{門市電話}}。";
-        var TPL_CUSTOM="親愛的{{會員姓名}}您好，提醒您已預約{{門市名稱}}。\n日期：{{預約日期}} {{預約時間}}（{{班別}}）\n看診班別：{{班別}}（{{醫師姓名}}）\n{{注意事項}}\n如需異動請來電{{門市電話}}。";
+      <!-- 中：編輯器 -->
+      <div class="card">
+        <div class="card-h" id="edTitle">編輯模板</div>
+        <div class="card-b">
+          <div class="ed-field"><label>模板名稱 <span style="color:var(--danger)">*</span></label><input class="ed-input" id="edName" placeholder="例如：醫美－療程提醒"></div>
+          <div class="ed-field"><label>用途說明</label><input class="ed-input" id="edDesc" placeholder="一句話描述何時使用"></div>
+          <div class="ed-field">
+            <label>簡訊內容 <span style="color:var(--danger)">*</span></label>
+            <textarea class="ed-area" id="edBody" placeholder="輸入內容，點下方參數插入游標位置…"></textarea>
+            <div class="param-hint">點擊插入參數（皆由系統自動帶入預約資料）：</div>
+            <div class="param-row" id="sysRow"></div>
+          </div>
+          <div class="ed-foot">
+            <button class="btn btn-primary" id="saveBtn">儲存為共用模板</button>
+            <button class="btn btn-ghost" id="newBtn">清空</button>
+            <button class="btn btn-danger" id="delBtn" style="display:none">刪除</button>
+            <label class="ed-enable"><span>啟用</span><span class="switch on" id="edEnable" role="switch" aria-checked="true" style="width:42px;height:23px"></span></label>
+          </div>
+        </div>
+      </div>
 
-        /* ---------- 工具 ---------- */
-        function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-        function resolvedText(body){return body.replace(/\{\{(.+?)\}\}/g,function(m,k){if(appt[k]!==undefined)return appt[k];if(manualKeys.indexOf(k)>-1)return "〔"+k+"〕";return m;});}
-        function smsSegments(len){if(len===0)return 0;if(len<=70)return 1;return Math.ceil(len/67);}
-        function previewHTML(body,manualFound){
-            var out="",re=/\{\{(.+?)\}\}/g,last=0,m;
-            while((m=re.exec(body))){
-                out+=esc(body.slice(last,m.index));var k=m[1];
-                if(appt[k]!==undefined)out+='<span class="tok">'+esc(appt[k])+'</span>';
-                else if(manualKeys.indexOf(k)>-1){out+='<span class="man">〔'+esc(k)+'〕</span>';if(manualFound.indexOf(k)<0)manualFound.push(k);}
-                else out+='<span class="man">'+esc(m[0])+'</span>';
-                last=re.lastIndex;
-            }
-            out+=esc(body.slice(last));return out;
-        }
+      <!-- 右：即時預覽 -->
+      <div class="card">
+        <div class="card-h">👁️ 即時預覽</div>
+        <div class="card-b">
+          <div class="pv-sample" id="pvSample"></div>
+          <div class="phone">
+            <div class="phone-bar"><span>09:00</span><span>NPOS</span></div>
+            <span class="sms-sender">三重光澤</span>
+            <div class="bubble" id="pvBubble"><span class="ph">選擇或編輯模板，此處即時預覽…</span></div>
+          </div>
+          <div class="pv-stats">
+            <div class="stat"><div class="n" id="pvChars">0</div><div class="l">字數 / 70</div></div>
+            <div class="stat"><div class="n" id="pvSegs">0</div><div class="l">預估簡訊則數</div></div>
+          </div>
+          <div class="legend">
+            <span class="k"><span class="sw sys"></span>參數自動帶入預約資料</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
 
-        var bubble=document.getElementById("bubble");
-        var charCount=document.getElementById("charCount");
-        var segCount=document.getElementById("segCount");
-        var manualNote=document.getElementById("manualNote");
+<div class="toast" id="toast"></div>
 
-        function renderPreview(body,opts){
-            opts=opts||{};
-            var manualFound=[];
-            bubble.innerHTML=previewHTML(body,manualFound);
-            var plain=resolvedText(body);
-            charCount.textContent=plain.length;
-            segCount.textContent=smsSegments(plain.length);
-            if(opts.showManual&&manualFound.length){
-                manualNote.classList.add("show");
-                manualNote.innerHTML='<b>發送前手動輸入：</b>'+manualFound.join("、")+'。此欄位非系統自動帶入，需由人員於發送前填寫。';
-            }else{
-                manualNote.classList.remove("show");
-            }
-            if(opts.flash){bubble.classList.add("updating");setTimeout(function(){bubble.classList.remove("updating");},500);}
-        }
-        function emptyPreview(){
-            bubble.innerHTML='<span class="ph">選擇模板後，此處即時帶入預約資料…</span>';
-            charCount.textContent="0";segCount.textContent="0";manualNote.classList.remove("show");
-        }
+<script>
+(function(){
+  "use strict";
+  var mem={};
+  var store={get:function(k){try{return localStorage.getItem(k);}catch(e){return mem[k]||null;}},
+             set:function(k,v){try{localStorage.setItem(k,v);}catch(e){mem[k]=v;}}};
+  var KEY={custom:"npos_tpl_custom",pins:"npos_tpl_pins",recent:"npos_tpl_recent",last:"npos_tpl_last",
+           swMain:"npos_sms_enabled",swTele:"npos_sms_tele"};
+  function loadJSON(k,d){try{var v=store.get(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+  function saveJSON(k,v){store.set(k,JSON.stringify(v));}
+  function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+  function todayStr(){var d=new Date();return d.getFullYear()+"/"+("0"+(d.getMonth()+1)).slice(-2)+"/"+("0"+d.getDate()).slice(-2);}
+  function smsSegments(len){if(len===0)return 0;if(len<=70)return 1;return Math.ceil(len/67);}
 
-        /* ---------- 元素引用 ---------- */
-        var secList=document.getElementById("secList"),secBuilder=document.getElementById("secBuilder");
-        var openTplBtn=document.getElementById("openTplBtn");
-        var card1=document.getElementById("card1"),apply1=document.getElementById("apply1"),star1=document.getElementById("star1");
-        var blk2=document.getElementById("blk2"),blk2body=document.getElementById("blk2body");
-        var saveBtn=document.getElementById("saveBtn"),successMsg=document.getElementById("successMsg");
-        var steps=[document.getElementById("step1"),document.getElementById("step2"),document.getElementById("step3"),document.getElementById("step4"),document.getElementById("step5")];
-        var hints=[document.getElementById("hint1"),document.getElementById("hint2"),document.getElementById("hint3"),document.getElementById("hint4"),document.getElementById("hint5")];
-        var restartBtn=document.getElementById("restartBtn"),playPauseBtn=document.getElementById("playPauseBtn");
-        var glowEls=[openTplBtn,card1,saveBtn];
+  /* ---------- 範例資料（預覽用） ---------- */
+  var sample={"會員姓名":"林雅婷","門市名稱":"三重光澤","門市地址":"三重區正義北路122號","門市電話":"02-29850300","預約日期":"06/26(五)","預約時間":"17:00","療程":"臉-超導(60分)"};
+  var SYS=[["會員姓名","會員姓名"],["門市名稱","預約門市"],["預約日期","預約日期"],["預約時間","預約時間"],["療程","施做療程"],["門市地址","門市地址"],["門市電話","門市電話"]];
 
-        /* ---------- 狀態管理 ---------- */
-        var state={isPlaying:true,timeouts:[],intervals:[]};
-        function clearTimers(){state.timeouts.forEach(clearTimeout);state.intervals.forEach(clearInterval);state.timeouts=[];state.intervals=[];}
-        function after(ms,fn){state.timeouts.push(setTimeout(function(){if(state.isPlaying)fn();},ms));}
-        function setStep(i){steps.forEach(function(s,idx){s.classList.remove("active","completed");if(idx<i)s.classList.add("completed");else if(idx===i)s.classList.add("active");});}
-        function hideHints(){hints.forEach(function(h){h.classList.remove("show");});}
-        function clearGlow(){glowEls.forEach(function(e){e.classList.remove("glow","highlight");});}
+  /* ---------- 模板資料（與預約操作頁共用 localStorage） ---------- */
+  var builtin=[
+    {id:"b1",name:"標準預約提醒",desc:"通用預約確認簡訊",enabled:true,
+     body:"提醒您有預約【{{門市名稱}}】{{預約日期}}{{預約時間}}{{門市地址}}，有任何疑問請撥打{{門市電話}}，{{門市名稱}}關心您。"},
+    {id:"b2",name:"醫美－療程提醒",desc:"醫美療程前報到提醒",enabled:true,
+     body:"{{會員姓名}}您好，提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}。請提前30分鐘蒞臨現場報到。洽詢{{門市電話}}。"},
+    {id:"b4",name:"中醫－門診提醒",desc:"中醫門診當日提醒",enabled:true,
+     body:"{{會員姓名}}您好，提醒您今日於{{門市名稱}}有門診預約{{預約時間}}，請依現場叫號順序看診。洽詢{{門市電話}}。"}
+  ];
+  var custom=loadJSON(KEY.custom,[]);
+  var pins=loadJSON(KEY.pins,[]);
+  function allTpl(){return builtin.concat(custom);}
+  function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
+  function isCustom(id){return id&&id.indexOf("c")===0;}
 
-        function resetAll(){
-            hideHints();clearGlow();
-            secList.classList.add("dim");secBuilder.classList.add("dim");
-            card1.classList.remove("active");apply1.textContent="套用";apply1.classList.remove("current");
-            star1.classList.remove("pinned");
-            blk2.classList.remove("editing");blk2body.textContent="看診班別：{{班別}}（{{醫師姓名}}）";
-            successMsg.classList.remove("show");
-            emptyPreview();
-        }
+  /* ---------- 全域開關 ---------- */
+  var swMain=document.getElementById("swMain"),swTele=document.getElementById("swTele");
+  if(store.get(KEY.swMain)==="0")swMain.classList.remove("on");
+  if(store.get(KEY.swTele)==="1")swTele.classList.add("on");
+  function bindSwitch(el,key){el.addEventListener("click",function(){el.classList.toggle("on");var on=el.classList.contains("on");el.setAttribute("aria-checked",on);store.set(key,on?"1":"0");toast(el===swMain?(on?"已開啟發送預約簡訊":"已關閉發送預約簡訊"):(on?"已納入「接受電訪/銷」判斷":"已取消「接受電訪/銷」判斷"));});}
+  bindSwitch(swMain,KEY.swMain);bindSwitch(swTele,KEY.swTele);
 
-        /* ---------- 動畫序列 ---------- */
-        function startAnimation(){
-            clearTimers();state.isPlaying=true;
-            playPauseBtn.textContent="暫停";playPauseBtn.classList.add("playing");
-            resetAll();setStep(0);
+  /* ---------- 預覽 ---------- */
+  var pvBubble=document.getElementById("pvBubble"),pvChars=document.getElementById("pvChars"),pvSegs=document.getElementById("pvSegs");
+  function resolved(body){return body.replace(/\{\{(.+?)\}\}/g,function(m,k){if(sample[k]!==undefined)return sample[k];return m;});}
+  function previewHTML(body){
+    var out="",re=/\{\{(.+?)\}\}/g,last=0,m;
+    while((m=re.exec(body))){
+      out+=esc(body.slice(last,m.index));var k=m[1];
+      if(sample[k]!==undefined)out+='<span class="tok">'+esc(sample[k])+'</span>';
+      else out+=esc(m[0]);
+      last=re.lastIndex;
+    }
+    out+=esc(body.slice(last));return out;
+  }
+  function updatePreview(){
+    var body=document.getElementById("edBody").value;
+    if(!body.trim()){pvBubble.innerHTML='<span class="ph">選擇或編輯模板，此處即時預覽…</span>';pvChars.textContent="0";pvChars.className="n";pvSegs.textContent="0";return;}
+    pvBubble.innerHTML=previewHTML(body);
+    var plain=resolved(body);
+    pvChars.textContent=plain.length;pvChars.className="n"+(plain.length>70?" over":"");
+    pvSegs.textContent=smsSegments(plain.length);
+  }
+  document.getElementById("pvSample").innerHTML='已套用範例資料：會員 <b>'+esc(sample["會員姓名"])+'</b>／<b>'+esc(sample["門市名稱"])+'</b>／'+esc(sample["預約日期"])+' '+esc(sample["預約時間"])+'／'+esc(sample["療程"]);
 
-            /* 步驟 1：開啟模板面板 */
-            after(900,function(){hints[0].classList.add("show");openTplBtn.classList.add("glow");setStep(0);});
-            after(3000,function(){openTplBtn.classList.remove("glow");hints[0].classList.remove("show");secList.classList.remove("dim");});
+  /* ---------- 參數插入 ---------- */
+  function pchip(k,man){return '<button class="pchip'+(man?' man':'')+'" data-token="{{'+k+'}}"><span class="d '+(man?'man':'sys')+'"></span>{{'+k+'}}</button>';}
+  document.getElementById("sysRow").innerHTML=SYS.map(function(s){return pchip(s[0],false);}).join("");
+  function insertToken(tok){
+    var ta=document.getElementById("edBody"),s=ta.selectionStart,e=ta.selectionEnd,v=ta.value;
+    ta.value=v.slice(0,s)+tok+v.slice(e);ta.focus();ta.selectionStart=ta.selectionEnd=s+tok.length;updatePreview();
+  }
+  document.querySelectorAll(".param-row").forEach(function(r){r.addEventListener("click",function(e){var b=e.target.closest("[data-token]");if(b)insertToken(b.getAttribute("data-token"));});});
+  document.getElementById("edBody").addEventListener("input",updatePreview);
 
-            /* 步驟 2：套用模板 + 釘選 */
-            after(3600,function(){setStep(1);hints[1].classList.add("show");card1.classList.add("glow");});
-            after(5200,function(){
-                card1.classList.remove("glow");star1.classList.add("pinned");
-                card1.classList.add("active");apply1.textContent="目前套用";apply1.classList.add("current");
-                renderPreview(TPL_BASE,{flash:true});
-            });
-            after(6400,function(){hints[1].classList.remove("show");});
+  /* ---------- 模板清單 ---------- */
+  var search="",editingId=null;
+  function matches(t){if(!search)return true;var q=search.toLowerCase();return t.name.toLowerCase().indexOf(q)>-1||(t.desc||"").toLowerCase().indexOf(q)>-1;}
+  function starSVG(f){return '<svg viewBox="0 0 24 24" fill="'+(f?"currentColor":"none")+'" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.9l-5.8 3.05 1.1-6.47L2.6 9.9l6.5-.95z"/></svg>';}
+  function cardHTML(t){
+    var pinned=pins.indexOf(t.id)>-1,cust=isCustom(t.id);
+    return '<div class="t-card'+(t.id===editingId?' active':'')+(t.enabled===false?' off':'')+'" data-edit="'+t.id+'">'+
+      '<div class="t-top"><div style="flex:1"><div class="t-name">'+esc(t.name)+'</div>'+
+      (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
+      (cust?'<div class="t-meta">'+esc(t.creator||"自訂")+' · '+esc(t.created||"")+'</div>':'')+
+      '</div><button class="star'+(pinned?' pinned':'')+'" data-pin="'+t.id+'" aria-label="釘選">'+starSVG(pinned)+'</button></div>'+
+      '<div style="display:flex;justify-content:flex-end;margin-top:7px"><span class="t-tag">'+(cust?"自訂模板":"系統模板")+'</span></div></div>';
+  }
+  function renderList(){
+    var all=allTpl().filter(matches);
+    var pinned=all.filter(function(t){return pins.indexOf(t.id)>-1;});
+    var rest=all.filter(function(t){return pins.indexOf(t.id)<0;});
+    var h="";
+    if(pinned.length)h+='<div class="group-t">★ 釘選</div>'+pinned.map(cardHTML).join("");
+    h+='<div class="group-t">全部模板</div>'+(rest.length?rest.map(cardHTML).join(""):'<div style="font-size:12px;color:var(--faint);padding:4px">無符合的模板</div>');
+    document.getElementById("listScroll").innerHTML=h;
+  }
+  document.getElementById("listScroll").addEventListener("click",function(e){
+    var p=e.target.closest("[data-pin]");
+    if(p){var id=p.getAttribute("data-pin");if(pins.indexOf(id)>-1)pins=pins.filter(function(x){return x!==id;});else pins.unshift(id);saveJSON(KEY.pins,pins);renderList();toast(pins.indexOf(id)>-1?"已釘選":"已取消釘選");return;}
+    var ed=e.target.closest("[data-edit]");if(ed)loadIntoEditor(ed.getAttribute("data-edit"));
+  });
+  document.getElementById("searchInput").addEventListener("input",function(e){search=e.target.value.trim();renderList();});
 
-            /* 步驟 3：辨識系統參數 / 手動參數 */
-            after(6800,function(){setStep(2);hints[2].classList.add("show");renderPreview(TPL_BASE,{showManual:true,flash:true});});
-            after(9600,function(){hints[2].classList.remove("show");});
+  /* ---------- 編輯器載入/儲存 ---------- */
+  var edName=document.getElementById("edName"),edDesc=document.getElementById("edDesc"),edBody=document.getElementById("edBody"),edEnable=document.getElementById("edEnable"),delBtn=document.getElementById("delBtn"),edTitle=document.getElementById("edTitle");
+  function setEnable(on){edEnable.classList.toggle("on",on);edEnable.setAttribute("aria-checked",on);}
+  edEnable.addEventListener("click",function(){edEnable.classList.toggle("on");edEnable.setAttribute("aria-checked",edEnable.classList.contains("on"));});
 
-            /* 步驟 4：到模板設定用區塊與參數自訂 */
-            after(10200,function(){
-                setStep(3);secList.classList.add("dim");secBuilder.classList.remove("dim");
-                hints[3].classList.add("show");blk2.classList.add("editing");
-            });
-            after(11200,function(){
-                /* 模擬打字：在「報到提醒」區塊加入手動參數與報到文字 */
-                var target="看診班別：{{班別}}（{{醫師姓名}}）\n請於療程前提早 10 分鐘報到。\n{{注意事項}}";
-                var i=0;
-                var iv=setInterval(function(){
-                    if(!state.isPlaying||i>=target.length){clearInterval(iv);return;}
-                    i++;blk2body.textContent=target.slice(0,i);
-                    renderPreview(TPL_CUSTOM.replace("看診班別：{{班別}}（{{醫師姓名}}）",target.slice(0,i)),{showManual:true});
-                },45);
-                state.intervals.push(iv);
-            });
-            after(14200,function(){blk2.classList.remove("editing");hints[3].classList.remove("show");renderPreview(TPL_CUSTOM,{showManual:true,flash:true});});
+  function loadIntoEditor(id){
+    var t=tplById(id);if(!t)return;
+    editingId=id;
+    edName.value=t.name;edDesc.value=t.desc||"";edBody.value=t.body;setEnable(t.enabled!==false);
+    edTitle.textContent=isCustom(id)?"編輯模板（自訂）":"編輯模板（系統內建 · 儲存將另存為自訂）";
+    delBtn.style.display=isCustom(id)?"":"none";
+    updatePreview();renderList();
+  }
+  function newTemplate(){editingId=null;edName.value="";edDesc.value="";edBody.value="";setEnable(true);edTitle.textContent="新增模板";delBtn.style.display="none";updatePreview();renderList();}
+  document.getElementById("newBtn").addEventListener("click",newTemplate);
+  document.getElementById("addBtn").addEventListener("click",function(){newTemplate();edName.focus();});
 
-            /* 步驟 5：儲存為共用模板 */
-            after(14800,function(){setStep(4);hints[4].classList.add("show");saveBtn.classList.add("glow");});
-            after(16600,function(){saveBtn.classList.remove("glow");saveBtn.classList.add("highlight");hints[4].classList.remove("show");});
-            after(17400,function(){
-                saveBtn.classList.remove("highlight");successMsg.classList.add("show");
-                steps.forEach(function(s){s.classList.remove("active");s.classList.add("completed");});
-            });
+  document.getElementById("saveBtn").addEventListener("click",function(){
+    var name=edName.value.trim(),desc=edDesc.value.trim(),body=edBody.value.trim(),enabled=edEnable.classList.contains("on");
+    if(!name){toast("請輸入模板名稱");edName.focus();return;}
+    if(!body){toast("請輸入簡訊內容");edBody.focus();return;}
+    if(isCustom(editingId)){
+      var t=tplById(editingId);t.name=name;t.desc=desc||"自訂模板";t.body=body;t.enabled=enabled;
+      saveJSON(KEY.custom,custom);toast("已更新「"+name+"」");
+    }else{
+      var id="c"+Date.now();
+      custom.push({id:id,name:name,desc:desc||"自訂模板",body:body,enabled:enabled,creator:"鄭楷錚",created:todayStr(),scenario:"預約簡訊"});
+      saveJSON(KEY.custom,custom);editingId=id;
+      edTitle.textContent="編輯模板（自訂）";delBtn.style.display="";
+      toast("已儲存「"+name+"」為共用模板，預約頁即可套用");
+    }
+    renderList();
+  });
+  document.getElementById("delBtn").addEventListener("click",function(){
+    if(!isCustom(editingId))return;
+    var t=tplById(editingId);custom=custom.filter(function(x){return x.id!==editingId;});saveJSON(KEY.custom,custom);
+    pins=pins.filter(function(x){return x!==editingId;});saveJSON(KEY.pins,pins);
+    toast("已刪除「"+(t?t.name:"")+"」");newTemplate();
+  });
 
-            /* 循環 */
-            after(20800,function(){startAnimation();});
-        }
+  /* ---------- 導航 ---------- */
+  document.getElementById("goAppt").addEventListener("click",function(){location.href="預約操作模擬.html";});
 
-        /* ---------- 跳轉到指定步驟（靜態定格） ---------- */
-        function jumpToStep(i){
-            clearTimers();state.isPlaying=false;
-            playPauseBtn.textContent="繼續";playPauseBtn.classList.remove("playing");
-            resetAll();setStep(i);
-            if(i===0){
-                hints[0].classList.add("show");openTplBtn.classList.add("glow");
-            }else if(i===1){
-                secList.classList.remove("dim");hints[1].classList.add("show");card1.classList.add("glow");
-            }else if(i===2){
-                secList.classList.remove("dim");star1.classList.add("pinned");
-                card1.classList.add("active");apply1.textContent="目前套用";apply1.classList.add("current");
-                hints[2].classList.add("show");renderPreview(TPL_BASE,{showManual:true});
-            }else if(i===3){
-                secBuilder.classList.remove("dim");star1.classList.add("pinned");
-                card1.classList.add("active");apply1.textContent="目前套用";apply1.classList.add("current");
-                blk2.classList.add("editing");
-                blk2body.textContent="看診班別：{{班別}}（{{醫師姓名}}）\n請於療程前提早 10 分鐘報到。\n{{注意事項}}";
-                hints[3].classList.add("show");renderPreview(TPL_CUSTOM,{showManual:true});
-            }else if(i===4){
-                secBuilder.classList.remove("dim");star1.classList.add("pinned");
-                card1.classList.add("active");apply1.textContent="目前套用";apply1.classList.add("current");
-                blk2body.textContent="看診班別：{{班別}}（{{醫師姓名}}）\n請於療程前提早 10 分鐘報到。\n{{注意事項}}";
-                renderPreview(TPL_CUSTOM,{showManual:true});
-                hints[4].classList.add("show");saveBtn.classList.add("glow");
-            }
-        }
-        window.jumpToStep=jumpToStep;
+  /* ---------- toast ---------- */
+  var toastTimer;
+  function toast(msg){var el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove("show");},2400);}
 
-        /* ---------- 控制 ---------- */
-        function togglePlayPause(){
-            if(state.isPlaying){state.isPlaying=false;clearTimers();playPauseBtn.textContent="繼續";playPauseBtn.classList.remove("playing");}
-            else{startAnimation();}
-        }
-        restartBtn.addEventListener("click",startAnimation);
-        playPauseBtn.addEventListener("click",togglePlayPause);
-
-        /* 手動互動：點按鈕/卡片也能看效果 */
-        openTplBtn.addEventListener("click",function(){secList.classList.remove("dim");});
-        apply1.addEventListener("click",function(){card1.classList.add("active");apply1.textContent="目前套用";apply1.classList.add("current");renderPreview(TPL_BASE,{showManual:true,flash:true});});
-        star1.addEventListener("click",function(e){e.stopPropagation();star1.classList.toggle("pinned");});
-        saveBtn.addEventListener("click",function(){successMsg.classList.add("show");setTimeout(function(){successMsg.classList.remove("show");},3000);});
-
-        /* 啟動 */
-        setTimeout(startAnimation,500);
-    })();
-    </script>
+  /* ---------- init ---------- */
+  renderList();
+  loadIntoEditor(builtin[0].id);
+})();
+</script>
 </body>
 </html>
