@@ -20,16 +20,7 @@
   button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
   input,textarea,select{font-family:inherit}
 
-  .app{display:grid;grid-template-columns:188px 1fr;grid-template-rows:52px 1fr;height:100vh;grid-template-areas:"side top" "side main"}
-  .side{grid-area:side;background:var(--side);color:var(--side-text);overflow-y:auto;font-size:13px}
-  .side-brand{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
-  .side-brand .logo{width:30px;height:30px;border-radius:7px;background:#eef2f6;color:#1f6feb;display:grid;place-items:center;font-weight:800;font-size:11px}
-  .side-brand b{font-size:13px;color:#fff;font-weight:700}
-  .side-brand span{font-size:11px;color:#9fb0c0;display:block}
-  .side-group{padding:7px 14px 4px;font-size:11px;color:#7d8b99;font-weight:700;letter-spacing:.5px;margin-top:4px}
-  .side-item{padding:7px 14px 7px 30px;color:var(--side-text);cursor:pointer;transition:.15s}
-  .side-item:hover{background:var(--side-2);color:#fff}
-  .side-item.active{background:var(--side-active);color:#fff;font-weight:600}
+  .app{display:grid;grid-template-columns:1fr;grid-template-rows:52px 1fr;height:100vh;grid-template-areas:"top" "main"}
   .top{grid-area:top;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 18px}
   .top .np{font-weight:800;color:#1f6feb;font-size:17px;letter-spacing:.5px}
   .top .title{font-weight:600}
@@ -132,15 +123,6 @@
 </head>
 <body>
 <div class="app">
-  <aside class="side">
-    <div class="side-brand"><div class="logo">光澤</div><div><b>三重光澤</b><span>光澤</span></div></div>
-    <div class="side-group">📋 預約</div>
-    <div class="side-item" id="goAppt">預約操作 ↗</div>
-    <div class="side-item">預約查詢</div>
-    <div class="side-group">🛠 設定</div>
-    <div class="side-item active">簡訊模板設定</div>
-  </aside>
-
   <header class="top">
     <span class="np">NPOS</span><span class="title">簡訊模板設定</span>
     <span class="ver">正式</span><span class="vnum">v2.48.0</span>
@@ -372,9 +354,6 @@
     pins=pins.filter(function(x){return x!==editingId;});saveJSON(KEY.pins,pins);
     toast("已刪除「"+(t?t.name:"")+"」");newTemplate();
   });
-
-  /* ---------- 導航 ---------- */
-  document.getElementById("goAppt").addEventListener("click",function(){location.href="預約操作模擬.html";});
 
   /* ---------- toast ---------- */
   var toastTimer;
