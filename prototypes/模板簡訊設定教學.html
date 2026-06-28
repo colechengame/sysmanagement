@@ -228,7 +228,7 @@
   function smsSegments(len){if(len===0)return 0;if(len<=70)return 1;return Math.ceil(len/67);}
 
   /* ---------- 範例資料（預覽用） ---------- */
-  var sample={"會員姓名":"林雅婷","門市名稱":"三重光澤","門市地址":"三重區正義北路122號","門市電話":"02-29850300","預約日期":"06/26(五)","預約時間":"17:00","療程":"臉-超導(60分)"};
+  var sample={"會員姓名":"王○○","門市名稱":"三重光澤","門市地址":"三重區正義北路122號","門市電話":"02-xxxx-xxxx","預約日期":"06/26(五)","預約時間":"17:00","療程":"臉-超導(60分)"};
   var SYS=[["會員姓名","會員姓名"],["門市名稱","預約門市"],["預約日期","預約日期"],["預約時間","預約時間"],["療程","施做療程"],["門市地址","門市地址"],["門市電話","門市電話"]];
 
   /* ---------- 模板資料（與預約操作頁共用 localStorage） ---------- */
@@ -341,7 +341,7 @@
       saveJSON(KEY.custom,custom);toast("已更新「"+name+"」");
     }else{
       var id="c"+Date.now();
-      custom.push({id:id,name:name,desc:desc||"自訂模板",body:body,enabled:enabled,creator:"鄭楷錚",created:todayStr(),scenario:"預約簡訊"});
+      custom.push({id:id,name:name,desc:desc||"自訂模板",body:body,enabled:enabled,creator:"系統人員",created:todayStr(),scenario:"預約簡訊"});
       saveJSON(KEY.custom,custom);editingId=id;
       edTitle.textContent="編輯模板（自訂）";delBtn.style.display="";
       toast("已儲存「"+name+"」為共用模板，預約頁即可套用");

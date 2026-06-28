@@ -168,7 +168,7 @@
     <div class="m-body">
       <div class="fld">
         <label>姓名</label>
-        <div class="name-row"><div class="nm-val" id="apName">GT0011059 鄭楷錚 09/19</div><button class="mini-btn">重置</button></div>
+        <div class="name-row"><div class="nm-val" id="apName">示範-001 王○○ 09/19</div><button class="mini-btn">重置</button></div>
       </div>
       <div class="fld"><label>床位</label><select class="ctrl" id="apBed"><option>肌動減脂</option><option>冷凍減脂</option><option>貴妃減脂</option><option>超導1</option></select></div>
       <div class="fld">
@@ -265,14 +265,14 @@
   var BEDS=["AB1","AB2","AB3(清道夫)","IV","肌動減脂","冷凍減脂","貴妃減脂","超導1"];
   var TIMES=["17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
   var bookings={
-    "肌動減脂|17:00":{cls:"b-blue",name:"鄭楷錚",memberId:"GT0011059",phone:"0912345678",item:"臉-超導(60分)",noSms:false},
-    "冷凍減脂|17:30":{cls:"b-teal",name:"葉姵岑",memberId:"GT0019988",phone:"0979896177",item:"超音波導入",noSms:false},
-    "貴妃減脂|18:00":{cls:"b-red",name:"王曉玲",memberId:"GT0020012",phone:"0975263248",item:"超音波導入",noSms:true},
-    "超導1|19:30":{cls:"b-pink",name:"游庚霖",memberId:"GT0033226",phone:"0933226021",item:"超音波導入",noSms:false},
-    "AB1|18:00":{cls:"b-blue",name:"林佳諭",memberId:"GT0087349",phone:"0987349500",item:"杏仁酸",noSms:false}
+    "肌動減脂|17:00":{cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:"臉-超導(60分)",noSms:false},
+    "冷凍減脂|17:30":{cls:"b-teal",name:"葉○○",memberId:"示範-002",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:false},
+    "貴妃減脂|18:00":{cls:"b-red",name:"林○○",memberId:"示範-003",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:true},
+    "超導1|19:30":{cls:"b-pink",name:"游○○",memberId:"示範-004",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:false},
+    "AB1|18:00":{cls:"b-blue",name:"張○○",memberId:"示範-005",phone:"09oo-xxx-oooo",item:"杏仁酸",noSms:false}
   };
 
-  var STORE={名稱:"三重光澤",地址:"三重區正義北路122號",電話:"02-29850300"};
+  var STORE={名稱:"三重光澤",地址:"三重區正義北路122號",電話:"02-xxxx-xxxx"};
 
   function renderSched(){
     var head=document.getElementById("schedHead");
@@ -402,7 +402,7 @@
   document.getElementById("apSave").addEventListener("click",function(){
     closeScrim("apptScrim");
     var timeStr=document.getElementById("apHour").value+":"+document.getElementById("apMin").value;
-    var bk={cls:"b-blue",name:"鄭楷錚",memberId:"GT0011059",phone:"0912345678",item:document.getElementById("apItem").value,noSms:false};
+    var bk={cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:document.getElementById("apItem").value,noSms:false};
     if(pendingNew){bookings[pendingNew]=bk;renderSched();}
     toast("預約已建立，請確認簡訊內容");
     setTimeout(function(){openSms(bk,timeStr);},250);
