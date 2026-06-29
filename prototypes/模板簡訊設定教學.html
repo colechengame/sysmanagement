@@ -89,8 +89,20 @@
   .param-row{display:flex;flex-wrap:wrap;gap:6px}
   .pchip{font-size:11.5px;font-weight:600;font-family:var(--mono);color:var(--blue-deep);background:var(--blue-wash);border:1px solid transparent;padding:5px 9px;border-radius:7px;display:inline-flex;align-items:center;gap:5px}
   .pchip:hover{background:#dbe7fb}
+  .pchip.cus{color:#5b21b6;background:#ede9fe}.pchip.cus:hover{background:#ddd6fe}
   .pchip .d{width:6px;height:6px;border-radius:50%}
-  .pchip .d.sys{background:var(--blue)}
+  .pchip .d.sys{background:var(--blue)}.pchip .d.cus{background:#7c3aed}
+  .bubble .tok.cus{background:#ede9fe;color:#5b21b6}
+  .cpitem{display:flex;align-items:center;gap:6px;padding:5px 2px;border-bottom:1px dashed var(--line);font-size:12px}
+  .cpitem:last-child{border-bottom:none}
+  .cpitem .cn{font-family:var(--mono);font-weight:650;color:#5b21b6}
+  .cpitem .cv{flex:1;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cpitem .cx{width:20px;height:20px;border-radius:5px;display:grid;place-items:center;color:var(--faint);font-size:13px;flex:none}
+  .cpitem .cx:hover{background:var(--danger-wash);color:var(--danger)}
+  .cp-add{display:flex;gap:6px;margin-top:8px}
+  .cp-in{flex:1;min-width:0;padding:6px 9px;border:1px solid var(--line-strong);border-radius:7px;font-size:12.5px;background:#fff;font-family:inherit}
+  .cp-in:focus{outline:none;border-color:var(--blue)}
+  .cp-btn{padding:6px 11px;background:var(--blue);color:#fff;border-radius:7px;font-size:12.5px;font-weight:600;white-space:nowrap;cursor:pointer;border:none;font-family:inherit}
   .ed-foot{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
   .btn{font-size:13.5px;font-weight:650;padding:9px 16px;border-radius:8px}
   .btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue-deep)}
@@ -148,6 +160,15 @@
           <div><div class="tl">包含「接受電訪/銷」</div><div class="ts">系統預設依會員「標註」關鍵字判斷；開啟後另檢查會員維護「接受電訪/銷」欄位</div></div>
           <div class="switch" id="swTele" role="switch" aria-checked="false"></div>
         </div>
+        <div class="toggle-row" style="flex-direction:column;align-items:flex-start;gap:6px;border-bottom:none;padding-bottom:4px">
+          <div><div class="tl">自訂參數</div><div class="ts">在模板中插入 <code style="font-size:11px;background:var(--surface-2);padding:0 4px;border-radius:4px">{{參數名稱}}</code>，套用時自動帶入設定值（中英文均可）</div></div>
+          <div id="cparamItems" style="width:100%"></div>
+          <div class="cp-add">
+            <input class="cp-in" id="cpName" placeholder="參數名稱（如：院長姓名）" maxlength="20">
+            <input class="cp-in" id="cpVal" placeholder="帶入值（如：陳○○）" maxlength="60">
+            <button class="cp-btn" id="cpAddBtn">＋ 新增</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -176,8 +197,10 @@
           <div class="ed-field">
             <label>簡訊內容 <span style="color:var(--danger)">*</span></label>
             <textarea class="ed-area" id="edBody" placeholder="輸入內容，點下方參數插入游標位置…"></textarea>
-            <div class="param-hint">點擊插入參數（皆由系統自動帶入預約資料）：</div>
+            <div class="param-hint">點擊插入參數：</div>
             <div class="param-row" id="sysRow"></div>
+            <div class="param-hint" id="cpChipHint" style="display:none;margin-top:6px;color:#5b21b6">自訂參數：</div>
+            <div class="param-row" id="customRow"></div>
           </div>
           <div class="ed-foot">
             <button class="btn btn-primary" id="saveBtn">儲存為共用模板</button>
@@ -203,7 +226,8 @@
             <div class="stat"><div class="n" id="pvSegs">0</div><div class="l">預估簡訊則數</div></div>
           </div>
           <div class="legend">
-            <span class="k"><span class="sw sys"></span>參數自動帶入預約資料</span>
+            <span class="k"><span class="sw sys"></span>系統參數（預約資料）</span>
+            <span class="k"><span class="sw" style="background:#ede9fe;border:1px solid #7c3aed"></span>自訂參數</span>
           </div>
         </div>
       </div>
@@ -220,7 +244,7 @@
   var store={get:function(k){try{return localStorage.getItem(k);}catch(e){return mem[k]||null;}},
              set:function(k,v){try{localStorage.setItem(k,v);}catch(e){mem[k]=v;}}};
   var KEY={custom:"npos_tpl_custom",pins:"npos_tpl_pins",recent:"npos_tpl_recent",last:"npos_tpl_last",
-           swMain:"npos_sms_enabled",swTele:"npos_sms_tele"};
+           swMain:"npos_sms_enabled",swTele:"npos_sms_tele",cparam:"npos_custom_params"};
   function loadJSON(k,d){try{var v=store.get(k);return v?JSON.parse(v):d;}catch(e){return d;}}
   function saveJSON(k,v){store.set(k,JSON.stringify(v));}
   function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
@@ -242,6 +266,7 @@
   ];
   var custom=loadJSON(KEY.custom,[]);
   var pins=loadJSON(KEY.pins,[]);
+  var cparams=loadJSON(KEY.cparam,[]);
   function allTpl(){return builtin.concat(custom);}
   function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
   function isCustom(id){return id&&id.indexOf("c")===0;}
@@ -255,13 +280,14 @@
 
   /* ---------- 預覽 ---------- */
   var pvBubble=document.getElementById("pvBubble"),pvChars=document.getElementById("pvChars"),pvSegs=document.getElementById("pvSegs");
-  function resolved(body){return body.replace(/\{\{(.+?)\}\}/g,function(m,k){if(sample[k]!==undefined)return sample[k];return m;});}
+  function cpVal(k){for(var i=0;i<cparams.length;i++)if(cparams[i].name===k)return cparams[i].value;return null;}
+  function resolved(body){return body.replace(/\{\{(.+?)\}\}/g,function(m,k){if(sample[k]!==undefined)return sample[k];var cv=cpVal(k);if(cv!==null)return cv;return m;});}
   function previewHTML(body){
     var out="",re=/\{\{(.+?)\}\}/g,last=0,m;
     while((m=re.exec(body))){
       out+=esc(body.slice(last,m.index));var k=m[1];
       if(sample[k]!==undefined)out+='<span class="tok">'+esc(sample[k])+'</span>';
-      else out+=esc(m[0]);
+      else{var cv=cpVal(k);if(cv!==null)out+='<span class="tok cus">'+esc(cv)+'</span>';else out+=esc(m[0]);}
       last=re.lastIndex;
     }
     out+=esc(body.slice(last));return out;
@@ -279,6 +305,37 @@
   /* ---------- 參數插入 ---------- */
   function pchip(k,man){return '<button class="pchip'+(man?' man':'')+'" data-token="{{'+k+'}}"><span class="d '+(man?'man':'sys')+'"></span>{{'+k+'}}</button>';}
   document.getElementById("sysRow").innerHTML=SYS.map(function(s){return pchip(s[0],false);}).join("");
+  function renderCustomChips(){
+    var row=document.getElementById("customRow"),hint=document.getElementById("cpChipHint");
+    if(!cparams.length){row.innerHTML="";hint.style.display="none";return;}
+    hint.style.display="";
+    row.innerHTML=cparams.map(function(p){return '<button class="pchip cus" data-token="{{'+esc(p.name)+'}}"><span class="d cus"></span>{{'+esc(p.name)+'}}</button>';}).join("");
+  }
+  function renderCparamItems(){
+    var el=document.getElementById("cparamItems");
+    if(!cparams.length){el.innerHTML='<div style="font-size:12px;color:var(--faint);padding:4px 0">尚無自訂參數</div>';return;}
+    el.innerHTML=cparams.map(function(p,i){
+      return '<div class="cpitem"><span class="cn">{{'+esc(p.name)+'}}</span><span style="font-size:11px;color:var(--faint);margin:0 5px">→</span><span class="cv">'+esc(p.value||'（空值）')+'</span><button class="cx" data-del="'+i+'" title="刪除">✕</button></div>';
+    }).join("");
+  }
+  document.getElementById("cparamItems").addEventListener("click",function(e){
+    var b=e.target.closest("[data-del]");if(!b)return;
+    var i=parseInt(b.getAttribute("data-del"),10),name=cparams[i].name;
+    cparams.splice(i,1);saveJSON(KEY.cparam,cparams);
+    renderCparamItems();renderCustomChips();updatePreview();
+    toast("已刪除自訂參數「"+name+"」");
+  });
+  document.getElementById("cpAddBtn").addEventListener("click",function(){
+    var name=document.getElementById("cpName").value.trim();
+    var val=document.getElementById("cpVal").value.trim();
+    if(!name){toast("請輸入參數名稱");document.getElementById("cpName").focus();return;}
+    if(SYS.some(function(s){return s[0]===name;})){toast("「"+name+"」與系統參數名稱衝突");return;}
+    if(cparams.some(function(p){return p.name===name;})){toast("參數「"+name+"」已存在");return;}
+    cparams.push({name:name,value:val});saveJSON(KEY.cparam,cparams);
+    document.getElementById("cpName").value="";document.getElementById("cpVal").value="";
+    renderCparamItems();renderCustomChips();
+    toast("已新增自訂參數 {{"+name+"}}");
+  });
   function insertToken(tok){
     var ta=document.getElementById("edBody"),s=ta.selectionStart,e=ta.selectionEnd,v=ta.value;
     ta.value=v.slice(0,s)+tok+v.slice(e);ta.focus();ta.selectionStart=ta.selectionEnd=s+tok.length;updatePreview();
@@ -360,6 +417,7 @@
   function toast(msg){var el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove("show");},2400);}
 
   /* ---------- init ---------- */
+  renderCparamItems();renderCustomChips();
   renderList();
   loadIntoEditor(builtin[0].id);
 })();

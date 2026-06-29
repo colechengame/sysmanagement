@@ -239,7 +239,7 @@
   var mem={};
   var store={get:function(k){try{return localStorage.getItem(k);}catch(e){return mem[k]||null;}},
              set:function(k,v){try{localStorage.setItem(k,v);}catch(e){mem[k]=v;}}};
-  var KEY={custom:"npos_tpl_custom",pins:"npos_tpl_pins",recent:"npos_tpl_recent",last:"npos_tpl_last"};
+  var KEY={custom:"npos_tpl_custom",pins:"npos_tpl_pins",recent:"npos_tpl_recent",last:"npos_tpl_last",cparam:"npos_custom_params"};
   function loadJSON(k,d){try{var v=store.get(k);return v?JSON.parse(v):d;}catch(e){return d;}}
   function saveJSON(k,v){store.set(k,JSON.stringify(v));}
   function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
@@ -256,6 +256,7 @@
   var custom=loadJSON(KEY.custom,[]);
   var pins=loadJSON(KEY.pins,[]);
   var recent=loadJSON(KEY.recent,[]);
+  var cparams=loadJSON(KEY.cparam,[]);
   var lastId=store.get(KEY.last)||null;
   function allTpl(){return builtin.concat(custom);}
   function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
@@ -316,7 +317,15 @@
     };
   }
   /* 套用模板時把參數注入為實際值（參數示意只保留在簡訊設定頁） */
-  function resolved(body){return body.replace(/\{\{(.+?)\}\}/g,function(m,k){if(ctx&&ctx[k]!==undefined&&ctx[k]!=="")return ctx[k];if(ctx&&ctx[k]==="")return "";return m;});}
+  function resolved(body){
+    cparams=loadJSON(KEY.cparam,[]);
+    return body.replace(/\{\{(.+?)\}\}/g,function(m,k){
+      if(ctx&&ctx[k]!==undefined&&ctx[k]!=="")return ctx[k];
+      if(ctx&&ctx[k]==="")return "";
+      for(var i=0;i<cparams.length;i++)if(cparams[i].name===k)return cparams[i].value;
+      return m;
+    });
+  }
 
   /* ---------- SMS modal 內容更新 ---------- */
   var smsContent=document.getElementById("smsContent");
