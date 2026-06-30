@@ -117,6 +117,20 @@
   .legend .sw{width:14px;height:14px;border-radius:4px}
   .legend .sw.sys{background:var(--blue-wash);border:1px solid var(--blue)}
 
+  /* 其他門市模板 */
+  .t-card.ext{background:#f8fbff;border-color:#d6e4f7}
+  .t-card.ext:hover{border-color:#a8c7ef}
+  .t-card.ext.active{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-wash)}
+  .t-tag.ext{background:#e3f0ff;color:#1565c0;border-color:#b3d4f5}
+  .t-store-badge{font-size:9.5px;color:#4a7ab5;background:#eaf2ff;border-radius:4px;padding:1px 6px;font-weight:600;display:inline-block;margin-top:4px}
+  .star.ext-star{opacity:.3;pointer-events:none}
+  /* 唯讀 banner */
+  .ed-ro-bar{background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 13px;font-size:12.5px;color:#795800;margin-bottom:12px;display:flex;align-items:center;gap:8px;line-height:1.4}
+  .ed-ro-bar b{color:#5c4200}
+  .btn-copy{background:#e3f0ff;color:#1565c0;border:1px solid #b3d4f5}
+  .btn-copy:hover{background:#cce0ff}
+  .ed-input[readonly],.ed-area[readonly]{background:var(--surface-2);color:var(--muted);cursor:default}
+  .ed-input[readonly]:focus,.ed-area[readonly]:focus{border-color:var(--line-strong);box-shadow:none}
   .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2933;color:#fff;font-size:13px;font-weight:550;padding:11px 18px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;visibility:hidden;transition:.22s;z-index:90}
   .toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -171,6 +185,7 @@
       <div class="card">
         <div class="card-h" id="edTitle">編輯模板</div>
         <div class="card-b">
+          <div class="ed-ro-bar" id="edRoBar" style="display:none"></div>
           <div class="ed-field"><label>模板名稱 <span style="color:var(--danger)">*</span></label><input class="ed-input" id="edName" placeholder="例如：醫美－療程提醒"></div>
           <div class="ed-field"><label>用途說明</label><input class="ed-input" id="edDesc" placeholder="一句話描述何時使用"></div>
           <div class="ed-field">
@@ -182,6 +197,7 @@
           <div class="ed-foot">
             <button class="btn btn-primary" id="saveBtn">儲存為共用模板</button>
             <button class="btn btn-ghost" id="newBtn">清空</button>
+            <button class="btn btn-copy" id="copyBtn" style="display:none">複製到本門市</button>
             <button class="btn btn-danger" id="delBtn" style="display:none">刪除</button>
             <label class="ed-enable"><span>啟用</span><span class="switch on" id="edEnable" role="switch" aria-checked="true" style="width:42px;height:23px"></span></label>
           </div>
@@ -257,11 +273,19 @@
     {id:"b4",name:"中醫－門診提醒",desc:"中醫門診當日提醒",enabled:true,
      body:"{{會員姓名}}您好，提醒您今日於{{門市名稱}}有門診預約{{預約時間}}，請依現場叫號順序看診。洽詢{{門市電話}}。"}
   ];
+  var ext=[
+    {id:"e1",name:"北投精緻美容－預約提醒",desc:"北投精緻美容門市自訂",enabled:true,storeId:"s2",storeName:"北投精緻美容",
+     body:"{{會員姓名}}您好，北投精緻美容提醒您{{預約日期}}{{預約時間}}的{{療程}}預約，請準時蒞臨。洽詢{{門市電話}}。"},
+    {id:"e2",name:"內湖光采－療程確認",desc:"內湖光采門市自訂",enabled:true,storeId:"s3",storeName:"內湖光采",
+     body:"{{會員姓名}}您好，提醒您{{預約日期}}於內湖光采的{{療程}}預約，時間{{預約時間}}。地址：{{門市地址}}。"}
+  ];
   var custom=loadJSON(KEY.custom,[]);
   var pins=loadJSON(KEY.pins,[]);
-  function allTpl(){return builtin.concat(custom);}
+  function allTpl(){return custom.concat(ext).concat(builtin);}
   function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
   function isCustom(id){return id&&id.indexOf("c")===0;}
+  function isExt(id){return id&&id.indexOf("e")===0;}
+  function todayStr(){var d=new Date();return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate();}
 
   /* ---------- 全域開關 ---------- */
   var swMain=document.getElementById("swMain"),swTele=document.getElementById("swTele");
@@ -313,21 +337,28 @@
   function matches(t){if(!search)return true;var q=search.toLowerCase();return t.name.toLowerCase().indexOf(q)>-1||(t.desc||"").toLowerCase().indexOf(q)>-1;}
   function starSVG(f){return '<svg viewBox="0 0 24 24" fill="'+(f?"currentColor":"none")+'" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.9l-5.8 3.05 1.1-6.47L2.6 9.9l6.5-.95z"/></svg>';}
   function cardHTML(t){
-    var pinned=pins.indexOf(t.id)>-1,cust=isCustom(t.id);
-    return '<div class="t-card'+(t.id===editingId?' active':'')+(t.enabled===false?' off':'')+'" data-edit="'+t.id+'">'+
+    var pinned=pins.indexOf(t.id)>-1,cust=isCustom(t.id),ext_t=isExt(t.id);
+    return '<div class="t-card'+(ext_t?' ext':'')+(t.id===editingId?' active':'')+(t.enabled===false?' off':'')+'" data-edit="'+t.id+'">'+
       '<div class="t-top"><div style="flex:1"><div class="t-name">'+esc(t.name)+'</div>'+
       (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
       (cust?'<div class="t-meta">'+esc(t.creator||"自訂")+' · '+esc(t.created||"")+'</div>':'')+
-      '</div><button class="star'+(pinned?' pinned':'')+'" data-pin="'+t.id+'" aria-label="釘選">'+starSVG(pinned)+'</button></div>'+
-      '<div style="display:flex;justify-content:flex-end;margin-top:7px"><span class="t-tag">'+(cust?"自訂模板":"系統模板")+'</span></div></div>';
+      (ext_t?'<div class="t-store-badge">'+esc(t.storeName||"")+'</div>':'')+
+      '</div><button class="star'+(pinned?' pinned':'')+(ext_t?' ext-star':'')+'" data-pin="'+t.id+'" aria-label="釘選">'+starSVG(pinned)+'</button></div>'+
+      '<div style="display:flex;justify-content:flex-end;margin-top:7px"><span class="t-tag'+(ext_t?' ext':'')+'">'+
+      (cust?"本門市自訂":ext_t?"其他門市":"系統內建")+'</span></div></div>';
   }
   function renderList(){
-    var all=allTpl().filter(matches);
-    var pinned=all.filter(function(t){return pins.indexOf(t.id)>-1;});
-    var rest=all.filter(function(t){return pins.indexOf(t.id)<0;});
-    var h="";
-    if(pinned.length)h+='<div class="group-t">★ 釘選</div>'+pinned.map(cardHTML).join("");
-    h+='<div class="group-t">全部模板</div>'+(rest.length?rest.map(cardHTML).join(""):'<div style="font-size:12px;color:var(--faint);padding:4px">無符合的模板</div>');
+    var pinnedAll=allTpl().filter(function(t){return pins.indexOf(t.id)>-1&&matches(t);});
+    var pinnedIds=pinnedAll.map(function(t){return t.id;});
+    var mine=custom.filter(function(t){return pinnedIds.indexOf(t.id)<0&&matches(t);});
+    var extList=ext.filter(function(t){return pinnedIds.indexOf(t.id)<0&&matches(t);});
+    var builtinList=builtin.filter(function(t){return pinnedIds.indexOf(t.id)<0&&matches(t);});
+    var h="",empty=!pinnedAll.length&&!mine.length&&!extList.length&&!builtinList.length;
+    if(pinnedAll.length)h+='<div class="group-t">★ 釘選</div>'+pinnedAll.map(cardHTML).join("");
+    if(mine.length)h+='<div class="group-t">本門市自訂</div>'+mine.map(cardHTML).join("");
+    if(extList.length)h+='<div class="group-t">其他門市</div>'+extList.map(cardHTML).join("");
+    if(builtinList.length)h+='<div class="group-t">系統內建</div>'+builtinList.map(cardHTML).join("");
+    if(empty)h='<div style="font-size:12px;color:var(--faint);padding:4px">無符合的模板</div>';
     document.getElementById("listScroll").innerHTML=h;
   }
   document.getElementById("listScroll").addEventListener("click",function(e){
@@ -345,12 +376,38 @@
   function loadIntoEditor(id){
     var t=tplById(id);if(!t)return;
     editingId=id;
+    var cust=isCustom(id),ext_t=isExt(id);
     edName.value=t.name;edDesc.value=t.desc||"";edBody.value=t.body;setEnable(t.enabled!==false);
-    edTitle.textContent=isCustom(id)?"編輯模板（自訂）":"編輯模板（系統內建 · 儲存將另存為自訂）";
-    delBtn.style.display=isCustom(id)?"":"none";
+    edName.readOnly=ext_t;edDesc.readOnly=ext_t;edBody.readOnly=ext_t;
+    var edRoBar=document.getElementById("edRoBar"),copyBtn=document.getElementById("copyBtn"),saveBtn=document.getElementById("saveBtn"),newBtn=document.getElementById("newBtn");
+    if(ext_t){
+      edTitle.textContent="檢視模板（其他門市）";
+      edRoBar.innerHTML='⚠ 此為「<b>'+esc(t.storeName||"其他門市")+'</b>」的模板，僅供檢視。若需使用請複製至本門市後再編輯。';
+      edRoBar.style.display="";
+    }else if(cust){
+      edTitle.textContent="編輯模板（本門市自訂）";
+      edRoBar.style.display="none";
+    }else{
+      edTitle.textContent="編輯模板（系統內建 · 儲存將另存為自訂）";
+      edRoBar.style.display="none";
+    }
+    saveBtn.style.display=ext_t?"none":"";
+    newBtn.style.display=ext_t?"none":"";
+    copyBtn.style.display=ext_t?"":"none";
+    delBtn.style.display=cust?"":"none";
     updatePreview();renderList();
   }
-  function newTemplate(){editingId=null;edName.value="";edDesc.value="";edBody.value="";setEnable(true);edTitle.textContent="新增模板";delBtn.style.display="none";updatePreview();renderList();}
+  function newTemplate(){
+    editingId=null;edName.value="";edDesc.value="";edBody.value="";setEnable(true);
+    edName.readOnly=false;edDesc.readOnly=false;edBody.readOnly=false;
+    edTitle.textContent="新增模板";
+    document.getElementById("edRoBar").style.display="none";
+    document.getElementById("saveBtn").style.display="";
+    document.getElementById("newBtn").style.display="";
+    document.getElementById("copyBtn").style.display="none";
+    delBtn.style.display="none";
+    updatePreview();renderList();
+  }
   document.getElementById("newBtn").addEventListener("click",newTemplate);
   document.getElementById("addBtn").addEventListener("click",function(){newTemplate();edName.focus();});
 
@@ -375,6 +432,14 @@
     var t=tplById(editingId);custom=custom.filter(function(x){return x.id!==editingId;});saveJSON(KEY.custom,custom);
     pins=pins.filter(function(x){return x!==editingId;});saveJSON(KEY.pins,pins);
     toast("已刪除「"+(t?t.name:"")+"」");newTemplate();
+  });
+  document.getElementById("copyBtn").addEventListener("click",function(){
+    var t=tplById(editingId);if(!t)return;
+    var id="c"+Date.now();
+    custom.push({id:id,name:t.name+"（複製）",desc:t.desc||"",body:t.body,enabled:true,creator:"系統人員",created:todayStr()});
+    saveJSON(KEY.custom,custom);
+    toast("已複製「"+t.name+"」至本門市，可進行編輯");
+    loadIntoEditor(id);
   });
 
   /* ---------- toast ---------- */

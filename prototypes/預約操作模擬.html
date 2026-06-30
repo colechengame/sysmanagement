@@ -219,6 +219,10 @@
       <div class="tpl-bar">
         <div class="tt">💬 套用簡訊模板 <span class="lk" id="manageTpl">管理模板 ↗</span></div>
         <div class="tpl-current" id="tplCurrent"></div>
+        <div style="position:relative;margin-bottom:8px">
+          <svg style="position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:#8a949c;pointer-events:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="tplSearch" placeholder="搜尋模板名稱…" style="width:100%;padding:7px 10px 7px 28px;border:1px solid var(--line-strong);border-radius:7px;font-size:13px;font-family:inherit;background:#fff">
+        </div>
         <div class="tpl-select-row">
           <select class="tpl-select" id="tplSelect"></select>
         </div>
@@ -265,12 +269,19 @@
     {id:"b4",name:"中醫－門診提醒",desc:"中醫門診當日提醒",
      body:"{{會員姓名}}您好，提醒您今日於{{門市名稱}}有門診預約{{預約時間}}，請依現場叫號順序看診。洽詢{{門市電話}}。"}
   ];
+  var ext=[
+    {id:"e1",name:"北投精緻美容－預約提醒",desc:"北投精緻美容門市自訂",storeId:"s2",storeName:"北投精緻美容",
+     body:"{{會員姓名}}您好，北投精緻美容提醒您{{預約日期}}{{預約時間}}的{{療程}}預約，請準時蒞臨。洽詢{{門市電話}}。"},
+    {id:"e2",name:"內湖光采－療程確認",desc:"內湖光采門市自訂",storeId:"s3",storeName:"內湖光采",
+     body:"{{會員姓名}}您好，提醒您{{預約日期}}於內湖光采的{{療程}}預約，時間{{預約時間}}。地址：{{門市地址}}。"}
+  ];
   var custom=loadJSON(KEY.custom,[]);
   var pins=loadJSON(KEY.pins,[]);
   var recent=loadJSON(KEY.recent,[]);
   var lastId=store.get(KEY.last)||null;
-  function allTpl(){return builtin.concat(custom);}
+  function allTpl(){return custom.concat(ext).concat(builtin);}
   function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
+  function isExt(id){return id&&id.indexOf("e")===0;}
   function smsSegments(len){if(len===0)return 0;if(len<=70)return 1;return Math.ceil(len/67);}
 
   /* ---------- 日期 / 時間工具 ---------- */
@@ -413,22 +424,33 @@
     if(!opts.silent)toast("已套用「"+t.name+"」並帶入預約資料");
   }
 
-  /* dropdown groups: 釘選 / 最近 / 全部 */
+  /* dropdown groups: 釘選 / 最近 / 本門市 / 其他門市 / 系統內建 */
+  var tplSearchQ="";
+  function matchesTpl(t){if(!tplSearchQ)return true;return t.name.toLowerCase().indexOf(tplSearchQ)>-1||(t.storeName||"").toLowerCase().indexOf(tplSearchQ)>-1;}
   function renderTplSelect(){
     var sel=document.getElementById("tplSelect");
-    function opt(t){return '<option value="'+t.id+'">'+esc(t.name)+(t.id.indexOf("c")===0?'（自訂）':'')+'</option>';}
-    var pinList=allTpl().filter(function(t){return pins.indexOf(t.id)>-1;});
-    var recentList=recent.map(tplById).filter(function(t){return t&&pins.indexOf(t.id)<0;});
-    var used=pinList.map(function(t){return t.id;}).concat(recentList.map(function(t){return t.id;}));
-    var rest=allTpl().filter(function(t){return used.indexOf(t.id)<0;});
+    function opt(t){
+      var label=t.name+(t.id.indexOf("c")===0?'（自訂）':isExt(t.id)?'（'+t.storeName+'）':'');
+      return '<option value="'+t.id+'">'+esc(label)+'</option>';
+    }
+    var pinList=allTpl().filter(function(t){return pins.indexOf(t.id)>-1&&matchesTpl(t);});
+    var pinnedIds=pinList.map(function(t){return t.id;});
+    var recentList=recent.map(tplById).filter(function(t){return t&&matchesTpl(t)&&pinnedIds.indexOf(t.id)<0;});
+    var usedIds=pinnedIds.concat(recentList.map(function(t){return t.id;}));
+    var mine=custom.filter(function(t){return matchesTpl(t)&&usedIds.indexOf(t.id)<0;});
+    var extList=ext.filter(function(t){return matchesTpl(t)&&usedIds.indexOf(t.id)<0;});
+    var builtinList=builtin.filter(function(t){return matchesTpl(t)&&usedIds.indexOf(t.id)<0;});
     var h='<option value="">— 請選擇模板 —</option>';
     if(pinList.length)h+='<optgroup label="★ 釘選">'+pinList.map(opt).join("")+'</optgroup>';
     if(recentList.length)h+='<optgroup label="最近使用">'+recentList.map(opt).join("")+'</optgroup>';
-    h+='<optgroup label="全部模板">'+rest.map(opt).join("")+'</optgroup>';
+    if(mine.length)h+='<optgroup label="本門市自訂">'+mine.map(opt).join("")+'</optgroup>';
+    if(extList.length)h+='<optgroup label="其他門市（僅可複製）">'+extList.map(opt).join("")+'</optgroup>';
+    if(builtinList.length)h+='<optgroup label="系統內建">'+builtinList.map(opt).join("")+'</optgroup>';
     sel.innerHTML=h;
     if(lastId&&tplById(lastId))sel.value=lastId;
   }
   document.getElementById("tplSelect").addEventListener("change",function(){if(this.value)applyTemplate(this.value);});
+  document.getElementById("tplSearch").addEventListener("input",function(){tplSearchQ=this.value.trim().toLowerCase();renderTplSelect();});
 
   function renderPinChips(){
     var box=document.getElementById("pinChips");
