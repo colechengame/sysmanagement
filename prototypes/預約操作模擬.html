@@ -265,11 +265,11 @@
   var BEDS=["AB1","AB2","AB3(清道夫)","IV","肌動減脂","冷凍減脂","貴妃減脂","超導1"];
   var TIMES=["17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
   var bookings={
-    "肌動減脂|17:00":{cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:"臉-超導(60分)",noSms:false},
-    "冷凍減脂|17:30":{cls:"b-teal",name:"葉○○",memberId:"示範-002",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:false},
-    "貴妃減脂|18:00":{cls:"b-red",name:"林○○",memberId:"示範-003",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:true},
-    "超導1|19:30":{cls:"b-pink",name:"游○○",memberId:"示範-004",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:false},
-    "AB1|18:00":{cls:"b-blue",name:"張○○",memberId:"示範-005",phone:"09oo-xxx-oooo",item:"杏仁酸",noSms:false}
+    "肌動減脂|17:00":{cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:"臉-超導(60分)",noSms:false,room:"診一",queueNo:"A03"},
+    "冷凍減脂|17:30":{cls:"b-teal",name:"葉○○",memberId:"示範-002",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:false,room:"診二",queueNo:"B07"},
+    "貴妃減脂|18:00":{cls:"b-red",name:"林○○",memberId:"示範-003",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:true,room:"診一",queueNo:"A05"},
+    "超導1|19:30":{cls:"b-pink",name:"游○○",memberId:"示範-004",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:false,room:"診二",queueNo:"B12"},
+    "AB1|18:00":{cls:"b-blue",name:"張○○",memberId:"示範-005",phone:"09oo-xxx-oooo",item:"杏仁酸",noSms:false,room:"診一",queueNo:"A08"}
   };
 
   var STORE={名稱:"三重光澤",地址:"三重區正義北路122號",電話:"02-xxxx-xxxx"};
@@ -308,11 +308,13 @@
 
   /* ---------- 目前預約上下文（給參數替換用） ---------- */
   var ctx=null;
+  function shiftFromTime(t){var h=parseInt(t,10);return h<12?"早診":h<17?"午診":"晚診";}
   function buildCtx(bk,timeStr,dateStr){
     return {
       "會員姓名":bk.name,"門市名稱":STORE.名稱,"門市地址":STORE.地址,"門市電話":STORE.電話,
-      "預約日期":dateStr,"預約時間":timeStr,"療程":bk.item,"班別":"","醫師姓名":"","noSms":!!bk.noSms,
-      "phone":bk.phone,"memberId":bk.memberId
+      "預約日期":dateStr,"預約時間":timeStr,"療程":bk.item,
+      "診間":bk.room||"診一","時段":bk.shift||shiftFromTime(timeStr),"派號":bk.queueNo||"—",
+      "noSms":!!bk.noSms,"phone":bk.phone,"memberId":bk.memberId
     };
   }
   /* 套用模板時把參數注入為實際值（參數示意只保留在簡訊設定頁） */
@@ -408,7 +410,7 @@
   document.getElementById("apSave").addEventListener("click",function(){
     closeScrim("apptScrim");
     var timeStr=document.getElementById("apHour").value+":"+document.getElementById("apMin").value;
-    var bk={cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:document.getElementById("apItem").value,noSms:false};
+    var bk={cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:document.getElementById("apItem").value,noSms:false,room:"診一",queueNo:"A01"};
     if(pendingNew){bookings[pendingNew]=bk;renderSched();}
     toast("預約已建立，請確認簡訊內容");
     setTimeout(function(){openSms(bk,timeStr);},250);
