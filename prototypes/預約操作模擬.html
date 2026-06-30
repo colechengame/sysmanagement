@@ -480,26 +480,49 @@
   }
 
   /* ---------- grid 點擊 ---------- */
-  var pendingNew=null;
+  var pendingNew=null,pendingEdit=null;
+  var apptTitle=document.querySelector("#apptScrim .m-head h3");
   document.getElementById("schedBody").addEventListener("click",function(e){
     var bookEl=e.target.closest("[data-book]");
-    if(bookEl){var key=bookEl.getAttribute("data-book"),bk=bookings[key],t=key.split("|")[1];openSms(bk,t);return;}
+    if(bookEl){
+      var key=bookEl.getAttribute("data-book"),bk=bookings[key],parts=key.split("|");
+      pendingEdit=key;pendingNew=null;
+      /* 帶入現有預約資料 */
+      document.getElementById("apName").textContent=(bk.memberId||"")+" "+(bk.name||"");
+      var bedSel=document.getElementById("apBed");
+      for(var i=0;i<bedSel.options.length;i++)if(bedSel.options[i].text===parts[0])bedSel.selectedIndex=i;
+      var hm=parts[1].split(":");document.getElementById("apHour").value=hm[0];document.getElementById("apMin").value=hm[1];
+      var itemSel=document.getElementById("apItem");
+      for(var j=0;j<itemSel.options.length;j++)if(itemSel.options[j].text===bk.item)itemSel.selectedIndex=j;
+      apptTitle.textContent="確認預約";
+      openScrim("apptScrim");
+      return;
+    }
     var newEl=e.target.closest("[data-new]");
     if(newEl){
-      var k=newEl.getAttribute("data-new");pendingNew=k;
+      var k=newEl.getAttribute("data-new");pendingNew=k;pendingEdit=null;
       var parts=k.split("|");if(BEDS.indexOf(parts[0])>-1){var bedSel=document.getElementById("apBed");for(var i=0;i<bedSel.options.length;i++){if(bedSel.options[i].value===parts[0])bedSel.selectedIndex=i;}}
       var hm=parts[1].split(":");document.getElementById("apHour").value=hm[0];document.getElementById("apMin").value=hm[1];
+      apptTitle.textContent="建立預約";
       openScrim("apptScrim");
     }
   });
 
-  /* 建立預約 → 儲存 → 發出簡訊 */
+  /* 預約 modal 儲存 → 發出簡訊 */
   document.getElementById("apSave").addEventListener("click",function(){
     closeScrim("apptScrim");
     var timeStr=document.getElementById("apHour").value+":"+document.getElementById("apMin").value;
-    var bk={cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:document.getElementById("apItem").value,noSms:false,room:"診一"};
-    if(pendingNew){bookings[pendingNew]=bk;renderSched();}
-    toast("預約已建立，請確認簡訊內容");
+    var bk;
+    if(pendingEdit){
+      bk=bookings[pendingEdit];
+      pendingEdit=null;
+      toast("預約已確認，請確認簡訊內容");
+    }else{
+      bk={cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:document.getElementById("apItem").value,noSms:false,room:"診一"};
+      if(pendingNew){bookings[pendingNew]=bk;renderSched();}
+      pendingNew=null;
+      toast("預約已建立，請確認簡訊內容");
+    }
     setTimeout(function(){openSms(bk,timeStr);},250);
   });
 
