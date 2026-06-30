@@ -261,7 +261,7 @@
   var mem={};
   var store={get:function(k){try{return localStorage.getItem(k);}catch(e){return mem[k]||null;}},
              set:function(k,v){try{localStorage.setItem(k,v);}catch(e){mem[k]=v;}}};
-  var KEY={custom:"npos_tpl_custom",pins:"npos_tpl_pins",recent:"npos_tpl_recent",last:"npos_tpl_last"};
+  var KEY={custom:"npos_tpl_custom",pins:"npos_tpl_pins",recent:"npos_tpl_recent",last:"npos_tpl_last",default:"npos_tpl_default"};
   function loadJSON(k,d){try{var v=store.get(k);return v?JSON.parse(v):d;}catch(e){return d;}}
   function saveJSON(k,v){store.set(k,JSON.stringify(v));}
   function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
@@ -327,7 +327,7 @@
     return bk;
   })();
 
-  var STORE={名稱:"示範光澤",地址:"XX區XX路1號",電話:"02-xxxx-xxxx",defaultTplId:"b2"};
+  var STORE={名稱:"示範光澤",地址:"XX區XX路1號",電話:"02-xxxx-xxxx"};
 
   function renderSched(){
     var head=document.getElementById("schedHead");
@@ -500,10 +500,11 @@
     renderAlert();renderPinChips();
     var now=new Date();
     document.getElementById("smsTime").value=todayISO()+"T"+pad2(now.getHours())+":"+pad2(now.getMinutes());
-    var useId=STORE.defaultTplId&&tplById(STORE.defaultTplId)
-      ?STORE.defaultTplId
+    var storeDefault=store.get(KEY.default)||null;
+    var useId=storeDefault&&tplById(storeDefault)
+      ?storeDefault
       :(lastId&&tplById(lastId)?lastId:builtin[0].id);
-    var remembered=!STORE.defaultTplId&&!!(lastId&&tplById(lastId));
+    var remembered=!storeDefault&&!!(lastId&&tplById(lastId));
     applyTemplate(useId,{silent:true,remembered:remembered});
     openScrim("smsScrim");
   }

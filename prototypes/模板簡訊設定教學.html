@@ -131,6 +131,9 @@
   .btn-copy:hover{background:#cce0ff}
   .ed-input[readonly],.ed-area[readonly]{background:var(--surface-2);color:var(--muted);cursor:default}
   .ed-input[readonly]:focus,.ed-area[readonly]:focus{border-color:var(--line-strong);box-shadow:none}
+  .t-tag.def{background:#fff8e1;color:#7a5400;border-color:#ffe082}
+  .btn-default{background:#fff8e1;color:#7a5400;border:1px solid #ffe082}.btn-default:hover{background:#fff0b3}
+  .btn-default.is-default{background:#ffe082;color:#5c4200;font-weight:700}
   .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2933;color:#fff;font-size:13px;font-weight:550;padding:11px 18px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;visibility:hidden;transition:.22s;z-index:90}
   .toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -197,6 +200,7 @@
           <div class="ed-foot">
             <button class="btn btn-primary" id="saveBtn">儲存為共用模板</button>
             <button class="btn btn-ghost" id="newBtn">清空</button>
+            <button class="btn btn-default" id="defaultBtn" style="display:none">設為門市預設</button>
             <button class="btn btn-copy" id="copyBtn" style="display:none">複製到本門市</button>
             <button class="btn btn-danger" id="delBtn" style="display:none">刪除</button>
             <label class="ed-enable"><span>啟用</span><span class="switch on" id="edEnable" role="switch" aria-checked="true" style="width:42px;height:23px"></span></label>
@@ -236,7 +240,7 @@
   var store={get:function(k){try{return localStorage.getItem(k);}catch(e){return mem[k]||null;}},
              set:function(k,v){try{localStorage.setItem(k,v);}catch(e){mem[k]=v;}}};
   var KEY={custom:"npos_tpl_custom",pins:"npos_tpl_pins",recent:"npos_tpl_recent",last:"npos_tpl_last",
-           swMain:"npos_sms_enabled",swTele:"npos_sms_tele"};
+           swMain:"npos_sms_enabled",swTele:"npos_sms_tele",default:"npos_tpl_default"};
   function loadJSON(k,d){try{var v=store.get(k);return v?JSON.parse(v):d;}catch(e){return d;}}
   function saveJSON(k,v){store.set(k,JSON.stringify(v));}
   function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
@@ -281,6 +285,7 @@
   ];
   var custom=loadJSON(KEY.custom,[]);
   var pins=loadJSON(KEY.pins,[]);
+  var defaultTplId=store.get(KEY.default)||"b2";
   function allTpl(){return custom.concat(ext).concat(builtin);}
   function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
   function isCustom(id){return id&&id.indexOf("c")===0;}
@@ -344,7 +349,9 @@
       (cust?'<div class="t-meta">'+esc(t.creator||"自訂")+' · '+esc(t.created||"")+'</div>':'')+
       (ext_t?'<div class="t-store-badge">'+esc(t.storeName||"")+'</div>':'')+
       '</div><button class="star'+(pinned?' pinned':'')+(ext_t?' ext-star':'')+'" data-pin="'+t.id+'" aria-label="釘選">'+starSVG(pinned)+'</button></div>'+
-      '<div style="display:flex;justify-content:flex-end;margin-top:7px"><span class="t-tag'+(ext_t?' ext':'')+'">'+
+      '<div style="display:flex;justify-content:flex-end;gap:4px;margin-top:7px">'+
+      (t.id===defaultTplId?'<span class="t-tag def">預設</span>':'')+
+      '<span class="t-tag'+(ext_t?' ext':'')+'">'+
       (cust?"本門市自訂":ext_t?"其他門市":"系統內建")+'</span></div></div>';
   }
   function renderList(){
@@ -395,6 +402,10 @@
     newBtn.style.display=ext_t?"none":"";
     copyBtn.style.display=ext_t?"":"none";
     delBtn.style.display=cust?"":"none";
+    var defaultBtn=document.getElementById("defaultBtn");
+    defaultBtn.style.display=ext_t?"none":"";
+    defaultBtn.textContent=id===defaultTplId?"✓ 已是門市預設":"設為門市預設";
+    defaultBtn.className="btn btn-default"+(id===defaultTplId?" is-default":"");
     updatePreview();renderList();
   }
   function newTemplate(){
@@ -405,6 +416,7 @@
     document.getElementById("saveBtn").style.display="";
     document.getElementById("newBtn").style.display="";
     document.getElementById("copyBtn").style.display="none";
+    document.getElementById("defaultBtn").style.display="none";
     delBtn.style.display="none";
     updatePreview();renderList();
   }
@@ -432,6 +444,16 @@
     var t=tplById(editingId);custom=custom.filter(function(x){return x.id!==editingId;});saveJSON(KEY.custom,custom);
     pins=pins.filter(function(x){return x!==editingId;});saveJSON(KEY.pins,pins);
     toast("已刪除「"+(t?t.name:"")+"」");newTemplate();
+  });
+  document.getElementById("defaultBtn").addEventListener("click",function(){
+    if(editingId===defaultTplId)return;
+    defaultTplId=editingId;
+    store.set(KEY.default,defaultTplId);
+    var t=tplById(defaultTplId);
+    this.textContent="✓ 已是門市預設";
+    this.className="btn btn-default is-default";
+    renderList();
+    toast("已將「"+(t?t.name:"")+"」設為門市預設");
   });
   document.getElementById("copyBtn").addEventListener("click",function(){
     var t=tplById(editingId);if(!t)return;
