@@ -651,6 +651,18 @@
         .detail-meta-row:last-child { border-bottom: none; }
         .detail-meta-row span:first-child { color: #888; }
         .detail-meta-row span:last-child { color: #333; font-weight: 500; }
+        .tag-modified {
+            display: inline-block;
+            margin-left: 6px;
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            font-size: 11px;
+            padding: 1px 6px;
+            font-weight: 600;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -884,7 +896,9 @@
         let currentAppointmentId = null;
         let pendingCancelId = null;
         let pendingCancelAppointmentId = null;
-        let pendingCanceledAppointmentId = null; // 用於情境5記錄被取消的預約ID
+        let pendingCanceledAppointmentId = null;
+        let originalSmsContent = '';   // 記錄模板帶入時的原始內容，用於偵測手動修改
+        let currentTemplateName = '標準預約提醒';
 
         function getSmsStatusDisplay(smsStatus) {
             const statusMap = {
@@ -1329,6 +1343,8 @@
                                appointment.date + ' ' + appointment.time +
                                ' 預約' + appointment.treatment + '，02-0000-0000，請提前30分鐘蒞臨現場報到。';
             document.getElementById('smsContent').value = smsTemplate;
+            originalSmsContent = smsTemplate;
+            currentTemplateName = '標準預約提醒';
 
             // 計算發送時間（預約前1小時）
             const appointmentTime = new Date(appointment.date.replace(/\//g, '-') + 'T' + appointment.time);
@@ -1437,6 +1453,8 @@
                                replacementAppointment.date + ' ' + replacementAppointment.time +
                                ' 預約' + replacementAppointment.treatment + '，02-0000-0000，請提前30分鐘蒞臨現場報到。';
             document.getElementById('smsContent').value = smsTemplate;
+            originalSmsContent = smsTemplate;
+            currentTemplateName = '標準預約提醒';
 
             // 計算發送時間
             const appointmentTime = new Date(replacementAppointment.date.replace(/\//g, '-') + 'T' + replacementAppointment.time);
@@ -1550,10 +1568,12 @@
             // 記錄排程詳情供查閱
             var scheduledApt = appointments.find(function(a){ return a.id === currentAppointmentId; });
             if (scheduledApt) {
+                var isModified = content.trim() !== originalSmsContent.trim();
                 scheduledApt.smsDetail = {
                     content: content,
                     sendTime: sendTime,
-                    template: '自訂',
+                    template: currentTemplateName,
+                    modified: isModified,
                     createdAt: new Date().toISOString(),
                     createdBy: '門市員工'
                 };
@@ -1610,7 +1630,8 @@
             document.getElementById('detailRecipient').textContent = apt.name + '　' + apt.phone;
             document.getElementById('detailContent').textContent = d.content;
             document.getElementById('detailCharCount').textContent = d.content.length + ' 字';
-            document.getElementById('detailTemplate').textContent = d.template || '自訂';
+            var tplEl = document.getElementById('detailTemplate');
+            tplEl.innerHTML = (d.template || '自訂') + (d.modified ? '<span class="tag-modified">已手動修改</span>' : '');
             document.getElementById('detailCreatedAt').textContent = fmtDT(d.createdAt);
             document.getElementById('detailCreatedBy').textContent = d.createdBy || '--';
             document.getElementById('smsDetailModal').style.display = 'block';
