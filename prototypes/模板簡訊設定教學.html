@@ -120,6 +120,7 @@
   .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2933;color:#fff;font-size:13px;font-weight:550;padding:11px 18px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;visibility:hidden;transition:.22s;z-index:90}
   .toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  .live-clock{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;font-weight:700;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:3px 10px;letter-spacing:.5px}
 </style>
 </head>
 <body>
@@ -128,6 +129,7 @@
     <span class="np">NPOS</span><span class="title">簡訊模板設定</span>
     <span class="ver">正式</span><span class="vnum">v2.48.0</span>
     <span class="sp"></span>
+    <span class="live-clock" id="liveClock"></span>
     <div class="user"><div class="av"></div><div><div class="nm">鄭楷錚</div><div class="dp">資訊軟體開發課-台灣</div></div></div>
   </header>
 
@@ -222,11 +224,28 @@
   function loadJSON(k,d){try{var v=store.get(k);return v?JSON.parse(v):d;}catch(e){return d;}}
   function saveJSON(k,v){store.set(k,JSON.stringify(v));}
   function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-  function todayStr(){var d=new Date();return d.getFullYear()+"/"+("0"+(d.getMonth()+1)).slice(-2)+"/"+("0"+d.getDate()).slice(-2);}
+  /* ---------- 日期 / 時間工具 ---------- */
+  var WKDAYS=["日","一","二","三","四","五","六"];
+  function pad2(n){return ("0"+n).slice(-2);}
+  function todayShort(){var d=new Date();return pad2(d.getMonth()+1)+"/"+pad2(d.getDate())+"("+WKDAYS[d.getDay()]+")";}
+  function nowSlotStr(){
+    var d=new Date(),total=d.getHours()*60+d.getMinutes();
+    var sm=Math.round(total/30)*30;sm=Math.min(Math.max(sm,9*60),21*60);
+    return pad2(Math.floor(sm/60))+":"+pad2(sm%60);
+  }
+  function shiftFromTimeStr(t){var h=parseInt(t,10),m=parseInt((t.split(":")[1])||"0",10),tot=h*60+m;return tot<13*60?"早診":tot<17*60?"午診":"晚診";}
+  var SHIFT_START={"早診":9*60+30,"午診":13*60,"晚診":17*60};
+  function queueNoFromTimeStr(t){var h=parseInt(t,10),m=parseInt((t.split(":")[1])||"0",10),tot=h*60+m,st=SHIFT_START[shiftFromTimeStr(t)];return String(1+Math.max(0,Math.floor((tot-st)/15))*2);}
   function smsSegments(len){if(len===0)return 0;if(len<=70)return 1;return Math.ceil(len/67);}
 
-  /* ---------- 範例資料（預覽用） ---------- */
-  var sample={"會員姓名":"王○○","門市名稱":"三重光澤","門市地址":"三重區正義北路122號","門市電話":"02-xxxx-xxxx","預約日期":"06/26(五)","預約時間":"17:00","療程":"臉-超導(60分)","診間":"診一","時段":"晚診","派號":"1"};
+  /* ---------- 範例資料（預覽用，跟隨真實時間） ---------- */
+  var _sampleTime=nowSlotStr();
+  var sample={
+    "會員姓名":"王○○","門市名稱":"三重光澤","門市地址":"三重區正義北路122號","門市電話":"02-xxxx-xxxx",
+    "預約日期":todayShort(),"預約時間":_sampleTime,
+    "療程":"臉-超導(60分)","診間":"診一",
+    "時段":shiftFromTimeStr(_sampleTime),"派號":queueNoFromTimeStr(_sampleTime)
+  };
   var SYS=[["會員姓名","會員姓名"],["門市名稱","預約門市"],["預約日期","預約日期"],["預約時間","預約時間"],["療程","施做療程"],["診間","診間"],["時段","時段"],["派號","派號"],["門市地址","門市地址"],["門市電話","門市電話"]];
 
   /* ---------- 模板資料（與預約操作頁共用 localStorage） ---------- */
@@ -272,7 +291,12 @@
     pvChars.textContent=plain.length;pvChars.className="n"+(plain.length>70?" over":"");
     pvSegs.textContent=smsSegments(plain.length);
   }
-  document.getElementById("pvSample").innerHTML='已套用範例資料：會員 <b>'+esc(sample["會員姓名"])+'</b>／<b>'+esc(sample["門市名稱"])+'</b>／'+esc(sample["預約日期"])+' '+esc(sample["預約時間"])+'／'+esc(sample["療程"]);
+  document.getElementById("pvSample").innerHTML='已套用範例資料：會員 <b>'+esc(sample["會員姓名"])+'</b>／<b>'+esc(sample["門市名稱"])+'</b>／'+esc(sample["預約日期"])+' '+esc(sample["預約時間"])+'（'+esc(sample["時段"])+'第'+esc(sample["派號"])+'號）／'+esc(sample["療程"]);
+
+  /* ---- 即時時鐘 ---- */
+  function pad2c(n){return ("0"+n).slice(-2);}
+  function updateClock(){var now=new Date(),el=document.getElementById("liveClock");if(el)el.textContent=pad2c(now.getHours())+":"+pad2c(now.getMinutes())+":"+pad2c(now.getSeconds());}
+  updateClock();setInterval(updateClock,1000);
 
   /* ---------- 參數插入 ---------- */
   function pchip(k,man){return '<button class="pchip'+(man?' man':'')+'" data-token="{{'+k+'}}"><span class="d '+(man?'man':'sys')+'"></span>{{'+k+'}}</button>';}
