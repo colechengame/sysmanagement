@@ -591,6 +591,66 @@
         .btn-secondary:hover {
             background: #d0d0d0;
         }
+
+        /* 查看排程詳情按鈕 */
+        .hover-btn-view { background: #2196f3; color: white; }
+        .hover-btn-view:hover { background: #1976d2; }
+        .hover-btn-xs { min-width: 44px; padding: 5px 8px; font-size: 11px; }
+
+        /* 排程詳情 Modal */
+        .detail-status-banner {
+            background: #e3f2fd;
+            border-bottom: 1px solid #bbdefb;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .detail-status-badge {
+            background: #1976d2;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .detail-send-time { font-size: 13px; color: #0d47a1; }
+        .detail-inner { padding: 16px 20px; }
+        .detail-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+        .detail-lbl { font-size: 12px; color: #888; font-weight: 600; white-space: nowrap; min-width: 48px; }
+        .detail-val { font-size: 14px; color: #222; }
+        .detail-sep { border: none; border-top: 1px solid #f0f0f0; margin: 12px 0; }
+        .detail-content-label { font-size: 12px; color: #888; font-weight: 600; margin-bottom: 6px; }
+        .detail-content-box {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #333;
+            min-height: 72px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .detail-char { text-align: right; font-size: 11px; color: #999; margin-top: 4px; }
+        .detail-meta {
+            margin-top: 14px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 4px 12px;
+        }
+        .detail-meta-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 7px 0;
+            font-size: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-meta-row:last-child { border-bottom: none; }
+        .detail-meta-row span:first-child { color: #888; }
+        .detail-meta-row span:last-child { color: #333; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -698,6 +758,43 @@
         </div>
     </div>
 
+    <!-- 排程詳情查閱 Modal -->
+    <div id="smsDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>簡訊排程詳情</h3>
+                <span class="close" onclick="closeDetailModal()">&times;</span>
+            </div>
+            <div class="modal-body" style="padding:0">
+                <div class="detail-status-banner">
+                    <span class="detail-status-badge">排程中</span>
+                    <span class="detail-send-time">預計於 <strong id="detailSendTime">--</strong> 發送</span>
+                </div>
+                <div class="detail-inner">
+                    <div class="detail-row">
+                        <span class="detail-lbl">收件人</span>
+                        <span class="detail-val" id="detailRecipient">--</span>
+                    </div>
+                    <hr class="detail-sep">
+                    <div class="detail-content-label">簡訊內容</div>
+                    <div class="detail-content-box" id="detailContent"></div>
+                    <div class="detail-char" id="detailCharCount"></div>
+                    <div class="detail-meta">
+                        <div class="detail-meta-row"><span>使用模板</span><span id="detailTemplate">--</span></div>
+                        <div class="detail-meta-row"><span>排程建立</span><span id="detailCreatedAt">--</span></div>
+                        <div class="detail-meta-row"><span>建立者</span><span id="detailCreatedBy">--</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="closeDetailModal()">關閉</button>
+                    <button class="btn btn-danger" onclick="closeDetailAndCancel()">取消此排程</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 成功提示 -->
     <div id="successToast" class="success-toast">
         ✓ 訂下整體成功
@@ -735,7 +832,7 @@
             // 未過期 + 未發送（可發送 - 測試情境1標準發送）
             {id: 12, date: '2025/10/31', member: 'GT0000012', name: '馬小玲', phone: '0912345679', time: '15:00', treatment: '雷射美白', staff: '王護理師', contactStatus: '1', smsStatus: '', noSmsPreference: false},
             // 未過期 + 排程中（可取消）
-            {id: 13, date: '2025/10/31', member: 'GT0000013', name: '周美美', phone: '0923456780', time: '16:00', treatment: '★3樓-醫美諮詢', staff: '陳醫師', contactStatus: '2', smsStatus: 'scheduled', noSmsPreference: false},
+            {id: 13, date: '2025/10/31', member: 'GT0000013', name: '周美美', phone: '0923456780', time: '16:00', treatment: '★3樓-醫美諮詢', staff: '陳醫師', contactStatus: '2', smsStatus: 'scheduled', noSmsPreference: false, smsDetail: {content: '提醒您：有在【示範麗雅醫學美容】2025/10/31 16:00 預約★3樓-醫美諮詢，02-xxxx-xxxx，請提前30分鐘蒞臨現場報到。', sendTime: '2025-10-31T15:00', template: '標準預約提醒', createdAt: '2025-10-30T11:32', createdBy: '陳醫師'}},
             // 未過期 + 已送達（無操作）
             {id: 14, date: '2025/10/31', member: 'GT0000014', name: '【VIP】李董', phone: '0934567891', time: '17:00', treatment: '電痛衝導入', staff: '李技師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false},
             // 未過期 + 已取消（可重發 - 客人拒收設定 - 測試情境2）
@@ -745,7 +842,7 @@
             
             // ========== 明天 2025/11/01 的預約（都未過期）==========
             // 未過期 + 排程中
-            {id: 17, date: '2025/11/01', member: 'GT0000017', name: '孫小美', phone: '0967890124', time: '09:00', treatment: '雷射除斑', staff: '張護理師', contactStatus: '3', smsStatus: 'scheduled', noSmsPreference: false},
+            {id: 17, date: '2025/11/01', member: 'GT0000017', name: '孫小美', phone: '0967890124', time: '09:00', treatment: '雷射除斑', staff: '張護理師', contactStatus: '3', smsStatus: 'scheduled', noSmsPreference: false, smsDetail: {content: '提醒您：有在【示範麗雅醫學美容】2025/11/01 09:00 預約雷射除斑，02-xxxx-xxxx，請提前30分鐘蒞臨現場報到。', sendTime: '2025-11-01T08:00', template: '標準預約提醒', createdAt: '2025-10-31T09:50', createdBy: '張護理師'}},
             // 未過期 + 未發送（客人拒收設定 - 測試情境2）
             {id: 18, date: '2025/11/01', member: 'GT0000018', name: '李大偉', phone: '0978901235', time: '10:30', treatment: '★5樓-純美療程', staff: '電痛衝導入', contactStatus: '1', smsStatus: '', noSmsPreference: true},
             // 未過期 + 已送達
@@ -757,7 +854,7 @@
             // 未過期 + 發送失敗（客人拒收設定 - 測試情境2）
             {id: 22, date: '2025/11/01', member: 'GT0000022', name: '【不可約】黃...', phone: '0912345680', time: '17:30', treatment: '★5樓-純美療程', staff: '超音波導入', contactStatus: '1', smsStatus: 'failed', noSmsPreference: true},
             // 未過期 + 排程中
-            {id: 23, date: '2025/11/01', member: 'GT0000023', name: '鍾小華', phone: '0923456781', time: '19:00', treatment: '★3樓-醫美諮詢', staff: '張醫師', contactStatus: '', smsStatus: 'scheduled', noSmsPreference: false},
+            {id: 23, date: '2025/11/01', member: 'GT0000023', name: '鍾小華', phone: '0923456781', time: '19:00', treatment: '★3樓-醫美諮詢', staff: '張醫師', contactStatus: '', smsStatus: 'scheduled', noSmsPreference: false, smsDetail: {content: '提醒您：有在【示範麗雅醫學美容】2025/11/01 19:00 預約★3樓-醫美諮詢，02-xxxx-xxxx，請提前30分鐘蒞臨現場報到。', sendTime: '2025-11-01T18:00', template: '醫美諮詢提醒', createdAt: '2025-10-30T16:44', createdBy: '張醫師'}},
 
             // ========== 後天 2025/11/02 的預約（情境 3-5 測試數據）==========
             // 情境 3 測試：同日多預約（會員 M001）
@@ -770,7 +867,7 @@
             {id: 28, date: '2025/11/02', member: 'M002', name: '林小美', phone: '0922222222', time: '15:00', treatment: '雷射美白', staff: '王護理師', contactStatus: '', smsStatus: '', noSmsPreference: true},
 
             // 情境 5 測試：自動補位（會員 M003）
-            {id: 29, date: '2025/11/02', member: 'M003', name: '張大華', phone: '0933333333', time: '11:00', treatment: '電痛衝導入', staff: '李技師', contactStatus: '3', smsStatus: 'scheduled', noSmsPreference: false},
+            {id: 29, date: '2025/11/02', member: 'M003', name: '張大華', phone: '0933333333', time: '11:00', treatment: '電痛衝導入', staff: '李技師', contactStatus: '3', smsStatus: 'scheduled', noSmsPreference: false, smsDetail: {content: '提醒您：有在【示範麗雅醫學美容】2025/11/02 11:00 預約電痛衝導入，02-xxxx-xxxx，請提前30分鐘蒞臨現場報到。', sendTime: '2025-11-02T10:00', template: '標準預約提醒', createdAt: '2025-10-31T10:15', createdBy: '李技師'}},
             {id: 30, date: '2025/11/02', member: 'M003', name: '張大華', phone: '0933333333', time: '17:00', treatment: '2樓總店-【醫美】', staff: '超音波導入', contactStatus: '1', smsStatus: '', noSmsPreference: false},
 
             // 其他標準預約（用於對比）
@@ -901,9 +998,10 @@
                     html += '<button class="hover-btn hover-btn-send" onclick="sendSms(' + appointmentId + ')">發送簡訊</button>';
                     html += '</div>';
                 } else if (smsStatus === 'scheduled') {
-                    // 排程中：可取消
-                    html += '<div class="sms-hover-actions">';
-                    html += '<button class="hover-btn hover-btn-cancel" onclick="cancelSms(' + appointmentId + ')">取消</button>';
+                    // 排程中：可查看詳情 / 可取消
+                    html += '<div class="sms-hover-actions" style="display:flex;gap:4px">';
+                    html += '<button class="hover-btn hover-btn-view hover-btn-xs" onclick="viewSmsDetail(' + appointmentId + ')">查看</button>';
+                    html += '<button class="hover-btn hover-btn-cancel hover-btn-xs" onclick="cancelSms(' + appointmentId + ')">取消</button>';
                     html += '</div>';
                 } else if (smsStatus === 'cancelled' || smsStatus === 'failed') {
                     // 已取消或失敗：可重新發送
@@ -1449,6 +1547,17 @@
             }
 
             updateSmsStatus(currentAppointmentId, 'scheduled');
+            // 記錄排程詳情供查閱
+            var scheduledApt = appointments.find(function(a){ return a.id === currentAppointmentId; });
+            if (scheduledApt) {
+                scheduledApt.smsDetail = {
+                    content: content,
+                    sendTime: sendTime,
+                    template: '自訂',
+                    createdAt: new Date().toISOString(),
+                    createdBy: '門市員工'
+                };
+            }
             showToast('簡訊已安排排程，等待發送時間');
 
             renderTable();
@@ -1480,6 +1589,44 @@
                 document.getElementById('charCount').style.color = '#666';
             }
         }
+
+        // ── 排程詳情查閱 ──────────────────────────────
+        var detailAppointmentId = null;
+
+        function fmtDT(iso) {
+            if (!iso) return '--';
+            var d = new Date(iso);
+            var pad = function(n){ return String(n).padStart(2,'0'); };
+            return d.getFullYear() + '/' + pad(d.getMonth()+1) + '/' + pad(d.getDate()) +
+                   ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+        }
+
+        function viewSmsDetail(appointmentId) {
+            var apt = appointments.find(function(a){ return a.id === appointmentId; });
+            if (!apt || !apt.smsDetail) { alert('查無排程詳情'); return; }
+            detailAppointmentId = appointmentId;
+            var d = apt.smsDetail;
+            document.getElementById('detailSendTime').textContent = fmtDT(d.sendTime);
+            document.getElementById('detailRecipient').textContent = apt.name + '　' + apt.phone;
+            document.getElementById('detailContent').textContent = d.content;
+            document.getElementById('detailCharCount').textContent = d.content.length + ' 字';
+            document.getElementById('detailTemplate').textContent = d.template || '自訂';
+            document.getElementById('detailCreatedAt').textContent = fmtDT(d.createdAt);
+            document.getElementById('detailCreatedBy').textContent = d.createdBy || '--';
+            document.getElementById('smsDetailModal').style.display = 'block';
+        }
+
+        function closeDetailModal() {
+            document.getElementById('smsDetailModal').style.display = 'none';
+            detailAppointmentId = null;
+        }
+
+        function closeDetailAndCancel() {
+            var id = detailAppointmentId;
+            closeDetailModal();
+            if (id !== null) cancelSms(id);
+        }
+        // ─────────────────────────────────────────────
 
         function showToast(message) {
             const toast = document.getElementById('successToast');
@@ -1565,6 +1712,10 @@
                 
                 if (event.target === confirmModal) {
                     closeConfirmModal();
+                }
+
+                if (event.target === document.getElementById('smsDetailModal')) {
+                    closeDetailModal();
                 }
             });
         });
