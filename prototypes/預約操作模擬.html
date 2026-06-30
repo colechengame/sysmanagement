@@ -122,6 +122,17 @@
   .toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
 
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  /* ---- 時間列狀態 ---- */
+  table.sched tr.now-row td.time{background:#fff3cd;color:#7a5b00;font-weight:800;position:relative}
+  table.sched tr.now-row td.time::after{content:" ◀";font-size:9px;color:#e03c3c;position:absolute;right:3px;top:50%;transform:translateY(-50%)}
+  table.sched tr.past-row td.time{color:#b4bcc4}
+  table.sched tr.past-row .cell.b-blue,
+  table.sched tr.past-row .cell.b-teal,
+  table.sched tr.past-row .cell.b-red,
+  table.sched tr.past-row .cell.b-pink{opacity:.42;pointer-events:none}
+  /* ---- 即時時鐘 ---- */
+  .live-clock{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:3px 10px;letter-spacing:.5px}
 </style>
 </head>
 <body>
@@ -133,6 +144,7 @@
     <span class="title">預約操作</span>
     <span class="ver">正式</span><span class="vnum">v2.48.0</span>
     <span class="sp"></span>
+    <span class="live-clock" id="liveClock"></span>
     <div class="user"><div class="av"></div><div><div class="nm">鄭楷錚</div><div class="dp">資訊軟體開發課-台灣</div></div></div>
   </header>
 
@@ -146,7 +158,7 @@
       <button class="tb-btn">門診</button>
       <button class="tb-btn">🔄 刷新資料</button>
       <button class="tb-btn">‹</button>
-      <select class="tb-select"><option>2026/06/26（週五）</option></select>
+      <select class="tb-select" id="tbDateSel"><option id="tbDateOpt">今天</option></select>
       <button class="tb-btn">›</button>
       <button class="tb-btn">今天</button>
       <span class="tb-hint">點任一床位格 → 建立預約 → 發出簡訊</span>
@@ -181,7 +193,7 @@
       <div class="fld">
         <label>預約日期 / 時間</label>
         <div class="row2">
-          <input type="date" class="ctrl" id="apDate" value="2026-06-26">
+          <input type="date" class="ctrl" id="apDate">
           <div class="row2"><select class="ctrl" id="apHour"></select><select class="ctrl" id="apMin"><option>00</option><option>10</option><option>20</option><option>30</option><option>40</option><option>50</option></select></div>
         </div>
       </div>
@@ -221,7 +233,7 @@
         <div class="char-line"><span></span><span>字數限制：<b id="smsChars">0</b>/70字 · 預估 <b id="smsSegs">0</b> 則</span></div>
       </div>
 
-      <div class="fld"><label>發送時間</label><input type="datetime-local" class="ctrl" id="smsTime" value="2026-06-26T09:00"></div>
+      <div class="fld"><label>發送時間</label><input type="datetime-local" class="ctrl" id="smsTime"></div>
     </div>
     <div class="m-foot">
       <button class="mini-btn ghost" id="smsCancel">取消簡訊</button>
@@ -261,25 +273,52 @@
   function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
   function smsSegments(len){if(len===0)return 0;if(len<=70)return 1;return Math.ceil(len/67);}
 
+  /* ---------- 日期 / 時間工具 ---------- */
+  var WKDAYS=["日","一","二","三","四","五","六"];
+  function pad2(n){return ("0"+n).slice(-2);}
+  var TODAY=new Date();
+  function todayISO(){return TODAY.getFullYear()+"-"+pad2(TODAY.getMonth()+1)+"-"+pad2(TODAY.getDate());}
+  function todayLabel(){return TODAY.getFullYear()+"/"+pad2(TODAY.getMonth()+1)+"/"+pad2(TODAY.getDate())+"（週"+WKDAYS[TODAY.getDay()]+"）";}
+  function todayShort(){return pad2(TODAY.getMonth()+1)+"/"+pad2(TODAY.getDate())+"("+WKDAYS[TODAY.getDay()]+")";}
+  /* 目前時間落在哪個 30 分格（向下取整） */
+  function currentSlotKey(){
+    var now=new Date(),h=now.getHours(),m=now.getMinutes();
+    var sm=Math.floor((h*60+m)/30)*30;
+    return pad2(Math.floor(sm/60))+":"+pad2(sm%60);
+  }
+  /* 從「下一個整 30 分」起算 delta 分鐘的時間字串，夾在 09:00~21:00 內 */
+  function slotFromNow(delta){
+    var now=new Date(),base=Math.ceil((now.getHours()*60+now.getMinutes())/30)*30;
+    var total=Math.min(Math.max(base+delta,9*60),21*60);
+    return pad2(Math.floor(total/60))+":"+pad2(total%60);
+  }
+
   /* ---------- 排程表格 ---------- */
   var BEDS=["AB1","AB2","AB3(清道夫)","IV","肌動減脂","冷凍減脂","貴妃減脂","超導1"];
-  var TIMES=["17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
-  var bookings={
-    "肌動減脂|17:00":{cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:"臉-超導(60分)",noSms:false,room:"診一"},
-    "冷凍減脂|17:30":{cls:"b-teal",name:"葉○○",memberId:"示範-002",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:false,room:"診二"},
-    "貴妃減脂|18:00":{cls:"b-red",name:"林○○",memberId:"示範-003",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:true,room:"診一"},
-    "超導1|19:30":{cls:"b-pink",name:"游○○",memberId:"示範-004",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:false,room:"診二"},
-    "AB1|18:00":{cls:"b-blue",name:"張○○",memberId:"示範-005",phone:"09oo-xxx-oooo",item:"杏仁酸",noSms:false,room:"診一"}
-  };
+  /* 全天時間格 09:00–21:00，每 30 分鐘一格 */
+  var TIMES=(function(){
+    var t=[];for(var m=9*60;m<=21*60;m+=30)t.push(pad2(Math.floor(m/60))+":"+pad2(m%60));return t;
+  })();
+  /* Demo 預約：相對於現在的時間動態生成 */
+  var bookings=(function(){
+    var bk={};
+    bk["肌動減脂|"+slotFromNow(-60)]={cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:"臉-超導(60分)",noSms:false,room:"診一"};
+    bk["冷凍減脂|"+slotFromNow(-30)]={cls:"b-teal",name:"葉○○",memberId:"示範-002",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:false,room:"診二"};
+    bk["貴妃減脂|"+slotFromNow(30)] ={cls:"b-red",name:"林○○",memberId:"示範-003",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:true,room:"診一"};
+    bk["超導1|"+slotFromNow(30)]    ={cls:"b-pink",name:"游○○",memberId:"示範-004",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:false,room:"診二"};
+    bk["AB1|"+slotFromNow(60)]      ={cls:"b-blue",name:"張○○",memberId:"示範-005",phone:"09oo-xxx-oooo",item:"杏仁酸",noSms:false,room:"診一"};
+    return bk;
+  })();
 
   var STORE={名稱:"三重光澤",地址:"三重區正義北路122號",電話:"02-xxxx-xxxx"};
 
   function renderSched(){
     var head=document.getElementById("schedHead");
     head.innerHTML='<th class="time">床位</th>'+BEDS.map(function(b){return '<th>'+esc(b)+'</th>';}).join("");
-    var body=document.getElementById("schedBody"),h="";
+    var body=document.getElementById("schedBody"),h="",now=currentSlotKey();
     TIMES.forEach(function(t){
-      h+='<tr><td class="time">'+t+'</td>';
+      var rowCls=t===now?"now-row":t<now?"past-row":"";
+      h+='<tr'+(rowCls?' class="'+rowCls+'"':'')+'><td class="time">'+t+'</td>';
       BEDS.forEach(function(b){
         var key=b+"|"+t,bk=bookings[key];
         if(bk){
@@ -292,12 +331,28 @@
       h+='</tr>';
     });
     body.innerHTML=h;
+    /* 自動捲到現在列 */
+    var nowRow=body.querySelector("tr.now-row");
+    if(nowRow)setTimeout(function(){nowRow.scrollIntoView({block:"center",behavior:"smooth"});},80);
   }
   renderSched();
 
+  /* ---- 初始化日期相關 DOM ---- */
+  document.getElementById("tbDateOpt").textContent=todayLabel();
+  document.getElementById("apDate").value=todayISO();
+
+  /* ---- 即時時鐘（每秒更新） ---- */
+  function updateClock(){
+    var now=new Date(),el=document.getElementById("liveClock");
+    if(el)el.textContent=pad2(now.getHours())+":"+pad2(now.getMinutes())+":"+pad2(now.getSeconds());
+  }
+  updateClock();
+  setInterval(updateClock,1000);
+
   /* hour options */
   var apHour=document.getElementById("apHour");
-  for(var hh=9;hh<=21;hh++){var o=document.createElement("option");o.value=("0"+hh).slice(-2);o.textContent=("0"+hh).slice(-2);if(hh===17)o.selected=true;apHour.appendChild(o);}
+  var _nowH=new Date().getHours();
+  for(var hh=9;hh<=21;hh++){var o=document.createElement("option");o.value=pad2(hh);o.textContent=pad2(hh);if(hh===_nowH)o.selected=true;apHour.appendChild(o);}
 
   /* ---------- modal helpers ---------- */
   function openScrim(id){document.getElementById(id).classList.add("open");}
@@ -392,10 +447,10 @@
 
   /* ---------- 開啟 SMS modal ---------- */
   function openSms(bk,timeStr){
-    var dateStr="06/26(五)";
-    ctx=buildCtx(bk,timeStr,dateStr);
+    ctx=buildCtx(bk,timeStr,todayShort());
     renderAlert();renderTplSelect();renderPinChips();
-    document.getElementById("smsTime").value="2026-06-26T09:00";
+    var now=new Date();
+    document.getElementById("smsTime").value=todayISO()+"T"+pad2(now.getHours())+":"+pad2(now.getMinutes());
     var hadLast=!!(lastId&&tplById(lastId));
     var useId=hadLast?lastId:builtin[0].id;
     applyTemplate(useId,{silent:true,remembered:hadLast});
