@@ -265,11 +265,11 @@
   var BEDS=["AB1","AB2","AB3(清道夫)","IV","肌動減脂","冷凍減脂","貴妃減脂","超導1"];
   var TIMES=["17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
   var bookings={
-    "肌動減脂|17:00":{cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:"臉-超導(60分)",noSms:false,room:"診一",queueNo:"1"},
-    "冷凍減脂|17:30":{cls:"b-teal",name:"葉○○",memberId:"示範-002",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:false,room:"診二",queueNo:"3"},
-    "貴妃減脂|18:00":{cls:"b-red",name:"林○○",memberId:"示範-003",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:true,room:"診一",queueNo:"5"},
-    "超導1|19:30":{cls:"b-pink",name:"游○○",memberId:"示範-004",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:false,room:"診二",queueNo:"7"},
-    "AB1|18:00":{cls:"b-blue",name:"張○○",memberId:"示範-005",phone:"09oo-xxx-oooo",item:"杏仁酸",noSms:false,room:"診一",queueNo:"9"}
+    "肌動減脂|17:00":{cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:"臉-超導(60分)",noSms:false,room:"診一"},
+    "冷凍減脂|17:30":{cls:"b-teal",name:"葉○○",memberId:"示範-002",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:false,room:"診二"},
+    "貴妃減脂|18:00":{cls:"b-red",name:"林○○",memberId:"示範-003",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:true,room:"診一"},
+    "超導1|19:30":{cls:"b-pink",name:"游○○",memberId:"示範-004",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:false,room:"診二"},
+    "AB1|18:00":{cls:"b-blue",name:"張○○",memberId:"示範-005",phone:"09oo-xxx-oooo",item:"杏仁酸",noSms:false,room:"診一"}
   };
 
   var STORE={名稱:"三重光澤",地址:"三重區正義北路122號",電話:"02-xxxx-xxxx"};
@@ -308,21 +308,22 @@
 
   /* ---------- 目前預約上下文（給參數替換用） ---------- */
   var ctx=null;
-  function shiftFromTime(t){var h=parseInt(t,10);return h<12?"早診":h<17?"午診":"晚診";}
-  function nextQueueNo(timeStr){
-    var shift=shiftFromTime(timeStr),max=0;
-    Object.keys(bookings).forEach(function(key){
-      if(shiftFromTime(key.split("|")[1])===shift){
-        var n=parseInt(bookings[key].queueNo,10)||0;if(n>max)max=n;
-      }
-    });
-    return String(max===0?1:max+2);
+  function shiftFromTime(t){
+    var h=parseInt(t,10),m=parseInt((t.split(":")[1])||"0",10),total=h*60+m;
+    return total<13*60?"早診":total<17*60?"午診":"晚診";
+  }
+  var SHIFT_START={"早診":9*60+30,"午診":13*60,"晚診":17*60};
+  function queueNoFromTime(timeStr){
+    var h=parseInt(timeStr,10),m=parseInt((timeStr.split(":")[1])||"0",10);
+    var total=h*60+m,start=SHIFT_START[shiftFromTime(timeStr)];
+    var offset=Math.max(0,Math.floor((total-start)/15));
+    return String(1+offset*2);
   }
   function buildCtx(bk,timeStr,dateStr){
     return {
       "會員姓名":bk.name,"門市名稱":STORE.名稱,"門市地址":STORE.地址,"門市電話":STORE.電話,
       "預約日期":dateStr,"預約時間":timeStr,"療程":bk.item,
-      "診間":bk.room||"診一","時段":bk.shift||shiftFromTime(timeStr),"派號":bk.queueNo||"—",
+      "診間":bk.room||"診一","時段":bk.shift||shiftFromTime(timeStr),"派號":queueNoFromTime(timeStr),
       "noSms":!!bk.noSms,"phone":bk.phone,"memberId":bk.memberId
     };
   }
@@ -419,7 +420,7 @@
   document.getElementById("apSave").addEventListener("click",function(){
     closeScrim("apptScrim");
     var timeStr=document.getElementById("apHour").value+":"+document.getElementById("apMin").value;
-    var bk={cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:document.getElementById("apItem").value,noSms:false,room:"診一",queueNo:nextQueueNo(timeStr)};
+    var bk={cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:document.getElementById("apItem").value,noSms:false,room:"診一"};
     if(pendingNew){bookings[pendingNew]=bk;renderSched();}
     toast("預約已建立，請確認簡訊內容");
     setTimeout(function(){openSms(bk,timeStr);},250);
