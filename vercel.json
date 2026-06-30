@@ -17,11 +17,13 @@
     },
     {
       "src": "/sms-template",
-      "dest": "/prototypes/%E6%A8%A1%E6%9D%BF%E7%B0%A1%E8%A8%8A%E8%A8%AD%E5%AE%9A%E6%95%99%E5%AD%B8.html"
+      "headers": {"Location": "/#sms-template"},
+      "status": 302
     },
     {
       "src": "/appointment",
-      "dest": "/prototypes/%E9%A0%90%E7%B4%84%E6%93%8D%E4%BD%9C%E6%A8%A1%E6%93%AC.html"
+      "headers": {"Location": "/#appointment"},
+      "status": 302
     },
     {
       "src": "/prototypes/(.*)",

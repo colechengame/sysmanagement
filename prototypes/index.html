@@ -317,85 +317,72 @@
         </div>
         <nav class="nav-menu" role="menu">
             <div class="nav-item active"
-                 role="menuitem"
-                 tabindex="0"
-                 aria-current="page"
-                 aria-label="簡訊設定教學"
+                 role="menuitem" tabindex="0" aria-current="page"
+                 aria-label="簡訊設定教學" data-hash="sms"
                  onclick="loadContent(this, '/prototypes/簡訊設定教學動畫.html')"
                  onkeydown="handleKeyNav(event, this, '/prototypes/簡訊設定教學動畫.html')">
                 <span class="icon" aria-hidden="true">⚙️</span>
                 <span>簡訊設定教學</span>
                 <a href="https://npos.drshinetech.com/appointment/text-setting"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="external-link-btn"
+                   target="_blank" rel="noopener noreferrer" class="external-link-btn"
                    aria-label="在新視窗開啟 NPOS 系統簡訊設定頁面"
                    onclick="event.stopPropagation()">點擊此->前往NPOS-簡訊設定↗</a>
             </div>
             <div class="nav-item"
-                 role="menuitem"
-                 tabindex="0"
-                 aria-label="彈窗情境模擬"
+                 role="menuitem" tabindex="0"
+                 aria-label="彈窗情境模擬" data-hash="popup"
                  onclick="loadContent(this, '/prototypes/簡訊彈窗情境模擬.html')"
                  onkeydown="handleKeyNav(event, this, '/prototypes/簡訊彈窗情境模擬.html')">
                 <span class="icon" aria-hidden="true">🎯</span>
                 <span>彈窗情境模擬</span>
             </div>
             <div class="nav-item"
-                 role="menuitem"
-                 tabindex="0"
-                 aria-label="預約查詢簡訊管理狀態"
+                 role="menuitem" tabindex="0"
+                 aria-label="預約查詢簡訊管理狀態" data-hash="search"
                  onclick="loadContent(this, '/prototypes/預約查詢互動.html')"
                  onkeydown="handleKeyNav(event, this, '/prototypes/預約查詢互動.html')">
                 <span class="icon" aria-hidden="true">🔍</span>
                 <span>預約查詢-簡訊管理狀態</span>
                 <a href="https://npos.drshinetech.com/appointment/search"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="external-link-btn"
+                   target="_blank" rel="noopener noreferrer" class="external-link-btn"
                    aria-label="在新視窗開啟 NPOS 系統預約查詢頁面"
                    onclick="event.stopPropagation()">點擊此->前往NPOS-預約查詢↗</a>
             </div>
             <div class="nav-item"
-                 role="menuitem"
-                 tabindex="0"
-                 aria-label="預約操作模擬與簡訊模板設定"
+                 role="menuitem" tabindex="0"
+                 aria-label="預約操作模擬與簡訊模板設定" data-hash="appointment"
                  onclick="loadContent(this, '/prototypes/預約操作模擬.html')"
                  onkeydown="handleKeyNav(event, this, '/prototypes/預約操作模擬.html')">
                 <span class="icon" aria-hidden="true">🧩</span>
                 <span>預約操作-模板套用設定</span>
             </div>
             <div class="nav-item"
-                 role="menuitem"
-                 tabindex="0"
-                 aria-label="簡訊模板設定"
+                 role="menuitem" tabindex="0"
+                 aria-label="簡訊模板設定" data-hash="sms-template"
                  onclick="loadContent(this, '/prototypes/模板簡訊設定教學.html')"
                  onkeydown="handleKeyNav(event, this, '/prototypes/模板簡訊設定教學.html')">
                 <span class="icon" aria-hidden="true">🛠️</span>
                 <span>簡訊模板設定</span>
             </div>
             <div class="nav-item"
-                 role="menuitem"
-                 tabindex="0"
-                 aria-label="基礎教學"
+                 role="menuitem" tabindex="0"
+                 aria-label="基礎教學" data-hash="basic"
                  onclick="loadContent(this, '/prototypes/基礎.html')"
                  onkeydown="handleKeyNav(event, this, '/prototypes/基礎.html')">
                 <span class="icon" aria-hidden="true">📚</span>
                 <span>基礎教學</span>
             </div>
             <div class="nav-item"
-                 role="menuitem"
-                 tabindex="0"
-                 aria-label="時間軸示意"
+                 role="menuitem" tabindex="0"
+                 aria-label="時間軸示意" data-hash="timeline"
                  onclick="loadContent(this, '/prototypes/發送時間互動示意.html')"
                  onkeydown="handleKeyNav(event, this, '/prototypes/發送時間互動示意.html')">
                 <span class="icon" aria-hidden="true">⏰</span>
                 <span>時間軸示意</span>
             </div>
             <div class="nav-item"
-                 role="menuitem"
-                 tabindex="0"
-                 aria-label="優化方案"
+                 role="menuitem" tabindex="0"
+                 aria-label="優化方案" data-hash="optimize"
                  onclick="loadContent(this, '/prototypes/優化.html')"
                  onkeydown="handleKeyNav(event, this, '/prototypes/優化.html')">
                 <span class="icon" aria-hidden="true">🔧</span>
@@ -419,7 +406,7 @@
             <div class="error-desc">無法載入此頁面，請檢查網路連線或稍後再試</div>
             <button class="retry-btn" onclick="retryLoad()">重新載入</button>
         </div>
-        <iframe id="content-iframe" src="/prototypes/簡訊設定教學動畫.html" style="width: 100%; height: 100%; border: none;"></iframe>
+        <iframe id="content-iframe" src="about:blank" style="width: 100%; height: 100%; border: none;"></iframe>
     </div>
 
     <script>
@@ -428,6 +415,18 @@
         const errorMessage = document.getElementById('error-message');
         let currentUrl = '/prototypes/簡訊設定教學動畫.html';
         let loadTimeout;
+
+        // hash → iframe URL mapping（加新頁面在這裡加即可）
+        const HASH_MAP = {
+            'sms':          '/prototypes/簡訊設定教學動畫.html',
+            'popup':        '/prototypes/簡訊彈窗情境模擬.html',
+            'search':       '/prototypes/預約查詢互動.html',
+            'appointment':  '/prototypes/預約操作模擬.html',
+            'sms-template': '/prototypes/模板簡訊設定教學.html',
+            'basic':        '/prototypes/基礎.html',
+            'timeline':     '/prototypes/發送時間互動示意.html',
+            'optimize':     '/prototypes/優化.html'
+        };
 
         function toggleMenu() {
             const sidebar = document.querySelector('.sidebar');
@@ -440,10 +439,7 @@
             loadingOverlay.classList.remove('hidden');
             errorMessage.classList.remove('show');
             clearTimeout(loadTimeout);
-            // 10秒超時
-            loadTimeout = setTimeout(() => {
-                showError();
-            }, 10000);
+            loadTimeout = setTimeout(() => { showError(); }, 10000);
         }
 
         function hideLoading() {
@@ -464,9 +460,7 @@
             hideError();
             showLoading();
             iframe.src = '';
-            setTimeout(() => {
-                iframe.src = currentUrl;
-            }, 100);
+            setTimeout(() => { iframe.src = currentUrl; }, 100);
         }
 
         function loadContent(element, url) {
@@ -481,24 +475,43 @@
             showLoading();
             iframe.src = url;
 
+            // 更新瀏覽器網址（保持左側選單）
+            const hash = element.getAttribute('data-hash');
+            if (hash) history.pushState(null, '', '#' + hash);
+
             if (window.innerWidth <= 768) {
                 toggleMenu();
             }
         }
 
+        // 讀取 URL hash 並切換到對應頁面；成功回傳 true
+        function loadFromHash() {
+            const hash = location.hash.replace(/^#/, '');
+            const url = HASH_MAP[hash];
+            if (!url) return false;
+            const navItem = document.querySelector('.nav-item[data-hash="' + hash + '"]');
+            if (!navItem) return false;
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active');
+                el.removeAttribute('aria-current');
+            });
+            navItem.classList.add('active');
+            navItem.setAttribute('aria-current', 'page');
+            currentUrl = url;
+            showLoading();
+            iframe.src = url;
+            return true;
+        }
+
         // 鍵盤導航支持
         function handleKeyNav(event, element, url) {
-            // Enter 或 Space 鍵觸發點擊
             if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
                 loadContent(element, url);
-            }
-            // 箭頭鍵導航
-            else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
                 event.preventDefault();
                 const navItems = Array.from(document.querySelectorAll('.nav-item'));
                 const currentIndex = navItems.indexOf(element);
-
                 if (event.key === 'ArrowDown' && currentIndex < navItems.length - 1) {
                     navItems[currentIndex + 1].focus();
                 } else if (event.key === 'ArrowUp' && currentIndex > 0) {
@@ -507,20 +520,18 @@
             }
         }
 
-        // iframe 事件監聽
-        iframe.addEventListener('load', () => {
-            hideLoading();
-        });
+        iframe.addEventListener('load', () => { hideLoading(); });
+        iframe.addEventListener('error', () => { showError(); });
 
-        iframe.addEventListener('error', () => {
-            showError();
-        });
+        // 瀏覽器上一頁/下一頁時同步選單與 iframe
+        window.addEventListener('popstate', loadFromHash);
 
-        // 初始加載完成後隱藏 loading
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                hideLoading();
-            }, 500);
+        // 初始載入：有 hash 就跳對應頁，否則載入預設第一頁
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!loadFromHash()) {
+                showLoading();
+                iframe.src = currentUrl;
+            }
         });
     </script>
 </body>
