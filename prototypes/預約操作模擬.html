@@ -152,7 +152,7 @@
   <main class="main">
     <div class="toolbar">
       <span class="tb-label">切換門市：</span>
-      <select class="tb-select"><option>三重光澤</option></select>
+      <select class="tb-select"><option>示範光澤</option></select>
       <button class="tb-btn">表格設定</button>
       <button class="tb-btn solid">美療</button>
       <button class="tb-btn">門診</button>
@@ -270,10 +270,10 @@
      body:"{{會員姓名}}您好，提醒您今日於{{門市名稱}}有門診預約{{預約時間}}，請依現場叫號順序看診。洽詢{{門市電話}}。"}
   ];
   var ext=[
-    {id:"e1",name:"北投精緻美容－預約提醒",desc:"北投精緻美容門市自訂",storeId:"s2",storeName:"北投精緻美容",
-     body:"{{會員姓名}}您好，北投精緻美容提醒您{{預約日期}}{{預約時間}}的{{療程}}預約，請準時蒞臨。洽詢{{門市電話}}。"},
-    {id:"e2",name:"內湖光采－療程確認",desc:"內湖光采門市自訂",storeId:"s3",storeName:"內湖光采",
-     body:"{{會員姓名}}您好，提醒您{{預約日期}}於內湖光采的{{療程}}預約，時間{{預約時間}}。地址：{{門市地址}}。"}
+    {id:"e1",name:"示範精緻美容－預約提醒",desc:"示範精緻美容門市自訂",storeId:"s2",storeName:"示範精緻美容",
+     body:"{{會員姓名}}您好，示範精緻美容提醒您{{預約日期}}{{預約時間}}的{{療程}}預約，請準時蒞臨。洽詢{{門市電話}}。"},
+    {id:"e2",name:"示範光采－療程確認",desc:"示範光采門市自訂",storeId:"s3",storeName:"示範光采",
+     body:"{{會員姓名}}您好，提醒您{{預約日期}}於示範光采的{{療程}}預約，時間{{預約時間}}。地址：{{門市地址}}。"}
   ];
   var custom=loadJSON(KEY.custom,[]);
   var pins=loadJSON(KEY.pins,[]);
@@ -321,7 +321,7 @@
     return bk;
   })();
 
-  var STORE={名稱:"三重光澤",地址:"XX區XX路1號",電話:"02-xxxx-xxxx"};
+  var STORE={名稱:"示範光澤",地址:"XX區XX路1號",電話:"02-xxxx-xxxx"};
 
   function renderSched(){
     var head=document.getElementById("schedHead");
