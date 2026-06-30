@@ -100,9 +100,18 @@
   .tpl-bar{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:11px 12px;margin-bottom:14px}
   .tpl-bar .tt{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
   .tpl-bar .tt .lk{margin-left:auto;font-size:11px;font-weight:600;color:var(--blue);cursor:pointer}
-  .tpl-select-row{display:flex;gap:8px;align-items:center}
-  .tpl-select{flex:1;padding:8px 10px;border:1px solid var(--line-strong);border-radius:8px;font-size:13px;background:#fff}
-  .tpl-select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-wash)}
+  .tpl-combo{position:relative;margin-bottom:8px}
+  .tpl-combo-input{width:100%;padding:8px 28px 8px 10px;border:1px solid var(--line-strong);border-radius:8px;font-size:13px;background:#fff;color:var(--ink);font-family:inherit}
+  .tpl-combo-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-wash)}
+  .tpl-combo::after{content:"▾";position:absolute;right:10px;top:10px;color:var(--faint);pointer-events:none;font-size:12px}
+  .tpl-drop{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid var(--line-strong);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:100;max-height:220px;overflow-y:auto;display:none}
+  .tpl-drop.open{display:block}
+  .tpl-drop-group{font-size:10.5px;font-weight:700;color:var(--faint);padding:6px 10px 3px;text-transform:uppercase;letter-spacing:.4px}
+  .tpl-drop-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;font-size:13px;cursor:pointer}
+  .tpl-drop-item:hover{background:var(--blue-wash);color:var(--blue-deep)}
+  .tpl-drop-item.sel{font-weight:700}
+  .tpl-drop-sub{font-size:10.5px;color:var(--faint);margin-left:8px;white-space:nowrap}
+  .tpl-drop-empty{padding:10px;font-size:12px;color:var(--faint);text-align:center}
   .pin-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
   .pin-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;border:1px solid var(--line-strong);background:#fff;color:var(--ink)}
   .pin-chip:hover{border-color:var(--blue);color:var(--blue)}
@@ -219,12 +228,9 @@
       <div class="tpl-bar">
         <div class="tt">💬 套用簡訊模板 <span class="lk" id="manageTpl">管理模板 ↗</span></div>
         <div class="tpl-current" id="tplCurrent"></div>
-        <div style="position:relative;margin-bottom:8px">
-          <svg style="position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:#8a949c;pointer-events:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="text" id="tplSearch" placeholder="搜尋模板名稱…" style="width:100%;padding:7px 10px 7px 28px;border:1px solid var(--line-strong);border-radius:7px;font-size:13px;font-family:inherit;background:#fff">
-        </div>
-        <div class="tpl-select-row">
-          <select class="tpl-select" id="tplSelect"></select>
+        <div class="tpl-combo" id="tplCombo">
+          <input type="text" class="tpl-combo-input" id="tplSearch" placeholder="搜尋或選擇模板…" autocomplete="off">
+          <div class="tpl-drop" id="tplDrop"></div>
         </div>
         <div class="pin-chips" id="pinChips"></div>
         <div class="tpl-hint">已自動沿用上次選用的模板；需更換時再從上方下拉或下方釘選挑選即可。</div>
@@ -321,7 +327,7 @@
     return bk;
   })();
 
-  var STORE={名稱:"示範光澤",地址:"XX區XX路1號",電話:"02-xxxx-xxxx"};
+  var STORE={名稱:"示範光澤",地址:"XX區XX路1號",電話:"02-xxxx-xxxx",defaultTplId:"b2"};
 
   function renderSched(){
     var head=document.getElementById("schedHead");
@@ -418,21 +424,19 @@
     lastId=id;store.set(KEY.last,id);
     recent=recent.filter(function(x){return x!==id;});recent.unshift(id);recent=recent.slice(0,5);saveJSON(KEY.recent,recent);
     smsContent.value=resolved(t.body);refreshRender();
-    document.getElementById("tplSelect").value=id;
+    tplComboIsOpen=false;
+    var si=document.getElementById("tplSearch");if(si)si.value=t.name;
+    renderTplDrop();
     document.getElementById("tplCurrent").innerHTML='目前套用：<b>'+esc(t.name)+'</b>'+(opts.remembered?'<span class="rem">已沿用上次選擇</span>':'');
     renderPinChips();
     if(!opts.silent)toast("已套用「"+t.name+"」並帶入預約資料");
   }
 
-  /* dropdown groups: 釘選 / 最近 / 本門市 / 其他門市 / 系統內建 */
-  var tplSearchQ="";
-  function matchesTpl(t){if(!tplSearchQ)return true;return t.name.toLowerCase().indexOf(tplSearchQ)>-1||(t.storeName||"").toLowerCase().indexOf(tplSearchQ)>-1;}
-  function renderTplSelect(){
-    var sel=document.getElementById("tplSelect");
-    function opt(t){
-      var label=t.name+(t.id.indexOf("c")===0?'（自訂）':isExt(t.id)?'（'+t.storeName+'）':'');
-      return '<option value="'+t.id+'">'+esc(label)+'</option>';
-    }
+  /* combobox：搜尋 + 下拉合一 */
+  var tplComboQ="",tplComboIsOpen=false;
+  function matchesTpl(t){if(!tplComboQ)return true;return t.name.toLowerCase().indexOf(tplComboQ)>-1||(t.storeName||"").toLowerCase().indexOf(tplComboQ)>-1;}
+  function renderTplDrop(){
+    var drop=document.getElementById("tplDrop");if(!drop)return;
     var pinList=allTpl().filter(function(t){return pins.indexOf(t.id)>-1&&matchesTpl(t);});
     var pinnedIds=pinList.map(function(t){return t.id;});
     var recentList=recent.map(tplById).filter(function(t){return t&&matchesTpl(t)&&pinnedIds.indexOf(t.id)<0;});
@@ -440,17 +444,39 @@
     var mine=custom.filter(function(t){return matchesTpl(t)&&usedIds.indexOf(t.id)<0;});
     var extList=ext.filter(function(t){return matchesTpl(t)&&usedIds.indexOf(t.id)<0;});
     var builtinList=builtin.filter(function(t){return matchesTpl(t)&&usedIds.indexOf(t.id)<0;});
-    var h='<option value="">— 請選擇模板 —</option>';
-    if(pinList.length)h+='<optgroup label="★ 釘選">'+pinList.map(opt).join("")+'</optgroup>';
-    if(recentList.length)h+='<optgroup label="最近使用">'+recentList.map(opt).join("")+'</optgroup>';
-    if(mine.length)h+='<optgroup label="本門市自訂">'+mine.map(opt).join("")+'</optgroup>';
-    if(extList.length)h+='<optgroup label="其他門市（僅可複製）">'+extList.map(opt).join("")+'</optgroup>';
-    if(builtinList.length)h+='<optgroup label="系統內建">'+builtinList.map(opt).join("")+'</optgroup>';
-    sel.innerHTML=h;
-    if(lastId&&tplById(lastId))sel.value=lastId;
+    function grp(label,list){
+      if(!list.length)return "";
+      return '<div class="tpl-drop-group">'+label+'</div>'+
+        list.map(function(t){
+          var sub=isExt(t.id)?esc(t.storeName):t.id.indexOf("c")===0?"自訂":"";
+          return '<div class="tpl-drop-item'+(t.id===lastId?" sel":"")+'" data-apply="'+t.id+'">'+
+            '<span>'+esc(t.name)+'</span>'+(sub?'<span class="tpl-drop-sub">'+sub+'</span>':'')+
+            '</div>';
+        }).join("");
+    }
+    var h=grp("★ 釘選",pinList)+grp("最近使用",recentList)+
+          grp("本門市自訂",mine)+grp("其他門市",extList)+grp("系統內建",builtinList);
+    drop.innerHTML=h||'<div class="tpl-drop-empty">無符合的模板</div>';
+    drop.classList.toggle("open",tplComboIsOpen);
   }
-  document.getElementById("tplSelect").addEventListener("change",function(){if(this.value)applyTemplate(this.value);});
-  document.getElementById("tplSearch").addEventListener("input",function(){tplSearchQ=this.value.trim().toLowerCase();renderTplSelect();});
+  var tplInput=document.getElementById("tplSearch");
+  tplInput.addEventListener("focus",function(){this.select();tplComboQ="";tplComboIsOpen=true;renderTplDrop();});
+  tplInput.addEventListener("input",function(){tplComboQ=this.value.trim().toLowerCase();tplComboIsOpen=true;renderTplDrop();});
+  tplInput.addEventListener("keydown",function(e){
+    if(e.key==="Escape"){tplComboIsOpen=false;var t=tplById(lastId);if(t)this.value=t.name;renderTplDrop();}
+  });
+  document.getElementById("tplDrop").addEventListener("mousedown",function(e){
+    var b=e.target.closest("[data-apply]");
+    if(b){e.preventDefault();tplComboIsOpen=false;applyTemplate(b.getAttribute("data-apply"));}
+  });
+  document.addEventListener("mousedown",function(e){
+    var combo=document.getElementById("tplCombo");
+    if(combo&&!combo.contains(e.target)){
+      tplComboIsOpen=false;var t=tplById(lastId);
+      if(tplInput&&t)tplInput.value=t.name;
+      renderTplDrop();
+    }
+  });
 
   function renderPinChips(){
     var box=document.getElementById("pinChips");
@@ -470,12 +496,15 @@
   /* ---------- 開啟 SMS modal ---------- */
   function openSms(bk,timeStr){
     ctx=buildCtx(bk,timeStr,todayShort());
-    renderAlert();renderTplSelect();renderPinChips();
+    tplComboQ="";tplComboIsOpen=false;
+    renderAlert();renderPinChips();
     var now=new Date();
     document.getElementById("smsTime").value=todayISO()+"T"+pad2(now.getHours())+":"+pad2(now.getMinutes());
-    var hadLast=!!(lastId&&tplById(lastId));
-    var useId=hadLast?lastId:builtin[0].id;
-    applyTemplate(useId,{silent:true,remembered:hadLast});
+    var useId=STORE.defaultTplId&&tplById(STORE.defaultTplId)
+      ?STORE.defaultTplId
+      :(lastId&&tplById(lastId)?lastId:builtin[0].id);
+    var remembered=!STORE.defaultTplId&&!!(lastId&&tplById(lastId));
+    applyTemplate(useId,{silent:true,remembered:remembered});
     openScrim("smsScrim");
   }
 
