@@ -660,7 +660,7 @@
                     <div style="color: #666; font-size: 12px; margin-bottom: 8px;">
                         預設帶入簡訊模板，每次儲存會覆蓋上次設定。系統將在指定時間自動發送。
                     </div>
-                    <textarea id="smsContent" class="form-control" placeholder="請輸入簡訊內容...">提醒您：有在【示範光澤醫學美容】預約，02-0000-0000，請提前30分鐘蒞臨現場報到。</textarea>
+                    <textarea id="smsContent" class="form-control" placeholder="請輸入簡訊內容...">提醒您：有在【示範麗雅醫學美容】預約，02-0000-0000，請提前30分鐘蒞臨現場報到。</textarea>
                     <div class="char-count">字數限制：<span id="charCount">67</span>/70字</div>
                 </div>
 
@@ -1227,7 +1227,7 @@
             setButtonStyles(scenario.buttons);
 
             // 更新簡訊內容
-            const smsTemplate = '提醒您：有在【示範光澤醫學美容】' +
+            const smsTemplate = '提醒您：有在【示範麗雅醫學美容】' +
                                appointment.date + ' ' + appointment.time +
                                ' 預約' + appointment.treatment + '，02-0000-0000，請提前30分鐘蒞臨現場報到。';
             document.getElementById('smsContent').value = smsTemplate;
@@ -1335,7 +1335,7 @@
             setButtonStyles(scenario.buttons);
 
             // 更新簡訊內容（使用補位預約的資訊）
-            const smsTemplate = '提醒您：有在【示範光澤醫學美容】' +
+            const smsTemplate = '提醒您：有在【示範麗雅醫學美容】' +
                                replacementAppointment.date + ' ' + replacementAppointment.time +
                                ' 預約' + replacementAppointment.treatment + '，02-0000-0000，請提前30分鐘蒞臨現場報到。';
             document.getElementById('smsContent').value = smsTemplate;
