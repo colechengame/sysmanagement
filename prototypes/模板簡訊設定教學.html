@@ -285,7 +285,7 @@
   ];
   var custom=loadJSON(KEY.custom,[]);
   var pins=loadJSON(KEY.pins,[]);
-  var defaultTplId=store.get(KEY.default)||"b2";
+  var defaultTplId=store.get(KEY.default)||null;
   function allTpl(){return custom.concat(ext).concat(builtin);}
   function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
   function isCustom(id){return id&&id.indexOf("c")===0;}
@@ -446,14 +446,24 @@
     toast("已刪除「"+(t?t.name:"")+"」");newTemplate();
   });
   document.getElementById("defaultBtn").addEventListener("click",function(){
-    if(editingId===defaultTplId)return;
-    defaultTplId=editingId;
-    store.set(KEY.default,defaultTplId);
-    var t=tplById(defaultTplId);
-    this.textContent="✓ 已是門市預設";
-    this.className="btn btn-default is-default";
-    renderList();
-    toast("已將「"+(t?t.name:"")+"」設為門市預設");
+    if(editingId===defaultTplId){
+      // 已是預設 → 取消預設
+      defaultTplId=null;
+      store.set(KEY.default,"");
+      this.textContent="設為門市預設";
+      this.className="btn btn-default";
+      renderList();
+      toast("已取消門市預設模板，將改為沿用上次套用");
+    }else{
+      // 不是預設 → 設為預設
+      defaultTplId=editingId;
+      store.set(KEY.default,defaultTplId);
+      var t=tplById(defaultTplId);
+      this.textContent="✓ 已是門市預設";
+      this.className="btn btn-default is-default";
+      renderList();
+      toast("已將「"+(t?t.name:"")+"」設為門市預設");
+    }
   });
   document.getElementById("copyBtn").addEventListener("click",function(){
     var t=tplById(editingId);if(!t)return;
