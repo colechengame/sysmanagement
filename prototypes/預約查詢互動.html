@@ -663,6 +663,28 @@
             font-weight: 600;
             vertical-align: middle;
         }
+
+        /* 模板 combobox */
+        .tpl-combo { position: relative; margin-bottom: 8px; }
+        .tpl-combo-input { width: 100%; padding: 8px 28px 8px 10px; border: 1px solid #ccd3db; border-radius: 8px; font-size: 13px; background: #fff; font-family: inherit; }
+        .tpl-combo-input:focus { outline: none; border-color: #4a90e2; box-shadow: 0 0 0 3px rgba(74,144,226,.15); }
+        .tpl-combo::after { content: "▾"; position: absolute; right: 10px; top: 10px; color: #8899aa; pointer-events: none; font-size: 12px; }
+        .tpl-drop { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1px solid #ccd3db; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.12); z-index: 200; max-height: 220px; overflow-y: auto; display: none; }
+        .tpl-drop.open { display: block; }
+        .tpl-drop-group { font-size: 10.5px; font-weight: 700; color: #8899aa; padding: 6px 10px 3px; text-transform: uppercase; letter-spacing: .4px; }
+        .tpl-drop-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; font-size: 13px; cursor: pointer; }
+        .tpl-drop-item:hover { background: #eff5ff; color: #1557c0; }
+        .tpl-drop-item.sel { font-weight: 700; }
+        .tpl-drop-sub { font-size: 10.5px; color: #8899aa; margin-left: 8px; white-space: nowrap; }
+        .tpl-drop-empty { padding: 10px; font-size: 12px; color: #8899aa; text-align: center; }
+        .pin-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; margin-bottom: 4px; }
+        .pin-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; border: 1px solid #ccd3db; background: #fff; color: #333; cursor: pointer; }
+        .pin-chip:hover { border-color: #4a90e2; color: #4a90e2; }
+        .pin-chip.active { background: #eff5ff; border-color: #4a90e2; color: #1557c0; }
+        .pin-chip .s { color: #f7b731; }
+        .pin-empty { font-size: 11.5px; color: #8899aa; }
+        .tpl-current { font-size: 12.5px; color: #1557c0; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .tpl-current .rem { font-size: 11px; font-weight: 700; color: #22a06b; background: #e3fcef; border-radius: 999px; padding: 1px 8px; }
     </style>
 </head>
 <body>
@@ -728,17 +750,24 @@
                 <div id="alertContainer" class="alert-container" style="display: none;"></div>
 
                 <div class="form-group">
-                    <label class="form-label">簡訊內容</label>
-                    <div style="color: #666; font-size: 12px; margin-bottom: 8px;">
-                        預設帶入簡訊模板，每次儲存會覆蓋上次設定。系統將在指定時間自動發送。
+                    <label class="form-label">選擇模板</label>
+                    <div class="tpl-current" id="tplCurrent"></div>
+                    <div class="tpl-combo" id="tplCombo">
+                        <input type="text" class="tpl-combo-input" id="tplSearch" placeholder="搜尋或選擇模板…" autocomplete="off">
+                        <div class="tpl-drop" id="tplDrop"></div>
                     </div>
-                    <textarea id="smsContent" class="form-control" placeholder="請輸入簡訊內容...">提醒您：有在【示範麗雅醫學美容】預約，02-0000-0000，請提前30分鐘蒞臨現場報到。</textarea>
-                    <div class="char-count">字數限制：<span id="charCount">67</span>/70字</div>
+                    <div class="pin-chips" id="pinChips"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">簡訊內容 <span style="color:#888;font-weight:400;font-size:12px">（套用模板後可手動修改）</span></label>
+                    <textarea id="smsContent" class="form-control" placeholder="請輸入簡訊內容..."></textarea>
+                    <div class="char-count">字數限制：<span id="charCount">0</span>/70字</div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">發送時間</label>
-                    <input type="datetime-local" id="sendTime" class="form-control" value="2025-10-31T13:40">
+                    <input type="datetime-local" id="sendTime" class="form-control">
                 </div>
             </div>
             <div class="modal-footer">
@@ -897,8 +926,133 @@
         let pendingCancelId = null;
         let pendingCancelAppointmentId = null;
         let pendingCanceledAppointmentId = null;
-        let originalSmsContent = '';   // 記錄模板帶入時的原始內容，用於偵測手動修改
+        let originalSmsContent = '';
         let currentTemplateName = '標準預約提醒';
+
+        // ── 多模板系統（與設定頁共用 localStorage）──────────────
+        const mem = {};
+        const store = {
+            get: function(k){ try{ return localStorage.getItem(k); }catch(e){ return mem[k]||null; } },
+            set: function(k,v){ try{ localStorage.setItem(k,v); }catch(e){ mem[k]=v; } }
+        };
+        const TPL_KEY = {custom:'npos_tpl_custom', pins:'npos_tpl_pins', recent:'npos_tpl_recent', last:'npos_tpl_last', default:'npos_tpl_default'};
+        function loadJSON(k,d){ try{ var v=store.get(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
+        function saveJSON(k,v){ store.set(k,JSON.stringify(v)); }
+        function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        const STORE_INFO = {名稱:'示範麗雅', 地址:'XX區XX路1號', 電話:'02-xxxx-xxxx'};
+
+        const builtinTpls = [
+            {id:'b1', name:'標準預約提醒', desc:'通用預約確認簡訊', enabled:true,
+             body:'提醒您有預約【{{門市名稱}}】{{預約日期}}{{預約時間}}{{門市地址}}，有任何疑問請撥打{{門市電話}}，{{門市名稱}}關心您。'},
+            {id:'b2', name:'醫美－療程提醒', desc:'醫美療程前報到提醒', enabled:true,
+             body:'{{會員姓名}}您好，提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}。請提前30分鐘蒞臨現場報到。洽詢{{門市電話}}。'},
+            {id:'b4', name:'中醫－門診提醒', desc:'中醫門診當日提醒', enabled:true,
+             body:'{{會員姓名}}您好，提醒您今日於{{門市名稱}}有門診預約{{預約時間}}，請依現場叫號順序看診。洽詢{{門市電話}}。'}
+        ];
+        const extTpls = [
+            {id:'e1', name:'示範精緻美容－預約提醒', desc:'示範精緻美容門市自訂', enabled:true, storeId:'s2', storeName:'示範精緻美容',
+             body:'{{會員姓名}}您好，示範精緻美容提醒您{{預約日期}}{{預約時間}}的{{療程}}預約，請準時蒞臨。洽詢{{門市電話}}。'},
+            {id:'e2', name:'示範光采－療程確認', desc:'示範光采門市自訂', enabled:true, storeId:'s3', storeName:'示範光采',
+             body:'{{會員姓名}}您好，提醒您{{預約日期}}於示範光采的{{療程}}預約，時間{{預約時間}}。地址：{{門市地址}}。'}
+        ];
+        let customTpls = loadJSON(TPL_KEY.custom, []);
+        let tplPins    = loadJSON(TPL_KEY.pins, []);
+        let tplRecent  = loadJSON(TPL_KEY.recent, []);
+        let tplLastId  = store.get(TPL_KEY.last) || null;
+
+        function allTpls(){ return customTpls.concat(extTpls).concat(builtinTpls); }
+        function tplById(id){ return allTpls().find(function(t){ return t.id===id; })||null; }
+        function isExtTpl(id){ return id && id.indexOf('e')===0; }
+
+        let tplCtx = {};
+        function resolved(body){
+            return body.replace(/\{\{(.+?)\}\}/g, function(m,k){
+                return tplCtx[k]!==undefined ? tplCtx[k] : m;
+            });
+        }
+
+        let tplComboQ = '', tplComboIsOpen = false;
+        function matchesTpl(t){ if(!tplComboQ)return true; return t.name.toLowerCase().indexOf(tplComboQ)>-1||(t.storeName||'').toLowerCase().indexOf(tplComboQ)>-1; }
+
+        function renderTplDropModal(){
+            const drop = document.getElementById('tplDrop'); if(!drop)return;
+            const pinList     = allTpls().filter(function(t){ return t.enabled!==false&&tplPins.indexOf(t.id)>-1&&matchesTpl(t); });
+            const pinnedIds   = pinList.map(function(t){ return t.id; });
+            const recentList  = tplRecent.map(tplById).filter(function(t){ return t&&t.enabled!==false&&matchesTpl(t)&&pinnedIds.indexOf(t.id)<0; });
+            const usedIds     = pinnedIds.concat(recentList.map(function(t){ return t.id; }));
+            const mine        = customTpls.filter(function(t){ return t.enabled!==false&&matchesTpl(t)&&usedIds.indexOf(t.id)<0; });
+            const extList     = extTpls.filter(function(t){ return t.enabled!==false&&matchesTpl(t)&&usedIds.indexOf(t.id)<0; });
+            const builtinList = builtinTpls.filter(function(t){ return t.enabled!==false&&matchesTpl(t)&&usedIds.indexOf(t.id)<0; });
+            function grp(label, list){
+                if(!list.length)return '';
+                return '<div class="tpl-drop-group">'+label+'</div>'+
+                    list.map(function(t){
+                        const sub = isExtTpl(t.id)?esc(t.storeName):t.id.indexOf('c')===0?'自訂':'';
+                        return '<div class="tpl-drop-item'+(t.id===tplLastId?' sel':'')+'" data-apply="'+t.id+'">'+
+                               '<span>'+esc(t.name)+'</span>'+(sub?'<span class="tpl-drop-sub">'+sub+'</span>':'')+
+                               '</div>';
+                    }).join('');
+            }
+            const h = grp('★ 釘選',pinList)+grp('最近使用',recentList)+grp('本門市自訂',mine)+grp('其他門市',extList)+grp('系統內建',builtinList);
+            drop.innerHTML = h || '<div class="tpl-drop-empty">無符合的模板</div>';
+            drop.classList.toggle('open', tplComboIsOpen);
+        }
+
+        function renderPinChipsModal(){
+            const box = document.getElementById('pinChips'); if(!box)return;
+            const pinList = allTpls().filter(function(t){ return tplPins.indexOf(t.id)>-1; });
+            if(!pinList.length){ box.innerHTML='<span class="pin-empty">尚無釘選模板</span>'; return; }
+            box.innerHTML = pinList.map(function(t){
+                return '<button class="pin-chip'+(t.id===tplLastId?' active':'')+'" data-apply="'+t.id+'"><span class="s">★</span>'+esc(t.name)+'</button>';
+            }).join('');
+        }
+
+        function applyTemplate(id, opts){
+            opts = opts||{};
+            const t = tplById(id); if(!t)return;
+            tplLastId = id; store.set(TPL_KEY.last, id);
+            tplRecent = tplRecent.filter(function(x){ return x!==id; }); tplRecent.unshift(id); tplRecent = tplRecent.slice(0,5); saveJSON(TPL_KEY.recent, tplRecent);
+            const content = resolved(t.body);
+            document.getElementById('smsContent').value = content;
+            originalSmsContent = content;
+            currentTemplateName = t.name;
+            updateCharCount();
+            tplComboIsOpen = false;
+            const si = document.getElementById('tplSearch'); if(si) si.value = t.name;
+            renderTplDropModal();
+            renderPinChipsModal();
+            const cur = document.getElementById('tplCurrent');
+            if(cur) cur.innerHTML = '目前套用：<b>'+esc(t.name)+'</b>'+(opts.remembered?'<span class="rem">已沿用上次選擇</span>':'');
+        }
+
+        function buildTplCtx(appointment){
+            return {
+                '會員姓名': appointment.name,
+                '門市名稱': STORE_INFO.名稱,
+                '門市地址': STORE_INFO.地址,
+                '門市電話': STORE_INFO.電話,
+                '預約日期': appointment.date,
+                '預約時間': appointment.time,
+                '療程':     appointment.treatment
+            };
+        }
+
+        function initTplModal(appointment){
+            tplCtx = buildTplCtx(appointment);
+            customTpls = loadJSON(TPL_KEY.custom, []);  // 重新讀取最新資料
+            tplPins    = loadJSON(TPL_KEY.pins, []);
+            tplRecent  = loadJSON(TPL_KEY.recent, []);
+            tplComboQ = ''; tplComboIsOpen = false;
+            renderTplDropModal();
+            renderPinChipsModal();
+            const storeDefault = store.get(TPL_KEY.default)||null;
+            const useId = storeDefault&&tplById(storeDefault) ? storeDefault
+                        : (tplLastId&&tplById(tplLastId) ? tplLastId : builtinTpls[0].id);
+            const remembered = !storeDefault&&!!(tplLastId&&tplById(tplLastId));
+            applyTemplate(useId, {silent:true, remembered:remembered});
+        }
+        // ─────────────────────────────────────────────────────────
 
         function getSmsStatusDisplay(smsStatus) {
             const statusMap = {
@@ -1338,13 +1492,8 @@
             // 設置按鈕樣式
             setButtonStyles(scenario.buttons);
 
-            // 更新簡訊內容
-            const smsTemplate = '提醒您：有在【示範麗雅醫學美容】' +
-                               appointment.date + ' ' + appointment.time +
-                               ' 預約' + appointment.treatment + '，02-0000-0000，請提前30分鐘蒞臨現場報到。';
-            document.getElementById('smsContent').value = smsTemplate;
-            originalSmsContent = smsTemplate;
-            currentTemplateName = '標準預約提醒';
+            // 初始化模板 combobox 並帶入預設模板
+            initTplModal(appointment);
 
             // 計算發送時間（預約前1小時）
             const appointmentTime = new Date(appointment.date.replace(/\//g, '-') + 'T' + appointment.time);
@@ -1352,7 +1501,6 @@
             document.getElementById('sendTime').value = appointmentTime.toISOString().slice(0, 16);
 
             document.getElementById('smsModal').style.display = 'block';
-            updateCharCount();
         }
 
         // 取消預約（觸發情境5自動補位）
@@ -1448,13 +1596,8 @@
             // 設置按鈕樣式
             setButtonStyles(scenario.buttons);
 
-            // 更新簡訊內容（使用補位預約的資訊）
-            const smsTemplate = '提醒您：有在【示範麗雅醫學美容】' +
-                               replacementAppointment.date + ' ' + replacementAppointment.time +
-                               ' 預約' + replacementAppointment.treatment + '，02-0000-0000，請提前30分鐘蒞臨現場報到。';
-            document.getElementById('smsContent').value = smsTemplate;
-            originalSmsContent = smsTemplate;
-            currentTemplateName = '標準預約提醒';
+            // 初始化模板 combobox（使用補位預約的資訊）
+            initTplModal(replacementAppointment);
 
             // 計算發送時間
             const appointmentTime = new Date(replacementAppointment.date.replace(/\//g, '-') + 'T' + replacementAppointment.time);
@@ -1720,9 +1863,34 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             renderTable();
-            
+
             document.getElementById('smsContent').addEventListener('input', updateCharCount);
-            
+
+            // 模板 combobox 事件
+            const tplInput = document.getElementById('tplSearch');
+            tplInput.addEventListener('focus', function(){ this.select(); tplComboQ=''; tplComboIsOpen=true; renderTplDropModal(); });
+            tplInput.addEventListener('input', function(){ tplComboQ=this.value.trim().toLowerCase(); tplComboIsOpen=true; renderTplDropModal(); });
+            tplInput.addEventListener('keydown', function(e){
+                if(e.key==='Escape'){ tplComboIsOpen=false; const t=tplById(tplLastId); if(t)this.value=t.name; renderTplDropModal(); }
+            });
+            document.getElementById('tplDrop').addEventListener('mousedown', function(e){
+                const b = e.target.closest('[data-apply]');
+                if(b){ e.preventDefault(); tplComboIsOpen=false; applyTemplate(b.getAttribute('data-apply')); }
+            });
+            document.getElementById('pinChips').addEventListener('click', function(e){
+                const b = e.target.closest('[data-apply]');
+                if(b) applyTemplate(b.getAttribute('data-apply'));
+            });
+            document.addEventListener('mousedown', function(e){
+                const combo = document.getElementById('tplCombo');
+                if(combo && !combo.contains(e.target)){
+                    tplComboIsOpen = false;
+                    const t = tplById(tplLastId);
+                    if(tplInput && t) tplInput.value = t.name;
+                    renderTplDropModal();
+                }
+            });
+
             window.addEventListener('click', function(event) {
                 const smsModal = document.getElementById('smsModal');
                 const confirmModal = document.getElementById('confirmModal');
