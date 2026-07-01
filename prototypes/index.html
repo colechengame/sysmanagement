@@ -382,6 +382,14 @@
             </div>
             <div class="nav-item"
                  role="menuitem" tabindex="0"
+                 aria-label="模板擴增視覺化流程圖" data-hash="flowchart"
+                 onclick="loadContent(this, '/prototypes/流程圖.html')"
+                 onkeydown="handleKeyNav(event, this, '/prototypes/流程圖.html')">
+                <span class="icon" aria-hidden="true">🗺️</span>
+                <span>模板擴增流程圖（PM 說明用）</span>
+            </div>
+            <div class="nav-item"
+                 role="menuitem" tabindex="0"
                  aria-label="模板擴增功能規格（前端）" data-hash="brief"
                  onclick="loadContent(this, '/prototypes/簡報.html')"
                  onkeydown="handleKeyNav(event, this, '/prototypes/簡報.html')">
@@ -433,6 +441,7 @@
             'sms-template': '/prototypes/模板簡訊設定教學.html',
             'basic':        '/prototypes/基礎.html',
             'timeline':     '/prototypes/發送時間互動示意.html',
+            'flowchart':    '/prototypes/流程圖.html',
             'brief':        '/prototypes/簡報.html',
             'backend-brief':'/prototypes/後端簡報.html'
         };
