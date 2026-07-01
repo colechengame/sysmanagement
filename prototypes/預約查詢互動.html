@@ -134,106 +134,34 @@
         .contact-select.status-no-answer { background: #fff3cd; color: #856404; }
         .contact-select.status-confirmed { background: #d4edda; color: #155724; }
         
-        /* 懸浮容器 */
-        .sms-hover-container {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 32px;
-            padding: 4px;
-            cursor: pointer;
-        }
-        
         /* 狀態色塊 */
         .sms-status-block {
+            display: inline-block;
             padding: 6px 12px;
             border-radius: 4px;
             font-size: 12px;
             font-weight: 500;
             white-space: nowrap;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            cursor: pointer;
             min-width: 85px;
             text-align: center;
-        }
-        
-        .status-none {
-            background: #e0e0e0;
-            color: #616161;
-        }
-        
-        .status-scheduled {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-        
-        .status-delivered {
-            background: #e8f5e9;
-            color: #388e3c;
             cursor: default;
+            user-select: none;
         }
-        
-        .status-cancelled {
-            background: #fce4ec;
-            color: #c2185b;
+        .sms-status-block.clickable {
+            cursor: pointer;
+            transition: filter .15s;
         }
-        
-        .status-failed {
-            background: #ffebee;
-            color: #d32f2f;
-        }
-        
-        .status-expired {
-            background: #f5f5f5;
-            color: #9e9e9e;
-            cursor: default;
-        }
+        .sms-status-block.clickable:hover { filter: brightness(.93); }
 
-        .status-merged {
-            background: #e0f2f1;
-            color: #00796b;
-            cursor: help;
-        }
-        
-        /* 懸浮操作按鈕 */
-        .sms-hover-actions {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            z-index: 10;
-        }
-        
-        /* 懸浮時的效果 */
-        .sms-hover-container:hover .sms-status-block {
-            opacity: 0.15;
-            transform: scale(0.95);
-        }
-        
-        .sms-hover-container:hover .sms-hover-actions {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        
-        /* 已送達、已過期、已合併狀態不顯示懸浮效果 */
-        .sms-hover-container:has(.status-delivered):hover .sms-status-block,
-        .sms-hover-container:has(.status-expired):hover .sms-status-block,
-        .sms-hover-container:has(.status-merged):hover .sms-status-block {
-            opacity: 1;
-            transform: scale(1);
-        }
+        .status-none     { background:#e0e0e0; color:#616161; }
+        .status-scheduled{ background:#e3f2fd; color:#1976d2; }
+        .status-delivered{ background:#e8f5e9; color:#388e3c; }
+        .status-cancelled{ background:#fce4ec; color:#c2185b; }
+        .status-failed   { background:#ffebee; color:#d32f2f; }
+        .status-expired  { background:#f5f5f5; color:#9e9e9e; }
+        .status-merged   { background:#e0f2f1; color:#00796b; }
 
-        .sms-hover-container:has(.status-delivered),
-        .sms-hover-container:has(.status-expired),
-        .sms-hover-container:has(.status-merged) {
-            cursor: default;
-        }
-        
-        /* 懸浮按鈕樣式 */
+        /* 發送簡訊直接按鈕（未發送狀態） */
         .hover-btn {
             padding: 6px 12px;
             border: none;
@@ -242,47 +170,12 @@
             font-weight: 500;
             cursor: pointer;
             white-space: nowrap;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: filter .15s;
             min-width: 85px;
             text-align: center;
         }
-        
-        .hover-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-        }
-        
-        .hover-btn:active {
-            transform: translateY(0);
-        }
-        
-        .hover-btn-send {
-            background: #4caf50;
-            color: white;
-        }
-        
-        .hover-btn-send:hover {
-            background: #45a049;
-        }
-        
-        .hover-btn-cancel {
-            background: #ff9800;
-            color: white;
-        }
-        
-        .hover-btn-cancel:hover {
-            background: #f57c00;
-        }
-        
-        .hover-btn-resend {
-            background: #03a9f4;
-            color: white;
-        }
-        
-        .hover-btn-resend:hover {
-            background: #0288d1;
-        }
+        .hover-btn:hover { filter: brightness(.9); }
+        .hover-btn-send  { background:#4caf50; color:white; }
         
         .expired-row {
             background-color: #f8f9fa !important;
@@ -593,9 +486,6 @@
         }
 
         /* 查看排程詳情按鈕 */
-        .hover-btn-view { background: #2196f3; color: white; }
-        .hover-btn-view:hover { background: #1976d2; }
-        .hover-btn-xs { min-width: 44px; padding: 5px 8px; font-size: 11px; }
 
         /* 排程詳情 Modal */
         .detail-status-banner {
@@ -809,13 +699,13 @@
     <div id="smsDetailModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>簡訊排程詳情</h3>
+                <h3>簡訊詳情</h3>
                 <span class="close" onclick="closeDetailModal()">&times;</span>
             </div>
             <div class="modal-body" style="padding:0">
-                <div class="detail-status-banner">
-                    <span class="detail-status-badge">排程中</span>
-                    <span class="detail-send-time">預計於 <strong id="detailSendTime">--</strong> 發送</span>
+                <div id="detailStatusBanner" class="detail-status-banner">
+                    <span id="detailStatusBadge" class="detail-status-badge">排程中</span>
+                    <span id="detailBannerInfo" class="detail-send-time"></span>
                 </div>
                 <div class="detail-inner">
                     <div class="detail-row">
@@ -830,11 +720,12 @@
                         <div class="detail-meta-row"><span>使用模板</span><span id="detailTemplate">--</span></div>
                         <div class="detail-meta-row"><span>排程建立</span><span id="detailCreatedAt">--</span></div>
                         <div class="detail-meta-row"><span>建立者</span><span id="detailCreatedBy">--</span></div>
+                        <div id="detailStatusRow" class="detail-meta-row" style="display:none"><span id="detailStatusLbl">--</span><span id="detailStatusVal">--</span></div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <div class="button-group">
+                <div class="button-group" id="detailFooterBtns">
                     <button class="btn btn-secondary" onclick="closeDetailModal()">關閉</button>
                     <button class="btn btn-danger" onclick="closeDetailAndCancel()">取消此排程</button>
                 </div>
@@ -881,11 +772,11 @@
             // 未過期 + 排程中（可取消）
             {id: 13, date: '2025/10/31', member: 'GT0000013', name: '周美美', phone: '0923456780', time: '16:00', treatment: '★3樓-醫美諮詢', staff: '陳醫師', contactStatus: '2', smsStatus: 'scheduled', noSmsPreference: false, smsDetail: {content: '提醒您：有在【示範麗雅醫學美容】2025/10/31 16:00 預約★3樓-醫美諮詢，02-xxxx-xxxx，請提前30分鐘蒞臨現場報到。', sendTime: '2025-10-31T15:00', template: '標準預約提醒', createdAt: '2025-10-30T11:32', createdBy: '陳醫師'}},
             // 未過期 + 已送達（無操作）
-            {id: 14, date: '2025/10/31', member: 'GT0000014', name: '【VIP】李董', phone: '0934567891', time: '17:00', treatment: '電痛衝導入', staff: '李技師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false},
+            {id: 14, date: '2025/10/31', member: 'GT0000014', name: '【VIP】李董', phone: '0934567891', time: '17:00', treatment: '電痛衝導入', staff: '李技師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false, smsDetail: {content: '提醒您有預約【示範麗雅】2025/10/31 17:00 XX區XX路1號，有任何疑問請撥打02-xxxx-xxxx，示範麗雅關心您。', sendTime: '2025-10-31T16:00', template: '標準預約提醒', createdAt: '2025-10-30T09:11', createdBy: '李技師', sentAt: '2025-10-31T16:00'}},
             // 未過期 + 已取消（可重發 - 客人拒收設定 - 測試情境2）
-            {id: 15, date: '2025/10/31', member: 'GT0000015', name: '趙雅婷', phone: '0945678902', time: '18:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '1', smsStatus: 'cancelled', noSmsPreference: true},
+            {id: 15, date: '2025/10/31', member: 'GT0000015', name: '趙雅婷', phone: '0945678902', time: '18:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '1', smsStatus: 'cancelled', noSmsPreference: true, smsDetail: {content: '趙雅婷您好，提醒您於示範麗雅的★5樓-純美療程預約：2025/10/31 18:00。請提前30分鐘蒞臨現場報到。洽詢02-xxxx-xxxx。', sendTime: '2025-10-31T17:00', template: '醫美－療程提醒', createdAt: '2025-10-30T14:22', createdBy: 'AB魔', cancelledAt: '2025-10-31T10:05'}},
             // 未過期 + 發送失敗（可重發）
-            {id: 16, date: '2025/10/31', member: 'GT0000016', name: '錢大富', phone: '0956789013', time: '19:00', treatment: '2樓總店-【醫美】', staff: '超音波導入', contactStatus: '2', smsStatus: 'failed', noSmsPreference: false},
+            {id: 16, date: '2025/10/31', member: 'GT0000016', name: '錢大富', phone: '0956789013', time: '19:00', treatment: '2樓總店-【醫美】', staff: '超音波導入', contactStatus: '2', smsStatus: 'failed', noSmsPreference: false, smsDetail: {content: '提醒您有預約【示範麗雅】2025/10/31 19:00 XX區XX路1號，有任何疑問請撥打02-xxxx-xxxx，示範麗雅關心您。', sendTime: '2025-10-31T18:00', template: '標準預約提醒', createdAt: '2025-10-30T16:50', createdBy: '門市員工', failReason: '號碼不在服務範圍'}},
             
             // ========== 明天 2025/11/01 的預約（都未過期）==========
             // 未過期 + 排程中
@@ -893,11 +784,11 @@
             // 未過期 + 未發送（客人拒收設定 - 測試情境2）
             {id: 18, date: '2025/11/01', member: 'GT0000018', name: '李大偉', phone: '0978901235', time: '10:30', treatment: '★5樓-純美療程', staff: '電痛衝導入', contactStatus: '1', smsStatus: '', noSmsPreference: true},
             // 未過期 + 已送達
-            {id: 19, date: '2025/11/01', member: 'GT0000019', name: '謝美慧', phone: '0989012346', time: '13:00', treatment: '電波拉提', staff: '王技師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false},
+            {id: 19, date: '2025/11/01', member: 'GT0000019', name: '謝美慧', phone: '0989012346', time: '13:00', treatment: '電波拉提', staff: '王技師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false, smsDetail: {content: '謝美慧您好，提醒您於示範麗雅的電波拉提預約：2025/11/01 13:00。請提前30分鐘蒞臨現場報到。洽詢02-xxxx-xxxx。', sendTime: '2025-11-01T12:00', template: '醫美－療程提醒', createdAt: '2025-10-31T11:30', createdBy: '王技師', sentAt: '2025-11-01T12:00'}},
             // 未過期 + 未發送
             {id: 20, date: '2025/11/01', member: 'GT0000020', name: '楊志強', phone: '0990123457', time: '14:30', treatment: '★3樓-醫美諮詢', staff: '李醫師', contactStatus: '', smsStatus: '', noSmsPreference: false},
             // 未過期 + 已取消
-            {id: 21, date: '2025/11/01', member: 'GT0000021', name: '劉雅雯', phone: '0901234568', time: '16:00', treatment: '雷射美白', staff: 'AB魔', contactStatus: '2', smsStatus: 'cancelled', noSmsPreference: false},
+            {id: 21, date: '2025/11/01', member: 'GT0000021', name: '劉雅雯', phone: '0901234568', time: '16:00', treatment: '雷射美白', staff: 'AB魔', contactStatus: '2', smsStatus: 'cancelled', noSmsPreference: false, smsDetail: {content: '提醒您有預約【示範麗雅】2025/11/01 16:00 XX區XX路1號，有任何疑問請撥打02-xxxx-xxxx，示範麗雅關心您。', sendTime: '2025-11-01T15:00', template: '標準預約提醒', createdAt: '2025-10-31T08:40', createdBy: 'AB魔', cancelledAt: '2025-10-31T14:20'}},
             // 未過期 + 發送失敗（客人拒收設定 - 測試情境2）
             {id: 22, date: '2025/11/01', member: 'GT0000022', name: '【不可約】黃...', phone: '0912345680', time: '17:30', treatment: '★5樓-純美療程', staff: '超音波導入', contactStatus: '1', smsStatus: 'failed', noSmsPreference: true},
             // 未過期 + 排程中
@@ -1082,112 +973,60 @@
         }
 
         function generateActionButtons(appointmentId, smsStatus) {
-            const appointment = appointments.find(apt => apt.id === appointmentId);
-            const isExpired = isAppointmentExpired(appointmentId);
+            var appointment = appointments.find(function(apt){ return apt.id === appointmentId; });
+            var isExpired = isAppointmentExpired(appointmentId);
 
-            // 🔒 預約已取消的，顯示灰色「已取消」狀態（read only）
+            // 預約已取消
             if (appointment.appointmentStatus === 'cancelled') {
-                return '<div class="sms-hover-container">' +
-                       '<span class="sms-status-block status-expired" style="background: #f5f5f5; color: #9e9e9e;">已取消</span>' +
-                       '</div>';
+                return '<span class="sms-status-block status-expired" style="background:#f5f5f5;color:#9e9e9e;">已取消</span>';
             }
 
-            // 🔒 時間已過的預約，無論簡訊狀態如何，都不允許任何操作
+            // 時間已過
             if (isExpired) {
-                // 根據簡訊狀態顯示不同的已過期訊息
-                let expiredText = '已過期';
-                if (smsStatus === 'delivered') {
-                    expiredText = '已送達';
-                } else if (smsStatus === 'cancelled') {
-                    expiredText = '已取消';
-                } else if (smsStatus === 'failed') {
-                    expiredText = '發送失敗';
-                } else if (smsStatus === 'scheduled') {
-                    expiredText = '已過期';
-                } else {
-                    expiredText = '已過期';
+                var expiredText = smsStatus === 'delivered' ? '已送達' :
+                                  smsStatus === 'cancelled' ? '已取消' :
+                                  smsStatus === 'failed'    ? '發送失敗' : '已過期';
+                var expClass = smsStatus === 'delivered' ? 'status-delivered' :
+                               smsStatus === 'cancelled' ? 'status-cancelled' :
+                               smsStatus === 'failed'    ? 'status-failed' : 'status-expired';
+                if (appointment.smsDetail && smsStatus !== 'scheduled' && smsStatus !== '') {
+                    return '<span class="sms-status-block ' + expClass + ' clickable" onclick="viewSmsDetail(' + appointmentId + ')">' + expiredText + '</span>';
                 }
-
-                return '<div class="sms-hover-container">' +
-                       '<span class="sms-status-block status-expired">' + expiredText + '</span>' +
-                       '</div>';
+                return '<span class="sms-status-block ' + expClass + '">' + expiredText + '</span>';
             }
 
-            // 🔍 檢查是否為同日多預約的非最早預約
-            const sameDayApts = getSameDayAppointments(appointment.member, appointment.date, appointment.id);
-            let isEarliest = true;
-
+            // 同日最早預約判斷
+            var sameDayApts = getSameDayAppointments(appointment.member, appointment.date, appointment.id);
+            var isEarliest = true;
             if (sameDayApts.length > 0) {
-                // 有同日其他預約，檢查是否為最早
-                const allApts = [appointment].concat(sameDayApts).sort(function(a, b) {
-                    // 時間相同時，選擇ID較小的
-                    const timeCompare = a.time.localeCompare(b.time);
-                    if (timeCompare !== 0) {
-                        return timeCompare;
-                    }
-                    return a.id - b.id;
+                var allApts = [appointment].concat(sameDayApts).sort(function(a, b) {
+                    var tc = a.time.localeCompare(b.time);
+                    return tc !== 0 ? tc : a.id - b.id;
                 });
-
                 isEarliest = allApts[0].id === appointmentId;
             }
 
-            // 生成狀態顯示（無論是否最早預約，都顯示原本的簡訊狀態）
-            let html = '<div class="sms-hover-container">';
-            let statusClass = '';
-            let statusText = '';
+            var statusMap = {
+                '':          ['status-none',      '未發送'],
+                'scheduled': ['status-scheduled', '排程中'],
+                'delivered': ['status-delivered', '已送達'],
+                'cancelled': ['status-cancelled', '已取消'],
+                'failed':    ['status-failed',    '發送失敗']
+            };
+            var sm = statusMap[smsStatus] || statusMap[''];
 
-            if (smsStatus === '') {
-                // 未發送
-                statusClass = 'status-none';
-                statusText = '未發送';
-            } else if (smsStatus === 'scheduled') {
-                // 排程中
-                statusClass = 'status-scheduled';
-                statusText = '排程中';
-            } else if (smsStatus === 'delivered') {
-                // 已送達
-                statusClass = 'status-delivered';
-                statusText = '已送達';
-            } else if (smsStatus === 'cancelled') {
-                // 已取消
-                statusClass = 'status-cancelled';
-                statusText = '已取消';
-            } else if (smsStatus === 'failed') {
-                // 發送失敗
-                statusClass = 'status-failed';
-                statusText = '發送失敗';
-            }
-
-            // 非最早預約：顯示灰色 read-only 狀態
+            // 非最早預約：半透明靜態 badge
             if (!isEarliest) {
-                html += '<span class="sms-status-block ' + statusClass + '" style="opacity: 0.5; cursor: default;" title="非最早預約，不可操作">' + statusText + '</span>';
-            } else {
-                // 最早預約：正常顯示，可操作
-                html += '<span class="sms-status-block ' + statusClass + '">' + statusText + '</span>';
-
-                // 根據狀態添加操作按鈕
-                if (smsStatus === '') {
-                    // 未發送：可發送
-                    html += '<div class="sms-hover-actions">';
-                    html += '<button class="hover-btn hover-btn-send" onclick="sendSms(' + appointmentId + ')">發送簡訊</button>';
-                    html += '</div>';
-                } else if (smsStatus === 'scheduled') {
-                    // 排程中：可查看詳情 / 可取消
-                    html += '<div class="sms-hover-actions" style="display:flex;gap:4px">';
-                    html += '<button class="hover-btn hover-btn-view hover-btn-xs" onclick="viewSmsDetail(' + appointmentId + ')">查看</button>';
-                    html += '<button class="hover-btn hover-btn-cancel hover-btn-xs" onclick="cancelSms(' + appointmentId + ')">取消</button>';
-                    html += '</div>';
-                } else if (smsStatus === 'cancelled' || smsStatus === 'failed') {
-                    // 已取消或失敗：可重新發送
-                    html += '<div class="sms-hover-actions">';
-                    html += '<button class="hover-btn hover-btn-resend" onclick="resendSms(' + appointmentId + ')">重新發送</button>';
-                    html += '</div>';
-                }
-                // 已送達：無操作按鈕
+                return '<span class="sms-status-block ' + sm[0] + '" style="opacity:.5;cursor:default" title="非最早預約，不可操作">' + sm[1] + '</span>';
             }
 
-            html += '</div>';
-            return html;
+            // 最早預約，未發送：直接顯示發送按鈕
+            if (smsStatus === '') {
+                return '<button class="hover-btn hover-btn-send" onclick="sendSms(' + appointmentId + ')">發送簡訊</button>';
+            }
+
+            // 其他狀態：點擊 badge 開詳情
+            return '<span class="sms-status-block ' + sm[0] + ' clickable" onclick="viewSmsDetail(' + appointmentId + ')">' + sm[1] + '</span>';
         }
 
         // 生成「取消預約」按鈕
@@ -1633,6 +1472,10 @@
 
         function confirmCancelSms() {
             if (pendingCancelId !== null) {
+                var apt = appointments.find(function(a){ return a.id === pendingCancelId; });
+                if (apt && apt.smsDetail) {
+                    apt.smsDetail.cancelledAt = new Date().toISOString();
+                }
                 updateSmsStatus(pendingCancelId, 'cancelled');
                 showToast('簡訊已取消');
                 renderTable();
@@ -1713,9 +1556,9 @@
                 pendingCanceledAppointmentId = null; // 清空記錄
             }
 
-            updateSmsStatus(currentAppointmentId, 'scheduled');
-            // 記錄排程詳情供查閱
-            var scheduledApt = appointments.find(function(a){ return a.id === currentAppointmentId; });
+            var scheduledId = currentAppointmentId; // 在 closeSmsModal 清掉前先快照
+            updateSmsStatus(scheduledId, 'scheduled');
+            var scheduledApt = appointments.find(function(a){ return a.id === scheduledId; });
             if (scheduledApt) {
                 var isModified = content.trim() !== originalSmsContent.trim();
                 scheduledApt.smsDetail = {
@@ -1734,13 +1577,15 @@
 
             // 模擬發送過程
             setTimeout(function() {
-                const sendSuccess = Math.random() > 0.1;
-
+                var apt2 = appointments.find(function(a){ return a.id === scheduledId; });
+                var sendSuccess = Math.random() > 0.1;
                 if (sendSuccess) {
-                    updateSmsStatus(currentAppointmentId, 'delivered');
+                    updateSmsStatus(scheduledId, 'delivered');
+                    if (apt2 && apt2.smsDetail) apt2.smsDetail.sentAt = new Date().toISOString();
                     showToast('簡訊發送成功！');
                 } else {
-                    updateSmsStatus(currentAppointmentId, 'failed');
+                    updateSmsStatus(scheduledId, 'failed');
+                    if (apt2 && apt2.smsDetail) apt2.smsDetail.failReason = '號碼不在服務範圍';
                     showToast('簡訊發送失敗，請檢查網路或重新發送');
                 }
                 renderTable();
@@ -1772,10 +1617,30 @@
 
         function viewSmsDetail(appointmentId) {
             var apt = appointments.find(function(a){ return a.id === appointmentId; });
-            if (!apt || !apt.smsDetail) { alert('查無排程詳情'); return; }
+            if (!apt || !apt.smsDetail) return;
             detailAppointmentId = appointmentId;
             var d = apt.smsDetail;
-            document.getElementById('detailSendTime').textContent = fmtDT(d.sendTime);
+            var status = apt.smsStatus;
+
+            // Banner 顏色 & 文字
+            var bannerCfg = {
+                'scheduled': { bg:'#e3f2fd', border:'#bbdefb', badgeBg:'#1976d2', textColor:'#0d47a1', badgeText:'排程中',  info:'預計於 <strong>' + fmtDT(d.sendTime) + '</strong> 發送' },
+                'delivered': { bg:'#e8f5e9', border:'#c8e6c9', badgeBg:'#388e3c', textColor:'#1b5e20', badgeText:'已送達',  info:'已於 <strong>' + fmtDT(d.sentAt) + '</strong> 送達' },
+                'cancelled': { bg:'#fce4ec', border:'#f8bbd0', badgeBg:'#c2185b', textColor:'#880e4f', badgeText:'已取消',  info:'已於 <strong>' + fmtDT(d.cancelledAt) + '</strong> 取消' },
+                'failed':    { bg:'#ffebee', border:'#ffcdd2', badgeBg:'#d32f2f', textColor:'#b71c1c', badgeText:'發送失敗', info: d.failReason ? '原因：' + d.failReason : '發送失敗' }
+            };
+            var cfg = bannerCfg[status] || bannerCfg['scheduled'];
+            var banner = document.getElementById('detailStatusBanner');
+            var badge  = document.getElementById('detailStatusBadge');
+            var info   = document.getElementById('detailBannerInfo');
+            banner.style.background = cfg.bg;
+            banner.style.borderBottomColor = cfg.border;
+            badge.style.background = cfg.badgeBg;
+            badge.textContent = cfg.badgeText;
+            info.style.color = cfg.textColor;
+            info.innerHTML = cfg.info;
+
+            // 收件人 / 內容
             document.getElementById('detailRecipient').textContent = apt.name + '　' + apt.phone;
             document.getElementById('detailContent').textContent = d.content;
             document.getElementById('detailCharCount').textContent = d.content.length + ' 字';
@@ -1783,6 +1648,36 @@
             tplEl.innerHTML = (d.template || '自訂') + (d.modified ? '<span class="tag-modified">已手動修改</span>' : '');
             document.getElementById('detailCreatedAt').textContent = fmtDT(d.createdAt);
             document.getElementById('detailCreatedBy').textContent = d.createdBy || '--';
+
+            // 狀態附加列
+            var statusRow = document.getElementById('detailStatusRow');
+            var lbl = '', val = '';
+            if (status === 'delivered' && d.sentAt)        { lbl = '送達時間'; val = fmtDT(d.sentAt); }
+            else if (status === 'cancelled' && d.cancelledAt) { lbl = '取消時間'; val = fmtDT(d.cancelledAt); }
+            else if (status === 'failed' && d.failReason)  { lbl = '失敗原因'; val = d.failReason; }
+            if (lbl) {
+                document.getElementById('detailStatusLbl').textContent = lbl;
+                document.getElementById('detailStatusVal').textContent = val;
+                statusRow.style.display = '';
+            } else {
+                statusRow.style.display = 'none';
+            }
+
+            // 頁腳按鈕
+            var footerBtns = document.getElementById('detailFooterBtns');
+            if (status === 'scheduled') {
+                footerBtns.innerHTML =
+                    '<button class="btn btn-secondary" onclick="closeDetailModal()">關閉</button>' +
+                    '<button class="btn btn-danger" onclick="closeDetailAndCancel()">取消此排程</button>';
+            } else if (status === 'cancelled' || status === 'failed') {
+                footerBtns.innerHTML =
+                    '<button class="btn btn-secondary" onclick="closeDetailModal()">關閉</button>' +
+                    '<button class="btn btn-primary" onclick="closeDetailAndResend()">重新發送</button>';
+            } else {
+                footerBtns.innerHTML =
+                    '<button class="btn btn-secondary" onclick="closeDetailModal()">關閉</button>';
+            }
+
             document.getElementById('smsDetailModal').style.display = 'block';
         }
 
@@ -1795,6 +1690,12 @@
             var id = detailAppointmentId;
             closeDetailModal();
             if (id !== null) cancelSms(id);
+        }
+
+        function closeDetailAndResend() {
+            var id = detailAppointmentId;
+            closeDetailModal();
+            if (id !== null) resendSms(id);
         }
         // ─────────────────────────────────────────────
 
