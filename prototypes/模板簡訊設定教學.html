@@ -136,6 +136,21 @@
   .btn-default.is-default{background:#ffe082;color:#5c4200;font-weight:700}
   .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2933;color:#fff;font-size:13px;font-weight:550;padding:11px 18px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;visibility:hidden;transition:.22s;z-index:90}
   .toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+
+  /* 確認彈窗 */
+  .scrim{position:fixed;inset:0;background:rgba(20,28,38,.5);opacity:0;visibility:hidden;transition:.2s;z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:48px 16px;overflow:auto}
+  .scrim.open{opacity:1;visibility:visible}
+  .modal{background:#fff;border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.28);width:520px;max-width:100%;transform:translateY(-12px);transition:transform .22s;overflow:hidden}
+  .modal.sm{width:380px}
+  .scrim.open .modal{transform:translateY(0)}
+  .m-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
+  .m-head h3{font-size:17px;font-weight:700}
+  .m-body{padding:18px 20px;font-size:13.5px;line-height:1.7;color:var(--muted)}
+  .m-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px;justify-content:flex-end}
+
+  /* 啟用開關說明文字 */
+  .ed-hint{font-size:11.5px;color:var(--faint);margin-top:8px;line-height:1.5}
+  .ed-enable.locked{opacity:.5;pointer-events:none}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
   .live-clock{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;font-weight:700;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:3px 10px;letter-spacing:.5px}
 </style>
@@ -203,8 +218,9 @@
             <button class="btn btn-default" id="defaultBtn" style="display:none">設為門市預設</button>
             <button class="btn btn-copy" id="copyBtn" style="display:none">複製到本門市</button>
             <button class="btn btn-danger" id="delBtn" style="display:none">刪除</button>
-            <label class="ed-enable"><span>啟用</span><span class="switch on" id="edEnable" role="switch" aria-checked="true" style="width:42px;height:23px"></span></label>
+            <label class="ed-enable" id="edEnableWrap"><span>啟用</span><span class="switch on" id="edEnable" role="switch" aria-checked="true" style="width:42px;height:23px"></span></label>
           </div>
+          <div class="ed-hint" id="edEnableHint"></div>
         </div>
       </div>
 
@@ -215,7 +231,7 @@
           <div class="pv-sample" id="pvSample"></div>
           <div class="phone">
             <div class="phone-bar"><span>09:00</span><span>NPOS</span></div>
-            <span class="sms-sender">示範麗雅</span>
+            <span class="sms-sender" id="pvSender"></span>
             <div class="bubble" id="pvBubble"><span class="ph">選擇或編輯模板，此處即時預覽…</span></div>
           </div>
           <div class="pv-stats">
@@ -232,6 +248,17 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div class="scrim" id="confirmScrim">
+  <div class="modal sm">
+    <div class="m-head"><h3 id="confirmTitle"></h3></div>
+    <div class="m-body" id="confirmMsg"></div>
+    <div class="m-foot">
+      <button class="btn btn-ghost" id="confirmCancelBtn"></button>
+      <button class="btn" id="confirmOkBtn"></button>
+    </div>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -259,9 +286,10 @@
   function smsSegments(len){if(len===0)return 0;if(len<=70)return 1;return Math.ceil(len/67);}
 
   /* ---------- 範例資料（預覽用，跟隨真實時間） ---------- */
+  var STORE_NAME="示範麗雅",STORE_ADDR="XX區XX路1號",STORE_PHONE="02-xxxx-xxxx";
   var _sampleTime=nowSlotStr();
   var sample={
-    "會員姓名":"王○○","門市名稱":"示範麗雅","門市地址":"XX區XX路1號","門市電話":"02-xxxx-xxxx",
+    "會員姓名":"王○○","門市名稱":STORE_NAME,"門市地址":STORE_ADDR,"門市電話":STORE_PHONE,
     "預約日期":todayShort(),"預約時間":_sampleTime,
     "療程":"臉-超導(60分)","診間":"診一",
     "時段":shiftFromTimeStr(_sampleTime),"派號":queueNoFromTimeStr(_sampleTime)
@@ -278,9 +306,9 @@
      body:"{{會員姓名}}您好，提醒您今日於{{門市名稱}}有門診預約{{預約時間}}，請依現場叫號順序看診。洽詢{{門市電話}}。"}
   ];
   var ext=[
-    {id:"e1",name:"示範精緻美容－預約提醒",desc:"示範精緻美容門市自訂",enabled:true,storeId:"s2",storeName:"示範精緻美容",
+    {id:"e1",name:"示範精緻美容－預約提醒",desc:"示範精緻美容門市自訂",enabled:true,storeId:"s2",storeName:"示範精緻美容",storeAddr:"OO區OO街56號",storePhone:"04-xxxx-xxxx",
      body:"{{會員姓名}}您好，示範精緻美容提醒您{{預約日期}}{{預約時間}}的{{療程}}預約，請準時蒞臨。洽詢{{門市電話}}。"},
-    {id:"e2",name:"示範光采－療程確認",desc:"示範光采門市自訂",enabled:true,storeId:"s3",storeName:"示範光采",
+    {id:"e2",name:"示範光采－療程確認",desc:"示範光采門市自訂",enabled:true,storeId:"s3",storeName:"示範光采",storeAddr:"OO路OO段88號",storePhone:"07-xxxx-xxxx",
      body:"{{會員姓名}}您好，提醒您{{預約日期}}於示範光采的{{療程}}預約，時間{{預約時間}}。地址：{{門市地址}}。"}
   ];
   var custom=loadJSON(KEY.custom,[]);
@@ -290,7 +318,11 @@
   function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
   function isCustom(id){return id&&id.indexOf("c")===0;}
   function isExt(id){return id&&id.indexOf("e")===0;}
+  function isBuiltin(id){return id&&id.indexOf("b")===0;}
   function todayStr(){var d=new Date();return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate();}
+  function contextStoreName(){var t=isExt(editingId)&&tplById(editingId);return (t&&t.storeName)||STORE_NAME;}
+  function contextStoreAddr(){var t=isExt(editingId)&&tplById(editingId);return (t&&t.storeAddr)||STORE_ADDR;}
+  function contextStorePhone(){var t=isExt(editingId)&&tplById(editingId);return (t&&t.storePhone)||STORE_PHONE;}
 
   /* ---------- 全域開關 ---------- */
   var swMain=document.getElementById("swMain"),swTele=document.getElementById("swTele");
@@ -312,7 +344,13 @@
     }
     out+=esc(body.slice(last));return out;
   }
+  function renderSampleSummary(){
+    document.getElementById("pvSample").innerHTML='已套用範例資料：會員 <b>'+esc(sample["會員姓名"])+'</b>／<b>'+esc(sample["門市名稱"])+'</b>／'+esc(sample["預約日期"])+' '+esc(sample["預約時間"])+'（'+esc(sample["時段"])+'第'+esc(sample["派號"])+'號）／'+esc(sample["療程"]);
+  }
   function updatePreview(){
+    sample["門市名稱"]=contextStoreName();sample["門市地址"]=contextStoreAddr();sample["門市電話"]=contextStorePhone();
+    document.getElementById("pvSender").textContent=sample["門市名稱"];
+    renderSampleSummary();
     var body=document.getElementById("edBody").value;
     if(!body.trim()){pvBubble.innerHTML='<span class="ph">選擇或編輯模板，此處即時預覽…</span>';pvChars.textContent="0";pvChars.className="n";pvSegs.textContent="0";return;}
     pvBubble.innerHTML=previewHTML(body);
@@ -320,7 +358,6 @@
     pvChars.textContent=plain.length;pvChars.className="n"+(plain.length>70?" over":"");
     pvSegs.textContent=smsSegments(plain.length);
   }
-  document.getElementById("pvSample").innerHTML='已套用範例資料：會員 <b>'+esc(sample["會員姓名"])+'</b>／<b>'+esc(sample["門市名稱"])+'</b>／'+esc(sample["預約日期"])+' '+esc(sample["預約時間"])+'（'+esc(sample["時段"])+'第'+esc(sample["派號"])+'號）／'+esc(sample["療程"]);
 
   /* ---- 即時時鐘 ---- */
   function pad2c(n){return ("0"+n).slice(-2);}
@@ -339,6 +376,13 @@
 
   /* ---------- 模板清單 ---------- */
   var search="",editingId=null;
+  var loadedSnapshot=null;
+  function snapshotEditor(){return {name:edName.value,desc:edDesc.value,body:edBody.value,enabled:edEnable.classList.contains("on")};}
+  function isDirty(){
+    if(!loadedSnapshot||isExt(editingId))return false;
+    var c=snapshotEditor();
+    return c.name!==loadedSnapshot.name||c.desc!==loadedSnapshot.desc||c.body!==loadedSnapshot.body||c.enabled!==loadedSnapshot.enabled;
+  }
   function matches(t){if(!search)return true;var q=search.toLowerCase();return t.name.toLowerCase().indexOf(q)>-1||(t.desc||"").toLowerCase().indexOf(q)>-1;}
   function starSVG(f){return '<svg viewBox="0 0 24 24" fill="'+(f?"currentColor":"none")+'" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.9l-5.8 3.05 1.1-6.47L2.6 9.9l6.5-.95z"/></svg>';}
   function cardHTML(t){
@@ -371,14 +415,26 @@
   document.getElementById("listScroll").addEventListener("click",function(e){
     var p=e.target.closest("[data-pin]");
     if(p){var id=p.getAttribute("data-pin");if(pins.indexOf(id)>-1)pins=pins.filter(function(x){return x!==id;});else pins.unshift(id);saveJSON(KEY.pins,pins);renderList();toast(pins.indexOf(id)>-1?"已釘選":"已取消釘選");return;}
-    var ed=e.target.closest("[data-edit]");if(ed)loadIntoEditor(ed.getAttribute("data-edit"));
+    var ed=e.target.closest("[data-edit]");
+    if(ed){
+      var id=ed.getAttribute("data-edit");
+      if(id===editingId)return;
+      if(isDirty()){
+        confirmDialog({title:"捨棄目前變更？",message:"目前編輯內容尚未儲存，切換模板將會遺失這些變更。",okText:"捨棄並切換",cancelText:"繼續編輯",danger:true},function(){loadIntoEditor(id);});
+      }else loadIntoEditor(id);
+    }
   });
   document.getElementById("searchInput").addEventListener("input",function(e){search=e.target.value.trim();renderList();});
 
   /* ---------- 編輯器載入/儲存 ---------- */
   var edName=document.getElementById("edName"),edDesc=document.getElementById("edDesc"),edBody=document.getElementById("edBody"),edEnable=document.getElementById("edEnable"),delBtn=document.getElementById("delBtn"),edTitle=document.getElementById("edTitle");
-  function setEnable(on){edEnable.classList.toggle("on",on);edEnable.setAttribute("aria-checked",on);}
-  edEnable.addEventListener("click",function(){edEnable.classList.toggle("on");edEnable.setAttribute("aria-checked",edEnable.classList.contains("on"));});
+  function setEnable(on){
+    edEnable.classList.toggle("on",on);edEnable.setAttribute("aria-checked",on);
+    document.getElementById("edEnableHint").textContent=on
+      ?"已啟用：可於「預約操作」發送簡訊視窗中選用此模板"
+      :"已停用：不會出現在「預約操作」發送簡訊視窗的可選清單中，但仍保留於此清單";
+  }
+  edEnable.addEventListener("click",function(){if(isExt(editingId))return;setEnable(!edEnable.classList.contains("on"));});
 
   function loadIntoEditor(id){
     var t=tplById(id);if(!t)return;
@@ -386,7 +442,9 @@
     var cust=isCustom(id),ext_t=isExt(id);
     edName.value=t.name;edDesc.value=t.desc||"";edBody.value=t.body;setEnable(t.enabled!==false);
     edName.readOnly=ext_t;edDesc.readOnly=ext_t;edBody.readOnly=ext_t;
+    document.getElementById("edEnableWrap").classList.toggle("locked",ext_t);
     var edRoBar=document.getElementById("edRoBar"),copyBtn=document.getElementById("copyBtn"),saveBtn=document.getElementById("saveBtn"),newBtn=document.getElementById("newBtn");
+    newBtn.textContent="取消編輯";
     if(ext_t){
       edTitle.textContent="檢視模板（其他門市）";
       edRoBar.innerHTML='⚠ 此為「<b>'+esc(t.storeName||"其他門市")+'</b>」的模板，僅供檢視。若需使用請複製至本門市後再編輯。';
@@ -407,43 +465,70 @@
     defaultBtn.textContent=id===defaultTplId?"✓ 已是門市預設":"設為門市預設";
     defaultBtn.className="btn btn-default"+(id===defaultTplId?" is-default":"");
     updatePreview();renderList();
+    loadedSnapshot=snapshotEditor();
   }
   function newTemplate(){
     editingId=null;edName.value="";edDesc.value="";edBody.value="";setEnable(true);
     edName.readOnly=false;edDesc.readOnly=false;edBody.readOnly=false;
+    document.getElementById("edEnableWrap").classList.remove("locked");
     edTitle.textContent="新增模板";
     document.getElementById("edRoBar").style.display="none";
     document.getElementById("saveBtn").style.display="";
     document.getElementById("newBtn").style.display="";
+    document.getElementById("newBtn").textContent="清空表單";
     document.getElementById("copyBtn").style.display="none";
     document.getElementById("defaultBtn").style.display="none";
     delBtn.style.display="none";
     updatePreview();renderList();
+    loadedSnapshot=snapshotEditor();
   }
-  document.getElementById("newBtn").addEventListener("click",newTemplate);
-  document.getElementById("addBtn").addEventListener("click",function(){newTemplate();edName.focus();});
+  function requestNewTemplate(focusName){
+    if(isDirty()){
+      confirmDialog({title:"捨棄目前變更？",message:"目前編輯內容尚未儲存，將會遺失這些變更。",okText:"捨棄並新增",cancelText:"繼續編輯",danger:true},function(){newTemplate();if(focusName)edName.focus();});
+    }else{newTemplate();if(focusName)edName.focus();}
+  }
+  document.getElementById("newBtn").addEventListener("click",function(){requestNewTemplate(false);});
+  document.getElementById("addBtn").addEventListener("click",function(){requestNewTemplate(true);});
 
+  function doSaveAsCopy(name,desc,body,enabled){
+    var id="c"+Date.now();
+    custom.push({id:id,name:name,desc:desc||"自訂模板",body:body,enabled:enabled,creator:"系統人員",created:todayStr(),scenario:"預約簡訊"});
+    saveJSON(KEY.custom,custom);editingId=id;
+    edTitle.textContent="編輯模板（自訂）";delBtn.style.display="";
+    loadedSnapshot=snapshotEditor();
+    toast("已另存為自訂模板「"+name+"」，預約頁即可套用");
+    renderList();
+  }
   document.getElementById("saveBtn").addEventListener("click",function(){
     var name=edName.value.trim(),desc=edDesc.value.trim(),body=edBody.value.trim(),enabled=edEnable.classList.contains("on");
     if(!name){toast("請輸入模板名稱");edName.focus();return;}
     if(!body){toast("請輸入簡訊內容");edBody.focus();return;}
     if(isCustom(editingId)){
       var t=tplById(editingId);t.name=name;t.desc=desc||"自訂模板";t.body=body;t.enabled=enabled;
-      saveJSON(KEY.custom,custom);toast("已更新「"+name+"」");
+      saveJSON(KEY.custom,custom);
+      loadedSnapshot=snapshotEditor();
+      toast("已更新「"+name+"」");
+      renderList();
+    }else if(isBuiltin(editingId)){
+      var origName=tplById(editingId).name;
+      confirmDialog({title:"另存為自訂複本",message:"「"+esc(origName)+"」為系統內建模板，無法直接修改。<br><br>儲存將建立一份可自訂的複本，系統內建的原始模板不受影響、也不會被覆蓋。",okText:"建立複本並儲存",cancelText:"取消"},function(){doSaveAsCopy(name,desc,body,enabled);});
     }else{
-      var id="c"+Date.now();
-      custom.push({id:id,name:name,desc:desc||"自訂模板",body:body,enabled:enabled,creator:"系統人員",created:todayStr(),scenario:"預約簡訊"});
-      saveJSON(KEY.custom,custom);editingId=id;
-      edTitle.textContent="編輯模板（自訂）";delBtn.style.display="";
-      toast("已儲存「"+name+"」為共用模板，預約頁即可套用");
+      doSaveAsCopy(name,desc,body,enabled);
     }
-    renderList();
   });
+  function performDelete(id){
+    var t=tplById(id);
+    custom=custom.filter(function(x){return x.id!==id;});saveJSON(KEY.custom,custom);
+    pins=pins.filter(function(x){return x!==id;});saveJSON(KEY.pins,pins);
+    var wasDefault=(id===defaultTplId);
+    if(wasDefault){defaultTplId=null;store.set(KEY.default,"");}
+    toast(wasDefault?("已刪除「"+(t?t.name:"")+"」，並已清除門市預設模板設定"):("已刪除「"+(t?t.name:"")+"」"));
+    newTemplate();
+  }
   document.getElementById("delBtn").addEventListener("click",function(){
     if(!isCustom(editingId))return;
-    var t=tplById(editingId);custom=custom.filter(function(x){return x.id!==editingId;});saveJSON(KEY.custom,custom);
-    pins=pins.filter(function(x){return x!==editingId;});saveJSON(KEY.pins,pins);
-    toast("已刪除「"+(t?t.name:"")+"」");newTemplate();
+    var t=tplById(editingId),id=editingId,isDefault=(id===defaultTplId);
+    confirmDialog({title:"刪除模板",message:"確定要刪除「"+esc(t.name)+"」嗎？此動作無法復原。"+(isDefault?"<br><br>此模板目前為「門市預設」，刪除後將一併清除預設設定。":""),okText:"刪除",cancelText:"取消",danger:true},function(){performDelete(id);});
   });
   document.getElementById("defaultBtn").addEventListener("click",function(){
     if(editingId===defaultTplId){
@@ -477,6 +562,23 @@
   /* ---------- toast ---------- */
   var toastTimer;
   function toast(msg){var el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove("show");},2400);}
+
+  /* ---------- 確認彈窗 ---------- */
+  function confirmDialog(opts,onOk){
+    document.getElementById("confirmTitle").textContent=opts.title;
+    document.getElementById("confirmMsg").innerHTML=opts.message;
+    var ok=document.getElementById("confirmOkBtn"),cancel=document.getElementById("confirmCancelBtn"),scrim=document.getElementById("confirmScrim");
+    ok.textContent=opts.okText||"確定";cancel.textContent=opts.cancelText||"取消";
+    ok.className="btn "+(opts.danger?"btn-danger":"btn-primary");
+    function close(){scrim.classList.remove("open");ok.onclick=null;cancel.onclick=null;scrim.onclick=null;}
+    ok.onclick=function(){close();onOk();};
+    cancel.onclick=close;
+    scrim.onclick=function(e){if(e.target===scrim)close();};
+    scrim.classList.add("open");
+  }
+
+  /* ---------- 離開頁面前警示未儲存變更 ---------- */
+  window.addEventListener("beforeunload",function(e){if(isDirty()){e.preventDefault();e.returnValue="";}});
 
   /* ---------- init ---------- */
   renderList();
