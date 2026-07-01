@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>簡訊模板設定 UX 修復 - 工程師討論簡報</title>
+<style>
+  :root{
+    --blue:#2563EB;--blue-deep:#1D4ED8;--blue-wash:#EAF1FE;
+    --ink:#1f2933;--muted:#5b6770;--faint:#8a949c;
+    --line:#e3e7eb;--surface:#fff;--surface-2:#f5f7f9;
+    --danger:#dc3545;--danger-wash:#fdecec;--ok:#198754;--ok-wash:#e8f5e9;
+    --gold:#C98A14;--gold-wash:#fff8e1;
+    --mono:ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Microsoft JhengHei',-apple-system,"PingFang TC",sans-serif;background:var(--surface-2);color:var(--ink);line-height:1.6;padding:32px 20px 80px}
+  .wrap{max-width:960px;margin:0 auto}
+  .hero{background:linear-gradient(135deg,var(--blue),var(--blue-deep));color:#fff;border-radius:14px;padding:34px 38px;margin-bottom:26px;box-shadow:0 8px 24px rgba(37,99,235,.25)}
+  .hero .tag{font-size:12px;font-weight:700;background:rgba(255,255,255,.18);display:inline-block;padding:4px 11px;border-radius:999px;letter-spacing:.5px;margin-bottom:12px}
+  .hero h1{font-size:26px;font-weight:800;margin-bottom:8px}
+  .hero p{font-size:14px;opacity:.92}
+
+  section{margin-bottom:30px}
+  .sec-h{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .sec-h .n{width:28px;height:28px;border-radius:8px;background:var(--blue);color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex:none}
+  .sec-h h2{font-size:18px;font-weight:800}
+  .sec-h p{font-size:12.5px;color:var(--muted);margin-top:2px}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .card + .card{margin-top:12px}
+
+  .issue{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:#fff}
+  .issue .badge{width:26px;height:26px;border-radius:7px;background:var(--blue-wash);color:var(--blue-deep);font-weight:800;font-size:12.5px;display:flex;align-items:center;justify-content:center}
+  .issue h3{font-size:14px;font-weight:700;margin-bottom:6px}
+  .issue .row{display:flex;gap:8px;font-size:12.5px;margin-bottom:4px;align-items:flex-start}
+  .issue .k{flex:none;width:52px;font-weight:700;color:var(--faint)}
+  .issue .k.before{color:var(--danger)}
+  .issue .k.after{color:var(--ok)}
+  .issue .v{color:var(--muted)}
+  .issue.extra .badge{background:var(--gold-wash);color:var(--gold)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:720px){.grid2{grid-template-columns:1fr}}
+
+  code,.code{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--blue-deep)}
+  pre.code-block{font-family:var(--mono);font-size:12px;background:#1f2933;color:#e3e7eb;border-radius:9px;padding:14px 16px;overflow:auto;line-height:1.7}
+  pre.code-block .c{color:#8a949c}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:var(--surface-2);text-align:left;padding:9px 12px;font-size:12px;color:var(--faint);font-weight:700;border-bottom:1px solid var(--line)}
+  td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px}
+  .pill.done{background:var(--ok-wash);color:var(--ok)}
+  .pill.open{background:var(--gold-wash);color:var(--gold)}
+
+  .callout{border-left:4px solid var(--blue);background:var(--blue-wash);border-radius:0 8px 8px 0;padding:12px 16px;font-size:13px;color:var(--blue-deep);margin-top:12px}
+  .callout.ok{border-color:var(--ok);background:var(--ok-wash);color:#1e6b3a}
+  .callout.warn{border-color:var(--gold);background:var(--gold-wash);color:#7a5400}
+
+  ul.plain{list-style:none;font-size:13.5px;color:var(--muted)}
+  ul.plain li{padding-left:18px;position:relative;margin-bottom:6px}
+  ul.plain li::before{content:"→";position:absolute;left:0;color:var(--blue)}
+
+  footer{text-align:center;font-size:12px;color:var(--faint);margin-top:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="tag">討論用簡報 · 給前端工程師</span>
+    <h1>簡訊模板設定畫面 — UX 修復說明</h1>
+    <p>對象檔案：<code style="background:rgba(255,255,255,.18);color:#fff;border:none">prototypes/模板簡訊設定教學.html</code>　目的：走過這次改了什麼、為什麼改、還有哪些留給下一輪討論</p>
+  </div>
+
+  <section>
+    <div class="sec-h">
+      <div class="n">1</div>
+      <div><h2>背景</h2><p>怎麼挑到這個畫面的</p></div>
+    </div>
+    <div class="card">
+      <p style="font-size:13.5px;color:var(--muted)">
+        先對整個 prototype 專案（9 個獨立 HTML 檔案）做了一輪 UI/UX review，發現跨檔案的設計不一致（配色、彈窗、無障礙）規模較大，這次先聚焦在單一畫面：<b>簡訊模板設定</b>——這是模板 CRUD 的核心頁面，也是問題密度最高的地方。
+        逐行讀過原始碼後鎖定 <b>7 個結構性問題</b>（會造成使用者資料遺失、操作誤解、跨頁資料不一致），加上規劃時多發現的 <b>2 個加強項目</b>，使用者確認全部一起修。
+      </p>
+      <div class="callout">全部改動只動了這一個檔案，沒有動到共用的 localStorage 資料結構，跟 <code>預約操作模擬.html</code> 的相依（<code>npos_tpl_custom</code>／<code>npos_tpl_default</code>）維持相容。</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <div class="n">2</div>
+      <div><h2>修了什麼</h2><p>逐項對照：問題 → 修法</p></div>
+    </div>
+
+    <div class="issue">
+      <div class="badge">A</div>
+      <div>
+        <h3>編輯到一半切換模板，靜默遺失變更</h3>
+        <div class="row"><span class="k before">問題</span><span class="v">編輯中只要點清單另一張卡片、「＋新增」或「清空」，內容直接被蓋掉，沒有任何提示。</span></div>
+        <div class="row"><span class="k after">修法</span><span class="v">加一顆共用確認彈窗，比對編輯器目前內容跟載入時的快照（<code>isDirty()</code>），有差異才跳出「捨棄目前變更？」。</span></div>
+      </div>
+    </div>
+
+    <div class="issue">
+      <div class="badge">B/C</div>
+      <div>
+        <h3>刪除沒有二次確認，刪到「門市預設」會留下 stale 資料</h3>
+        <div class="row"><span class="k before">問題</span><span class="v">按刪除立即生效；如果刪的剛好是被設成門市預設的模板，<code>npos_tpl_default</code> 會指向一筆已經不存在的 id。</span></div>
+        <div class="row"><span class="k after">修法</span><span class="v">刪除前先確認；若刪的是目前預設，確認訊息會先講清楚，並在 <code>performDelete()</code> 裡一併清掉 <code>defaultTplId</code>／localStorage。</span></div>
+      </div>
+    </div>
+
+    <div class="issue">
+      <div class="badge">D</div>
+      <div>
+        <h3>編輯系統內建模板，存檔後靜默變成同名複本</h3>
+        <div class="row"><span class="k before">問題</span><span class="v">只有編輯器標題文字提示「儲存將另存為自訂」，很容易被忽略，使用者以為自己在改內建模板本身。</span></div>
+        <div class="row"><span class="k after">修法</span><span class="v">存檔前明確跳出「另存為自訂複本」確認；複本名稱維持使用者輸入原樣，不自動改名（靠清單分組＋確認文字區分，不動使用者輸入）。</span></div>
+      </div>
+    </div>
+
+    <div class="issue">
+      <div class="badge">E</div>
+      <div>
+        <h3>「清空」按鈕命名跟行為不符</h3>
+        <div class="row"><span class="k before">問題</span><span class="v">點下去其實是把編輯器重置成新增狀態，不是清空/刪除目前模板。</span></div>
+        <div class="row"><span class="k after">修法</span><span class="v">改成情境式標籤：編輯既有模板時顯示「取消編輯」，已在空白新增狀態時顯示「清空表單」。</span></div>
+      </div>
+    </div>
+
+    <div class="issue">
+      <div class="badge">F</div>
+      <div>
+        <h3>「啟用」開關沒說明實際影響</h3>
+        <div class="row"><span class="k before">問題</span><span class="v">關掉某模板只讓清單卡片變半透明，不知道實際會發生什麼事。</span></div>
+        <div class="row"><span class="k after">修法</span><span class="v">開關下方常駐顯示說明文字，即時反映開/關狀態：會/不會出現在「預約操作」發送簡訊視窗裡。</span></div>
+      </div>
+    </div>
+
+    <div class="issue">
+      <div class="badge">G</div>
+      <div>
+        <h3>預覽手機畫面寄件者/地址/電話寫死本店資料</h3>
+        <div class="row"><span class="k before">問題</span><span class="v">檢視「其他門市」模板時，寄件者標籤跟 <code>{{門市名稱}}</code> 等 token 仍固定顯示「示範麗雅」，跟模板實際所屬門市矛盾。</span></div>
+        <div class="row"><span class="k after">修法</span><span class="v">預覽依 <code>contextStoreName()</code>／<code>contextStoreAddr()</code>／<code>contextStorePhone()</code> 切換情境；順便幫 e1/e2 兩筆其他門市模板補上假地址/電話，讓完整預覽對得上。</span></div>
+      </div>
+    </div>
+
+    <div class="issue extra">
+      <div class="badge">H</div>
+      <div>
+        <h3>額外加強：唯讀模板時「啟用」開關還能點</h3>
+        <div class="row"><span class="k before">問題</span><span class="v">檢視其他門市模板時，名稱/說明/內容都鎖了，唯獨這顆開關還能切換。</span></div>
+        <div class="row"><span class="k after">修法</span><span class="v">視覺鎖住（半透明＋不可點擊）並在 click handler 內加防呆。</span></div>
+      </div>
+    </div>
+
+    <div class="issue extra">
+      <div class="badge">I</div>
+      <div>
+        <h3>額外加強：離開頁面沒有警示</h3>
+        <div class="row"><span class="k before">問題</span><span class="v">前面的確認只擋得住站內切換，重新整理或關分頁還是會無聲遺失。</span></div>
+        <div class="row"><span class="k after">修法</span><span class="v">掛上 <code>beforeunload</code>，dirty 時交給瀏覽器原生的離開確認提示。</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <div class="n">3</div>
+      <div><h2>技術實作重點</h2><p>給工程師快速對照 code 用</p></div>
+    </div>
+    <div class="card">
+      <p style="font-size:13px;font-weight:700;margin-bottom:8px">新增的共用元件</p>
+      <ul class="plain">
+        <li><code>confirmDialog(opts, onOk)</code> — 輕量確認彈窗，樣式移植自 <code>預約操作模擬.html</code> 既有的 <code>.scrim</code>/<code>.modal</code>，A/B/D 三種情境共用同一顆元件、不同文案。</li>
+        <li><code>isDirty()</code> / <code>snapshotEditor()</code> — 比對編輯器目前值跟載入時快照；對「其他門市」唯讀模板永遠回傳 false。</li>
+        <li><code>performDelete(id)</code> / <code>doSaveAsCopy(...)</code> — 從原本的 saveBtn/delBtn handler 拆出來，因為現在存檔／刪除都可能先經過非同步的確認彈窗 callback。</li>
+      </ul>
+      <p style="font-size:13px;font-weight:700;margin:16px 0 8px">資料模型微調</p>
+      <ul class="plain">
+        <li><code>ext</code> 陣列（其他門市模板）新增 <code>storeAddr</code> / <code>storePhone</code> 欄位（虛構假資料，跟現有假資料風格一致）。</li>
+        <li><code>STORE_NAME</code> / <code>STORE_ADDR</code> / <code>STORE_PHONE</code> 常數取代原本寫死在 <code>sample</code> 物件跟 HTML 裡的「示範麗雅」字串。</li>
+      </ul>
+      <div class="callout ok">跟 <code>預約操作模擬.html</code> 共用的 localStorage 鍵值（<code>npos_tpl_custom</code> / <code>npos_tpl_pins</code> / <code>npos_tpl_default</code>）結構完全沒變，只有多了「刪除預設模板時清空 default」這個副作用，對方頁面原本就有 stale-id 的 fallback 防呆，相容沒有問題。</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <div class="n">4</div>
+      <div><h2>已經拍板的決策</h2><p>規劃階段跟你我來回確認過，避免討論時重複繞</p></div>
+    </div>
+    <div class="card">
+      <table>
+        <tr><th>項目</th><th>決策</th><th>原因</th></tr>
+        <tr><td>D · 複本命名</td><td>不自動改名</td><td>不動使用者輸入內容，靠確認彈窗文字 + 清單分組區分原始/複本</td></tr>
+        <tr><td>G · 其他門市資料</td><td>補上假地址/電話</td><td>讓其他門市模板的完整預覽（含地址、電話 token）都對得上，不留半套</td></tr>
+        <tr><td>F · 說明文字呈現</td><td>常駐顯示，不用 hover tooltip</td><td>跟現有 <code>.ed-ro-bar</code>／<code>.param-hint</code> 視覺語言一致，也避免觸控裝置點不到 tooltip</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <div class="n">5</div>
+      <div><h2>驗證方式</h2><p>怎麼確認這次改動沒問題</p></div>
+    </div>
+    <div class="card">
+      <p style="font-size:13.5px;color:var(--muted)">用 headless Chrome（puppeteer-core）跑過完整互動流程：切換模板、儲存、刪除、鎖定唯讀開關、預覽情境切換、beforeunload，共 <b>22 項細部檢查全數通過</b>，過程中 console 無任何錯誤。也截圖確認了實際畫面（確認彈窗、其他門市預覽鎖定狀態）跟既有設計語言一致。</p>
+      <div class="callout">程式碼已經 commit（<code>6748c04</code>）並推送到 <code>origin/master</code>。</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <div class="n">6</div>
+      <div><h2>待討論 — 還沒動的部分</h2><p>第一輪全站 review 找到、但這次刻意先不做的項目，適合這次一起排優先序</p></div>
+    </div>
+    <div class="card">
+      <table>
+        <tr><th>範疇</th><th>問題摘要</th><th>狀態</th></tr>
+        <tr><td>跨檔案</td><td>9 個 prototype 各自手刻 CSS，沒有共用 tokens/components，配色（紫色漸層 vs NPOS 藍 vs 一般藍）三套並存</td><td><span class="pill open">未排</span></td></tr>
+        <tr><td>跨檔案</td><td>不少可點擊元素是 <code>&lt;span&gt;</code>/<code>&lt;div onclick&gt;</code>，缺 <code>role="button"</code>/鍵盤操作，僅 <code>index.html</code> 側欄做對</td><td><span class="pill open">未排</span></td></tr>
+        <tr><td>跨檔案</td><td>4 個教學素材（基礎.html／簡訊設定教學動畫／發送時間互動示意／優化.html）重複教同一套 SMS 流程，顏色圖例互不一致</td><td><span class="pill open">未排</span></td></tr>
+        <tr><td>單檔（預約查詢互動.html）</td><td>CSS class 重複定義 bug、alert() 混用、發送無過場動畫、無 RWD、時間寫死、取消簡訊/取消預約易誤觸</td><td><span class="pill open">未排</span></td></tr>
+        <tr><td>本畫面（模板簡訊設定）</td><td>7＋2 項本次已全數修復</td><td><span class="pill done">已完成</span></td></tr>
+      </table>
+      <div class="callout warn">建議討論重點：要不要先做「共用 CSS tokens」這個結構性項目——影響範圍最大，但一次能解決 3 套配色系統並存的問題，後續每個畫面的維護成本都會降低。</div>
+    </div>
+  </section>
+
+  <footer>簡訊模板設定 UX 修復 · 討論用簡報 · 產生於 prototypes/簡報.html</footer>
+</div>
+</body>
+</html>

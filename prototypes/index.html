@@ -380,6 +380,14 @@
                 <span class="icon" aria-hidden="true">⏰</span>
                 <span>時間軸示意</span>
             </div>
+            <div class="nav-item"
+                 role="menuitem" tabindex="0"
+                 aria-label="簡訊模板設定 UX 修復簡報" data-hash="brief"
+                 onclick="loadContent(this, '/prototypes/簡報.html')"
+                 onkeydown="handleKeyNav(event, this, '/prototypes/簡報.html')">
+                <span class="icon" aria-hidden="true">📝</span>
+                <span>模板設定 UX 修復簡報</span>
+            </div>
         </nav>
         <div class="sidebar-footer">
             Dr. Shine 醫美診所<br>
@@ -416,7 +424,8 @@
             'appointment':  '/prototypes/預約操作模擬.html',
             'sms-template': '/prototypes/模板簡訊設定教學.html',
             'basic':        '/prototypes/基礎.html',
-            'timeline':     '/prototypes/發送時間互動示意.html'
+            'timeline':     '/prototypes/發送時間互動示意.html',
+            'brief':        '/prototypes/簡報.html'
         };
 
         function toggleMenu() {
