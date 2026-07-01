@@ -123,13 +123,13 @@
         <tr><td><code>pinned_at</code></td><td>timestamp</td><td>排序用（新釘選排前面）</td></tr>
       </table>
 
-      <p style="font-size:13px;font-weight:700;margin:16px 0 8px"><code>template_usage_log</code> — 「最近使用」／「個人上次套用」</p>
+      <p style="font-size:13px;font-weight:700;margin:16px 0 8px"><code>template_usage_log</code> — 「個人上次套用」</p>
       <table>
         <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
         <tr><td><code>store_id</code></td><td>FK</td><td>門市</td></tr>
         <tr><td><code>user_id</code></td><td>FK，<span class="pill get">待討論</span></td><td>目前 prototype 是綁裝置，正式環境建議綁登入帳號，見第 5 節</td></tr>
         <tr><td><code>template_id</code></td><td>FK</td><td>套用的模板</td></tr>
-        <tr><td><code>used_at</code></td><td>timestamp</td><td>取最新 N 筆＝最近使用；單筆最新＝個人上次套用</td></tr>
+        <tr><td><code>used_at</code></td><td>timestamp</td><td>只需要取單筆最新＝個人上次套用；不需要保留歷史多筆（原本設計的「最近使用」清單已確認不需要顯示）</td></tr>
       </table>
 
       <p style="font-size:13px;font-weight:700;margin:16px 0 8px"><code>appointment_sms_log</code> — 每筆簡訊發送記錄（擴充既有預約簡訊資料）</p>
@@ -157,7 +157,7 @@
       <div class="api-row">
         <span class="pill get">GET</span><code>/stores/:storeId/templates</code>
         <div>
-          <div class="desc">回傳該門市可用的完整清單（系統內建 + 本門市自訂 + 其他門市唯讀），後端依規則決定「其他門市」的可見範圍（見第 5 節待討論），前端只負責分組顯示、不做權限判斷。「其他門市」正式環境資料量會很大，建議加上 <code>?q=</code> 搜尋參數，沒有 <code>q</code> 時後端可以不回傳這個分組的項目（呼應前端「其他門市預設不展開、需搜尋才顯示」的行為），避免每次都撈一份很大的清單</div>
+          <div class="desc">回傳該門市可用的完整清單（系統內建 + 本門市自訂 + 其他門市唯讀），後端依規則決定「其他門市」的可見範圍（見第 5 節待討論），前端只負責分組顯示、不做權限判斷。「其他門市」正式環境資料量會很大，建議加上 <code>?q=</code> 搜尋參數，沒有 <code>q</code> 時後端可以不回傳這個分組的項目（呼應前端模板管理頁「其他門市預設不展開、需搜尋才顯示」的行為），避免每次都撈一份很大的清單。<b>注意：這支只給模板管理頁用</b>——預約操作／預約查詢的發送下拉選單刻意精簡成只給「釘選」「已啟用的本門市自訂」「系統預設（BU 指定）」，不需要也不該回傳其他門市或其他系統內建模板，避免每次開發送視窗都撈一份不會用到的大清單</div>
         </div>
       </div>
       <div class="api-row">

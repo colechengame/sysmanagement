@@ -123,7 +123,7 @@
   .t-card.ext.active{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-wash)}
   .t-tag.ext{background:#e3f0ff;color:#1565c0;border-color:#b3d4f5}
   .t-store-badge{font-size:9.5px;color:#4a7ab5;background:#eaf2ff;border-radius:4px;padding:1px 6px;font-weight:600;display:inline-block;margin-top:4px}
-  .star.ext-star{opacity:.3;pointer-events:none}
+  .star.locked{opacity:.3;pointer-events:none}
   /* 唯讀 banner */
   .ed-ro-bar{background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 13px;font-size:12.5px;color:#795800;margin-bottom:12px;display:flex;align-items:center;gap:8px;line-height:1.4}
   .ed-ro-bar b{color:#5c4200}
@@ -395,7 +395,7 @@
       (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
       (cust?'<div class="t-meta">'+esc(t.creator||"自訂")+' · '+esc(t.created||"")+'</div>':'')+
       (ext_t?'<div class="t-store-badge">'+esc(t.storeName||"")+'</div>':'')+
-      '</div><button class="star'+(pinned?' pinned':'')+(ext_t?' ext-star':'')+'" data-pin="'+t.id+'" aria-label="釘選">'+starSVG(pinned)+'</button></div>'+
+      '</div><button class="star'+(pinned?' pinned':'')+((ext_t||isBuiltin(t.id))?' locked':'')+'" data-pin="'+t.id+'" aria-label="'+(isBuiltin(t.id)?'系統內建模板需先另存為自訂複本才能釘選':ext_t?'其他門市模板僅供檢視，無法釘選':'釘選')+'">'+starSVG(pinned)+'</button></div>'+
       '<div style="display:flex;justify-content:flex-end;gap:4px;margin-top:7px">'+
       (t.id===defaultTplId?'<span class="t-tag def">預設</span>':'')+
       (t.id===BU_DESIGNATED_ID?'<span class="t-tag bu">BU 指定</span>':'')+
@@ -423,7 +423,12 @@
   }
   document.getElementById("listScroll").addEventListener("click",function(e){
     var p=e.target.closest("[data-pin]");
-    if(p){var id=p.getAttribute("data-pin");if(pins.indexOf(id)>-1)pins=pins.filter(function(x){return x!==id;});else pins.unshift(id);saveJSON(KEY.pins,pins);renderList();toast(pins.indexOf(id)>-1?"已釘選":"已取消釘選");return;}
+    if(p){
+      var id=p.getAttribute("data-pin");
+      if(isExt(id)||isBuiltin(id))return;
+      if(pins.indexOf(id)>-1)pins=pins.filter(function(x){return x!==id;});else pins.unshift(id);saveJSON(KEY.pins,pins);renderList();toast(pins.indexOf(id)>-1?"已釘選":"已取消釘選");
+      return;
+    }
     var ed=e.target.closest("[data-edit]");
     if(ed){
       var id=ed.getAttribute("data-edit");
