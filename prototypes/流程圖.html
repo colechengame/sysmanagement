@@ -46,16 +46,24 @@
   .arrow-d{width:2px;height:26px;background:var(--line);position:relative}
   .arrow-d::after{content:"";position:absolute;left:50%;bottom:-1px;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--line)}
 
-  .decision{border:2px dashed var(--gold);background:var(--gold-wash);border-radius:16px;padding:12px 24px;text-align:center;min-width:260px}
-  .decision .ic{font-size:20px}
-  .decision .lb{font-size:13.5px;font-weight:800;color:#7a5400}
-
-  .branches{display:flex;gap:60px;margin-top:0;position:relative}
-  .branch{display:flex;flex-direction:column;align-items:center}
-  .branch .tag{font-size:11.5px;font-weight:800;padding:2px 10px;border-radius:999px;margin-bottom:6px}
-  .branch .tag.yes{background:var(--ok-wash);color:var(--ok)}
-  .branch .tag.no{background:var(--danger-wash);color:var(--danger)}
-  .h-rail{width:100%;max-width:420px;height:2px;background:var(--line);margin:0 auto 0}
+  /* ---- priority cascade（由上而下逐條判斷，符合「優先序」的實際語意：不成立才往下一條，成立就直接跳出結果） ---- */
+  .cascade{max-width:640px;margin:0 auto}
+  .cascade-row{display:flex;align-items:center;gap:14px}
+  .cascade-num{flex:none;width:30px;height:30px;border-radius:50%;background:var(--gold-wash);border:2px solid var(--gold);color:#7a5400;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .cascade-q{flex:1;border:2px dashed var(--gold);background:var(--gold-wash);border-radius:12px;padding:10px 16px;font-size:13.5px;font-weight:700;color:#7a5400}
+  .cascade-exit{flex:none;display:flex;align-items:center;gap:8px}
+  .cascade-exit .tag{font-size:11.5px;font-weight:800;padding:2px 10px;border-radius:999px;white-space:nowrap}
+  .cascade-exit .tag.yes{background:var(--ok-wash);color:var(--ok)}
+  .cascade-exit .tag.no{background:var(--danger-wash);color:var(--danger)}
+  .cascade-exit .arrow-r{color:var(--faint);font-size:16px}
+  .cascade-result{flex:none;border-radius:12px;padding:9px 16px;font-size:13px;font-weight:800;text-align:center;border:2px solid var(--line);min-width:200px}
+  .cascade-result .sub{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-top:2px}
+  .cascade-result.ok{border-color:var(--ok);background:var(--ok-wash);color:#0f5132}
+  .cascade-result.gold{border-color:var(--gold);background:var(--gold-wash);color:#7a5400}
+  .cascade-result.purple{border-color:var(--purple);background:var(--purple-wash);color:#5b21b6}
+  .cascade-connector{display:flex;align-items:center;gap:10px;padding:6px 0 6px 15px;font-size:12px;color:var(--muted);font-weight:600}
+  .cascade-connector::before{content:"";width:2px;height:22px;background:var(--line);flex:none}
+  .cascade-final{display:flex;align-items:center;gap:14px;padding-left:44px}
 
   /* ---- horizontal timeline ---- */
   .timeline{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px}
@@ -147,53 +155,54 @@
       <div class="flow-v">
         <div class="node blue"><div class="ic">📬</div><div class="lb">開啟發送簡訊視窗</div></div>
         <div class="arrow-d"></div>
-        <div class="decision"><div class="ic">❓</div><div class="lb">門市有設「預設模板」且模板還在？</div></div>
-        <div class="arrow-d"></div>
-        <div class="branches">
-          <div class="branch">
-            <span class="tag yes">是</span>
-            <div class="node ok"><div class="ic">✅</div><div class="lb">套用門市預設</div></div>
-          </div>
-          <div class="branch">
-            <span class="tag no">否</span>
-            <div class="decision" style="min-width:220px"><div class="ic">❓</div><div class="lb">門市是否有任何自訂模板？</div></div>
-            <div class="arrow-d"></div>
-            <div class="branches" style="gap:36px">
-              <div class="branch">
-                <span class="tag yes">是</span>
-                <div class="decision" style="min-width:200px"><div class="ic">❓</div><div class="lb">有『上次套用』紀錄且模板還在？</div></div>
-                <div class="arrow-d"></div>
-                <div class="branches" style="gap:20px">
-                  <div class="branch">
-                    <span class="tag yes">是</span>
-                    <div class="node ok" style="min-width:170px"><div class="ic">🔁</div><div class="lb">套用上次模板</div><div class="sub">標示「已沿用上次選擇」</div></div>
-                  </div>
-                  <div class="branch">
-                    <span class="tag no">否（首次套用）</span>
-                    <div class="decision" style="min-width:170px"><div class="ic">❓</div><div class="lb">曾釘選過本門市自訂模板？</div></div>
-                    <div class="arrow-d"></div>
-                    <div class="branches" style="gap:14px">
-                      <div class="branch">
-                        <span class="tag yes">是</span>
-                        <div class="node purple" style="min-width:150px"><div class="ic">📌</div><div class="lb">套用最近釘選的自訂模板</div></div>
-                      </div>
-                      <div class="branch">
-                        <span class="tag no">否</span>
-                        <div class="node purple" style="min-width:150px"><div class="ic">🆕</div><div class="lb">套用最新建立的自訂模板</div></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="branch">
-                <span class="tag no">否</span>
-                <div class="node gold" style="min-width:170px"><div class="ic">🏛️</div><div class="lb">套用「BU 指定模板」</div></div>
-              </div>
-            </div>
+      </div>
+      <div class="cascade">
+        <div class="cascade-row">
+          <div class="cascade-num">1</div>
+          <div class="cascade-q">門市有設「預設模板」且模板還在？</div>
+          <div class="cascade-exit">
+            <span class="tag yes">是</span><span class="arrow-r">→</span>
+            <div class="cascade-result ok">✅ 套用門市預設</div>
           </div>
         </div>
+        <div class="cascade-connector">否，往下一條規則判斷</div>
+
+        <div class="cascade-row">
+          <div class="cascade-num">2</div>
+          <div class="cascade-q">門市是否有任何自訂模板？</div>
+          <div class="cascade-exit">
+            <span class="tag no">沒有</span><span class="arrow-r">→</span>
+            <div class="cascade-result gold">🏛️ 套用「BU 指定模板」</div>
+          </div>
+        </div>
+        <div class="cascade-connector">有自訂模板，往下一條規則判斷</div>
+
+        <div class="cascade-row">
+          <div class="cascade-num">3</div>
+          <div class="cascade-q">有『上次套用』紀錄且模板還在？</div>
+          <div class="cascade-exit">
+            <span class="tag yes">是</span><span class="arrow-r">→</span>
+            <div class="cascade-result ok">🔁 套用上次模板<span class="sub">標示「已沿用上次選擇」</span></div>
+          </div>
+        </div>
+        <div class="cascade-connector">否（本門市第一次套用），往下一條規則判斷</div>
+
+        <div class="cascade-row">
+          <div class="cascade-num">4</div>
+          <div class="cascade-q">曾釘選過本門市自訂模板？</div>
+          <div class="cascade-exit">
+            <span class="tag yes">是</span><span class="arrow-r">→</span>
+            <div class="cascade-result purple">📌 套用最近釘選的自訂模板</div>
+          </div>
+        </div>
+        <div class="cascade-connector">否，最後一條規則</div>
+
+        <div class="cascade-final">
+          <span class="tag no">否</span><span class="arrow-r">→</span>
+          <div class="cascade-result purple">🆕 套用最新建立的自訂模板</div>
+        </div>
       </div>
-      <div class="caption">多層 fallback，<b>模板被刪掉也不會出錯</b>——這段邏輯建議放後端統一算，前端兩個發送畫面呼叫同一支 API；「首次套用」分支（釘選自訂／最新自訂／BU 指定）套用時不顯示特別提示標記</div>
+      <div class="caption">4 條規則<b>由上而下依序判斷</b>，符合就直接套用、不再往下——這段邏輯建議放後端統一算，前端兩個發送畫面呼叫同一支 API；規則 2-4 的結果套用時不顯示特別提示標記（只有規則 3「上次套用」會標示）</div>
     </div>
   </section>
 

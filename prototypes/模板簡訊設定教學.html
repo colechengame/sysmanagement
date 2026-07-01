@@ -443,7 +443,21 @@
       ?"已啟用：可於「預約操作」發送簡訊視窗中選用此模板"
       :"已停用：不會出現在「預約操作」發送簡訊視窗的可選清單中，但仍保留於此清單";
   }
-  edEnable.addEventListener("click",function(){if(isExt(editingId))return;setEnable(!edEnable.classList.contains("on"));});
+  edEnable.addEventListener("click",function(){
+    if(isExt(editingId))return;
+    var on=!edEnable.classList.contains("on");
+    setEnable(on);
+    if(isCustom(editingId)){
+      var t=tplById(editingId);
+      if(t){
+        t.enabled=on;
+        saveJSON(KEY.custom,custom);
+        loadedSnapshot=snapshotEditor();
+        renderList();
+        toast(on?"已啟用並自動儲存":"已停用並自動儲存");
+      }
+    }
+  });
 
   function loadIntoEditor(id){
     var t=tplById(id);if(!t)return;

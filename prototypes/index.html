@@ -81,11 +81,18 @@
             align-items: center;
             gap: 6px;
             flex-wrap: wrap;
+            text-decoration: none;
         }
         .nav-item > span:not(.icon) {
             white-space: nowrap;
         }
-        .nav-item .external-link-btn {
+        .nav-item-wrap {
+            margin: 8px 5px;
+        }
+        .nav-item-wrap .nav-item {
+            margin: 0;
+        }
+        .nav-item-wrap .external-link-btn {
             width: 100%;
             margin-left: 34px;
             margin-top: 6px;
@@ -142,22 +149,22 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         /* 簡訊設定教學按鈕 - 北歐深藍 */
-        .nav-item:nth-child(1) .external-link-btn {
+        .nav-item-wrap:nth-child(1) .external-link-btn {
             background: linear-gradient(135deg, #4A90E2 0%, #2E5C8A 100%);
             color: white;
         }
-        .nav-item:nth-child(1) .external-link-btn:hover {
+        .nav-item-wrap:nth-child(1) .external-link-btn:hover {
             background: linear-gradient(135deg, #3A7BC8 0%, #1E4D75 100%);
         }
         /* 預約查詢按鈕 - 北歐深綠 */
-        .nav-item:nth-child(3) .external-link-btn {
+        .nav-item-wrap:nth-child(3) .external-link-btn {
             background: linear-gradient(135deg, #5FB381 0%, #3D8B5C 100%);
             color: white;
         }
-        .nav-item:nth-child(3) .external-link-btn:hover {
+        .nav-item-wrap:nth-child(3) .external-link-btn:hover {
             background: linear-gradient(135deg, #4A9F6E 0%, #2D7548 100%);
         }
-        .nav-item.active .external-link-btn {
+        .nav-item-wrap:has(.nav-item.active) .external-link-btn {
             box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
         .sidebar-footer {
@@ -316,94 +323,96 @@
             <p>預約簡訊自動化操作說明<br>系統功能與優化方案</p>
         </div>
         <nav class="nav-menu" role="menu">
-            <div class="nav-item active"
-                 role="menuitem" tabindex="0" aria-current="page"
-                 aria-label="簡訊設定教學" data-hash="sms"
-                 onclick="loadContent(this, '/prototypes/簡訊設定教學動畫.html')"
-                 onkeydown="handleKeyNav(event, this, '/prototypes/簡訊設定教學動畫.html')">
-                <span class="icon" aria-hidden="true">⚙️</span>
-                <span>簡訊設定教學</span>
+            <div class="nav-item-wrap">
+                <a class="nav-item active" href="#sms"
+                   role="menuitem" tabindex="0" aria-current="page"
+                   aria-label="簡訊設定教學" data-hash="sms"
+                   onclick="event.preventDefault();loadContent(this, '/prototypes/簡訊設定教學動畫.html')"
+                   onkeydown="handleKeyNav(event, this, '/prototypes/簡訊設定教學動畫.html')">
+                    <span class="icon" aria-hidden="true">⚙️</span>
+                    <span>簡訊設定教學</span>
+                </a>
                 <a href="https://npos.drshinetech.com/appointment/text-setting"
                    target="_blank" rel="noopener noreferrer" class="external-link-btn"
-                   aria-label="在新視窗開啟 NPOS 系統簡訊設定頁面"
-                   onclick="event.stopPropagation()">點擊此->前往NPOS-簡訊設定↗</a>
+                   aria-label="在新視窗開啟 NPOS 系統簡訊設定頁面">點擊此->前往NPOS-簡訊設定↗</a>
             </div>
-            <div class="nav-item"
-                 role="menuitem" tabindex="0"
-                 aria-label="彈窗情境模擬" data-hash="popup"
-                 onclick="loadContent(this, '/prototypes/簡訊彈窗情境模擬.html')"
-                 onkeydown="handleKeyNav(event, this, '/prototypes/簡訊彈窗情境模擬.html')">
+            <a class="nav-item" href="#popup"
+               role="menuitem" tabindex="0"
+               aria-label="彈窗情境模擬" data-hash="popup"
+               onclick="event.preventDefault();loadContent(this, '/prototypes/簡訊彈窗情境模擬.html')"
+               onkeydown="handleKeyNav(event, this, '/prototypes/簡訊彈窗情境模擬.html')">
                 <span class="icon" aria-hidden="true">🎯</span>
                 <span>彈窗情境模擬</span>
-            </div>
-            <div class="nav-item"
-                 role="menuitem" tabindex="0"
-                 aria-label="預約查詢簡訊管理狀態" data-hash="search"
-                 onclick="loadContent(this, '/prototypes/預約查詢互動.html')"
-                 onkeydown="handleKeyNav(event, this, '/prototypes/預約查詢互動.html')">
-                <span class="icon" aria-hidden="true">🔍</span>
-                <span>預約查詢-簡訊管理狀態</span>
+            </a>
+            <div class="nav-item-wrap">
+                <a class="nav-item" href="#search"
+                   role="menuitem" tabindex="0"
+                   aria-label="預約查詢簡訊管理狀態" data-hash="search"
+                   onclick="event.preventDefault();loadContent(this, '/prototypes/預約查詢互動.html')"
+                   onkeydown="handleKeyNav(event, this, '/prototypes/預約查詢互動.html')">
+                    <span class="icon" aria-hidden="true">🔍</span>
+                    <span>預約查詢-簡訊管理狀態</span>
+                </a>
                 <a href="https://npos.drshinetech.com/appointment/search"
                    target="_blank" rel="noopener noreferrer" class="external-link-btn"
-                   aria-label="在新視窗開啟 NPOS 系統預約查詢頁面"
-                   onclick="event.stopPropagation()">點擊此->前往NPOS-預約查詢↗</a>
+                   aria-label="在新視窗開啟 NPOS 系統預約查詢頁面">點擊此->前往NPOS-預約查詢↗</a>
             </div>
-            <div class="nav-item"
-                 role="menuitem" tabindex="0"
-                 aria-label="預約操作模擬與簡訊模板設定" data-hash="appointment"
-                 onclick="loadContent(this, '/prototypes/預約操作模擬.html')"
-                 onkeydown="handleKeyNav(event, this, '/prototypes/預約操作模擬.html')">
+            <a class="nav-item" href="#appointment"
+               role="menuitem" tabindex="0"
+               aria-label="預約操作模擬與簡訊模板設定" data-hash="appointment"
+               onclick="event.preventDefault();loadContent(this, '/prototypes/預約操作模擬.html')"
+               onkeydown="handleKeyNav(event, this, '/prototypes/預約操作模擬.html')">
                 <span class="icon" aria-hidden="true">🧩</span>
                 <span>預約操作-模板套用設定</span>
-            </div>
-            <div class="nav-item"
-                 role="menuitem" tabindex="0"
-                 aria-label="簡訊模板設定" data-hash="sms-template"
-                 onclick="loadContent(this, '/prototypes/模板簡訊設定教學.html')"
-                 onkeydown="handleKeyNav(event, this, '/prototypes/模板簡訊設定教學.html')">
+            </a>
+            <a class="nav-item" href="#sms-template"
+               role="menuitem" tabindex="0"
+               aria-label="簡訊模板設定" data-hash="sms-template"
+               onclick="event.preventDefault();loadContent(this, '/prototypes/模板簡訊設定教學.html')"
+               onkeydown="handleKeyNav(event, this, '/prototypes/模板簡訊設定教學.html')">
                 <span class="icon" aria-hidden="true">🛠️</span>
                 <span>簡訊模板設定</span>
-            </div>
-            <div class="nav-item"
-                 role="menuitem" tabindex="0"
-                 aria-label="基礎教學" data-hash="basic"
-                 onclick="loadContent(this, '/prototypes/基礎.html')"
-                 onkeydown="handleKeyNav(event, this, '/prototypes/基礎.html')">
+            </a>
+            <a class="nav-item" href="#basic"
+               role="menuitem" tabindex="0"
+               aria-label="基礎教學" data-hash="basic"
+               onclick="event.preventDefault();loadContent(this, '/prototypes/基礎.html')"
+               onkeydown="handleKeyNav(event, this, '/prototypes/基礎.html')">
                 <span class="icon" aria-hidden="true">📚</span>
                 <span>基礎教學</span>
-            </div>
-            <div class="nav-item"
-                 role="menuitem" tabindex="0"
-                 aria-label="時間軸示意" data-hash="timeline"
-                 onclick="loadContent(this, '/prototypes/發送時間互動示意.html')"
-                 onkeydown="handleKeyNav(event, this, '/prototypes/發送時間互動示意.html')">
+            </a>
+            <a class="nav-item" href="#timeline"
+               role="menuitem" tabindex="0"
+               aria-label="時間軸示意" data-hash="timeline"
+               onclick="event.preventDefault();loadContent(this, '/prototypes/發送時間互動示意.html')"
+               onkeydown="handleKeyNav(event, this, '/prototypes/發送時間互動示意.html')">
                 <span class="icon" aria-hidden="true">⏰</span>
                 <span>時間軸示意</span>
-            </div>
-            <div class="nav-item"
-                 role="menuitem" tabindex="0"
-                 aria-label="模板擴增視覺化流程圖" data-hash="flowchart"
-                 onclick="loadContent(this, '/prototypes/流程圖.html')"
-                 onkeydown="handleKeyNav(event, this, '/prototypes/流程圖.html')">
+            </a>
+            <a class="nav-item" href="#flowchart"
+               role="menuitem" tabindex="0"
+               aria-label="模板擴增視覺化流程圖" data-hash="flowchart"
+               onclick="event.preventDefault();loadContent(this, '/prototypes/流程圖.html')"
+               onkeydown="handleKeyNav(event, this, '/prototypes/流程圖.html')">
                 <span class="icon" aria-hidden="true">🗺️</span>
                 <span>模板擴增流程圖（PM 說明用）</span>
-            </div>
-            <div class="nav-item"
-                 role="menuitem" tabindex="0"
-                 aria-label="模板擴增功能規格（前端）" data-hash="brief"
-                 onclick="loadContent(this, '/prototypes/簡報.html')"
-                 onkeydown="handleKeyNav(event, this, '/prototypes/簡報.html')">
+            </a>
+            <a class="nav-item" href="#brief"
+               role="menuitem" tabindex="0"
+               aria-label="模板擴增功能規格（前端）" data-hash="brief"
+               onclick="event.preventDefault();loadContent(this, '/prototypes/簡報.html')"
+               onkeydown="handleKeyNav(event, this, '/prototypes/簡報.html')">
                 <span class="icon" aria-hidden="true">📝</span>
                 <span>模板擴增功能規格（前端）</span>
-            </div>
-            <div class="nav-item"
-                 role="menuitem" tabindex="0"
-                 aria-label="模板擴增功能規格（後端）" data-hash="backend-brief"
-                 onclick="loadContent(this, '/prototypes/後端簡報.html')"
-                 onkeydown="handleKeyNav(event, this, '/prototypes/後端簡報.html')">
+            </a>
+            <a class="nav-item" href="#backend-brief"
+               role="menuitem" tabindex="0"
+               aria-label="模板擴增功能規格（後端）" data-hash="backend-brief"
+               onclick="event.preventDefault();loadContent(this, '/prototypes/後端簡報.html')"
+               onkeydown="handleKeyNav(event, this, '/prototypes/後端簡報.html')">
                 <span class="icon" aria-hidden="true">🗄️</span>
                 <span>模板擴增功能規格（後端）</span>
-            </div>
+            </a>
         </nav>
         <div class="sidebar-footer">
             Dr. Shine 醫美診所<br>
