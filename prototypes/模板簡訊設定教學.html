@@ -132,6 +132,8 @@
   .ed-input[readonly],.ed-area[readonly]{background:var(--surface-2);color:var(--muted);cursor:default}
   .ed-input[readonly]:focus,.ed-area[readonly]:focus{border-color:var(--line-strong);box-shadow:none}
   .t-tag.def{background:#fff8e1;color:#7a5400;border-color:#ffe082}
+  .t-tag.bu{background:#e0f2f1;color:#00695c;border-color:#80cbc4}
+  .ext-hint{font-size:11.5px;color:var(--faint);padding:2px 4px 10px;line-height:1.5}
   .btn-default{background:#fff8e1;color:#7a5400;border:1px solid #ffe082}.btn-default:hover{background:#fff0b3}
   .btn-default.is-default{background:#ffe082;color:#5c4200;font-weight:700}
   .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2933;color:#fff;font-size:13px;font-weight:550;padding:11px 18px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;visibility:hidden;transition:.22s;z-index:90}
@@ -314,6 +316,7 @@
   var custom=loadJSON(KEY.custom,[]);
   var pins=loadJSON(KEY.pins,[]);
   var defaultTplId=store.get(KEY.default)||null;
+  var BU_DESIGNATED_ID="b1"; // KEEP IN SYNC with 預約操作模擬.html / 預約查詢互動.html
   function allTpl(){return custom.concat(ext).concat(builtin);}
   function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
   function isCustom(id){return id&&id.indexOf("c")===0;}
@@ -395,6 +398,7 @@
       '</div><button class="star'+(pinned?' pinned':'')+(ext_t?' ext-star':'')+'" data-pin="'+t.id+'" aria-label="釘選">'+starSVG(pinned)+'</button></div>'+
       '<div style="display:flex;justify-content:flex-end;gap:4px;margin-top:7px">'+
       (t.id===defaultTplId?'<span class="t-tag def">預設</span>':'')+
+      (t.id===BU_DESIGNATED_ID?'<span class="t-tag bu">BU 指定</span>':'')+
       '<span class="t-tag'+(ext_t?' ext':'')+'">'+
       (cust?"本門市自訂":ext_t?"其他門市":"系統內建")+'</span></div></div>';
   }
@@ -402,14 +406,19 @@
     var pinnedAll=allTpl().filter(function(t){return pins.indexOf(t.id)>-1&&matches(t);});
     var pinnedIds=pinnedAll.map(function(t){return t.id;});
     var mine=custom.filter(function(t){return pinnedIds.indexOf(t.id)<0&&matches(t);});
-    var extList=ext.filter(function(t){return pinnedIds.indexOf(t.id)<0&&matches(t);});
     var builtinList=builtin.filter(function(t){return pinnedIds.indexOf(t.id)<0&&matches(t);});
-    var h="",empty=!pinnedAll.length&&!mine.length&&!extList.length&&!builtinList.length;
+    var extList=ext.filter(function(t){return pinnedIds.indexOf(t.id)<0&&matches(t);});
+    var h="";
     if(pinnedAll.length)h+='<div class="group-t">★ 釘選</div>'+pinnedAll.map(cardHTML).join("");
     if(mine.length)h+='<div class="group-t">本門市自訂</div>'+mine.map(cardHTML).join("");
-    if(extList.length)h+='<div class="group-t">其他門市</div>'+extList.map(cardHTML).join("");
     if(builtinList.length)h+='<div class="group-t">系統內建</div>'+builtinList.map(cardHTML).join("");
-    if(empty)h='<div style="font-size:12px;color:var(--faint);padding:4px">無符合的模板</div>';
+    if(search){
+      if(extList.length)h+='<div class="group-t">其他門市</div>'+extList.map(cardHTML).join("");
+    }else{
+      h+='<div class="group-t">其他門市</div><div class="ext-hint">輸入關鍵字搜尋跨門市共用模板</div>';
+    }
+    var noResults=!!search&&!pinnedAll.length&&!mine.length&&!builtinList.length&&!extList.length;
+    if(noResults)h='<div style="font-size:12px;color:var(--faint);padding:4px">無符合的模板</div>';
     document.getElementById("listScroll").innerHTML=h;
   }
   document.getElementById("listScroll").addEventListener("click",function(e){

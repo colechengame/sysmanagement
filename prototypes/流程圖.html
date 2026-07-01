@@ -26,7 +26,7 @@
   .sec-h .n{width:30px;height:30px;border-radius:9px;background:var(--blue);color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;flex:none}
   .sec-h h2{font-size:19px;font-weight:800}
 
-  .diagram{background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px 24px 22px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .diagram{background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px 24px 22px;box-shadow:0 1px 3px rgba(0,0,0,.04);overflow-x:auto}
   .caption{text-align:center;font-size:13px;color:var(--muted);margin-top:18px;font-weight:600}
   .caption b{color:var(--blue-deep)}
 
@@ -119,6 +119,7 @@
           <div class="ttl">系統內建</div>
           <div class="prefix">id: b_</div>
           <div class="rule">全系統共用</div>
+          <div class="rule">其中一筆為「BU 指定模板」</div>
           <div class="lockrow">🔒 不可直接改</div>
         </div>
         <div class="col custom">
@@ -155,22 +156,44 @@
           </div>
           <div class="branch">
             <span class="tag no">否</span>
-            <div class="decision"><div class="ic">❓</div><div class="lb">有個人上次套用且模板還在？</div></div>
+            <div class="decision" style="min-width:220px"><div class="ic">❓</div><div class="lb">門市是否有任何自訂模板？</div></div>
             <div class="arrow-d"></div>
-            <div class="branches">
+            <div class="branches" style="gap:36px">
               <div class="branch">
                 <span class="tag yes">是</span>
-                <div class="node ok"><div class="ic">🔁</div><div class="lb">套用上次模板</div><div class="sub">標示「已沿用上次選擇」</div></div>
+                <div class="decision" style="min-width:200px"><div class="ic">❓</div><div class="lb">有『上次套用』紀錄且模板還在？</div></div>
+                <div class="arrow-d"></div>
+                <div class="branches" style="gap:20px">
+                  <div class="branch">
+                    <span class="tag yes">是</span>
+                    <div class="node ok" style="min-width:170px"><div class="ic">🔁</div><div class="lb">套用上次模板</div><div class="sub">標示「已沿用上次選擇」</div></div>
+                  </div>
+                  <div class="branch">
+                    <span class="tag no">否（首次套用）</span>
+                    <div class="decision" style="min-width:170px"><div class="ic">❓</div><div class="lb">曾釘選過本門市自訂模板？</div></div>
+                    <div class="arrow-d"></div>
+                    <div class="branches" style="gap:14px">
+                      <div class="branch">
+                        <span class="tag yes">是</span>
+                        <div class="node purple" style="min-width:150px"><div class="ic">📌</div><div class="lb">套用最近釘選的自訂模板</div></div>
+                      </div>
+                      <div class="branch">
+                        <span class="tag no">否</span>
+                        <div class="node purple" style="min-width:150px"><div class="ic">🆕</div><div class="lb">套用最新建立的自訂模板</div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="branch">
                 <span class="tag no">否</span>
-                <div class="node gold"><div class="ic">🏛️</div><div class="lb">套用系統內建第一筆</div></div>
+                <div class="node gold" style="min-width:170px"><div class="ic">🏛️</div><div class="lb">套用「BU 指定模板」</div></div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="caption">兩層 fallback，<b>模板被刪掉也不會出錯</b>——這段邏輯建議放後端統一算，前端兩個發送畫面呼叫同一支 API</div>
+      <div class="caption">多層 fallback，<b>模板被刪掉也不會出錯</b>——這段邏輯建議放後端統一算，前端兩個發送畫面呼叫同一支 API；「首次套用」分支（釘選自訂／最新自訂／BU 指定）套用時不顯示特別提示標記</div>
     </div>
   </section>
 
@@ -197,7 +220,7 @@
         <div class="hnode ghost"><div class="ic">🚫</div><div class="lb">被取消</div><div class="sub">可重新發送</div></div>
       </div>
       <div class="flow-v"><div class="arrow-d"></div></div>
-      <div class="timeline"><div class="hnode purple" style="min-width:320px"><div class="ic">🔍</div><div class="lb">預約查詢：可查閱詳情</div><div class="sub">顯示模板名稱＋「已手動修改」標記</div></div></div>
+      <div class="timeline"><div class="hnode purple" style="min-width:320px"><div class="ic">🔍</div><div class="lb">預約查詢：可查閱詳情</div><div class="sub">顯示模板名稱＋簡訊狀態</div></div></div>
       <div class="caption">兩個發送入口（預約操作／預約查詢）走<b>同一套</b>套用/記錄邏輯，結果都能在查詢頁追溯</div>
     </div>
   </section>
