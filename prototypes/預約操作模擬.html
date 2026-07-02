@@ -236,7 +236,7 @@
           <div class="tpl-drop" id="tplDrop"></div>
         </div>
         <div class="pin-chips" id="pinChips"></div>
-        <div class="tpl-hint">已自動沿用上次選用的模板；需更換時再從上方下拉或下方釘選挑選即可。</div>
+        <div class="tpl-hint">開啟時已依優先序自動帶入模板；需更換時再從上方下拉或下方釘選挑選即可。</div>
       </div>
 
       <div class="fld">
@@ -295,10 +295,11 @@
   var BU_DESIGNATED_ID="b1"; // KEEP IN SYNC with 模板簡訊設定教學.html / 預約查詢互動.html
   function customCreatedTs(t){return parseInt(String(t.id).slice(1),10)||0;}
   function computeAutoApplyId(){
-    var storeDefault=store.get(KEY.default)||null;
-    if(storeDefault&&tplById(storeDefault))return {id:storeDefault,remembered:false};
+    var storeDefault=store.get(KEY.default)||null,dt=storeDefault&&tplById(storeDefault);
+    if(dt&&dt.enabled!==false)return {id:storeDefault,remembered:false};
     if(custom.length>0){
-      if(lastId&&tplById(lastId))return {id:lastId,remembered:true};
+      var lt=lastId&&tplById(lastId);
+      if(lt&&lt.enabled!==false)return {id:lastId,remembered:true};
       var pinnedCustom=pins.filter(function(id){var t=tplById(id);return isCustom(id)&&t&&t.enabled!==false;});
       if(pinnedCustom.length)return {id:pinnedCustom[0],remembered:false};
       var newestCustom=custom.filter(function(t){return t.enabled!==false;}).slice()
@@ -440,8 +441,12 @@
 
   function applyTemplate(id,opts){
     opts=opts||{};var t=tplById(id);if(!t)return;
-    lastId=id;store.set(KEY.last,id);
-    recent=recent.filter(function(x){return x!==id;});recent.unshift(id);recent=recent.slice(0,5);saveJSON(KEY.recent,recent);
+    lastId=id;
+    /* 開窗自動帶入（silent）不寫入「上次套用」，否則首次套用的 fallback 分支永遠不會觸發 */
+    if(!opts.silent){
+      store.set(KEY.last,id);
+      recent=recent.filter(function(x){return x!==id;});recent.unshift(id);recent=recent.slice(0,5);saveJSON(KEY.recent,recent);
+    }
     smsContent.value=resolved(t.body);refreshRender();
     tplComboIsOpen=false;
     var si=document.getElementById("tplSearch");if(si)si.value=t.name;
@@ -479,7 +484,7 @@
   tplInput.addEventListener("focus",function(){this.select();tplComboQ="";tplComboIsOpen=true;renderTplDrop();});
   tplInput.addEventListener("input",function(){tplComboQ=this.value.trim().toLowerCase();tplComboIsOpen=true;renderTplDrop();});
   tplInput.addEventListener("keydown",function(e){
-    if(e.key==="Escape"){tplComboIsOpen=false;var t=tplById(lastId);if(t)this.value=t.name;renderTplDrop();}
+    if(e.key==="Escape"&&tplComboIsOpen){e.stopPropagation();tplComboIsOpen=false;var t=tplById(lastId);if(t)this.value=t.name;renderTplDrop();}
   });
   document.getElementById("tplDrop").addEventListener("mousedown",function(e){
     var b=e.target.closest("[data-apply]");
@@ -496,7 +501,7 @@
 
   function renderPinChips(){
     var box=document.getElementById("pinChips");
-    var pinList=allTpl().filter(function(t){return pins.indexOf(t.id)>-1;});
+    var pinList=allTpl().filter(function(t){return t.enabled!==false&&pins.indexOf(t.id)>-1;});
     if(!pinList.length){box.innerHTML='<span class="pin-empty">尚無釘選模板，可至「管理模板」釘選常用模板以便快速套用。</span>';return;}
     box.innerHTML=pinList.map(function(t){return '<button class="pin-chip'+(t.id===lastId?' active':'')+'" data-apply="'+t.id+'"><span class="s">★</span>'+esc(t.name)+'</button>';}).join("");
   }
@@ -573,13 +578,21 @@
   document.getElementById("smsSend").addEventListener("click",function(){
     if(!smsContent.value.trim()){toast("請輸入簡訊內容");return;}
     var t=tplById(lastId);
+    if(t){
+      store.set(KEY.last,lastId);
+      recent=recent.filter(function(x){return x!==lastId;});recent.unshift(lastId);recent=recent.slice(0,5);saveJSON(KEY.recent,recent);
+    }
     closeScrim("smsScrim");
     toast("簡訊已排程發送（"+smsContent.value.length+" 字"+(t?" · "+t.name:"")+"）");
   });
   document.getElementById("smsCancel").addEventListener("click",function(){closeScrim("smsScrim");toast("已取消發送簡訊");});
 
   /* 前往設定頁 */
-  function gotoSetting(){location.href="模板簡訊設定教學.html";}
+  function gotoSetting(){
+    /* 在 index.html iframe 內時改切父頁 hash，讓左側選單保持同步 */
+    if(window.parent!==window)window.parent.location.hash="#sms-template";
+    else location.href="模板簡訊設定教學.html";
+  }
   document.getElementById("manageTpl").addEventListener("click",gotoSetting);
 
   /* ---------- toast ---------- */

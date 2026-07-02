@@ -129,7 +129,7 @@
         <tr><td><code>store_id</code></td><td>FK</td><td>門市</td></tr>
         <tr><td><code>user_id</code></td><td>FK，<span class="pill get">待討論</span></td><td>目前 prototype 是綁裝置，正式環境建議綁登入帳號，見第 5 節</td></tr>
         <tr><td><code>template_id</code></td><td>FK</td><td>套用的模板</td></tr>
-        <tr><td><code>used_at</code></td><td>timestamp</td><td>只需要取單筆最新＝個人上次套用；不需要保留歷史多筆（原本設計的「最近使用」清單已確認不需要顯示）</td></tr>
+        <tr><td><code>used_at</code></td><td>timestamp</td><td>只需要取單筆最新＝個人上次套用；不需要保留歷史多筆（原本設計的「最近使用」清單已確認不需要顯示）。<b>寫入時機</b>：使用者主動選擇模板或實際送出時才記錄，開發送視窗的自動帶入不記錄，避免污染「首次套用」的 fallback 判斷</td></tr>
       </table>
 
       <p style="font-size:13px;font-weight:700;margin:16px 0 8px"><code>appointment_sms_log</code> — 每筆簡訊發送記錄（擴充既有預約簡訊資料）</p>

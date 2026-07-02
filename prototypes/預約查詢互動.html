@@ -195,6 +195,8 @@
         }
         .hover-btn:hover { filter: brightness(.9); }
         .hover-btn-send  { background:#4caf50; color:white; }
+        .hover-btn-cancel { background:white; color:#d32f2f; border:1px solid #ef9a9a; }
+        .hover-btn-cancel:hover { background:#ffebee; }
         
         .expired-row {
             background-color: #f8f9fa !important;
@@ -605,7 +607,7 @@
     
     <div style="background: #fff3cd; padding: 8px 20px; font-size: 11px; border-left: 4px solid #ffc107; margin-bottom: 1px;">
         <strong>💡 操作提示：</strong>
-        將鼠標移到「簡訊管理」欄位上，狀態色塊會淡出並顯示操作按鈕
+        未發送的預約直接點「發送簡訊」；其他狀態點擊狀態色塊可開啟簡訊詳情（排程中可取消、已取消/失敗可重發）
         | <strong>5 大情境：</strong> ①標準發送 ②客人拒收 ③排程衝突 ④複合風險 ⑤自動補位
         | <strong>⚠️ 重要：</strong>同日多預約時，僅最早預約可發送，其他反灰不可操作。
     </div>
@@ -652,6 +654,7 @@
                     <label class="form-label" style="display:flex;justify-content:space-between;align-items:center">
                         <span>選擇模板</span>
                         <a href="/prototypes/模板簡訊設定教學.html" target="_blank" rel="noopener"
+                           onclick="if(window.parent!==window){event.preventDefault();window.parent.location.hash='#sms-template';}"
                            style="font-size:12px;font-weight:400;color:#4a90e2;text-decoration:none">
                             管理模板 ↗
                         </a>
@@ -744,7 +747,7 @@
 
     <!-- 成功提示 -->
     <div id="successToast" class="success-toast">
-        ✓ 訂下整體成功
+        ✓ 操作成功
     </div>
 
     <script>
@@ -844,6 +847,11 @@
         function loadJSON(k,d){ try{ var v=store.get(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
         function saveJSON(k,v){ store.set(k,JSON.stringify(v)); }
         function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+        // datetime-local 需用本地時間；toISOString 會轉成 UTC 造成時差
+        function toLocalInputValue(d){
+            const p = function(n){ return String(n).padStart(2,'0'); };
+            return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());
+        }
 
         const STORE_INFO = {名稱:'示範麗雅', 地址:'XX區XX路1號', 電話:'02-xxxx-xxxx'};
 
@@ -874,9 +882,11 @@
         function customCreatedTs(t){ return parseInt(String(t.id).slice(1),10)||0; }
         function computeAutoApplyId(){
             const storeDefault = store.get(TPL_KEY.default)||null;
-            if(storeDefault&&tplById(storeDefault)) return {id:storeDefault, remembered:false};
+            const dt = storeDefault&&tplById(storeDefault);
+            if(dt&&dt.enabled!==false) return {id:storeDefault, remembered:false};
             if(customTpls.length>0){
-                if(tplLastId&&tplById(tplLastId)) return {id:tplLastId, remembered:true};
+                const lt = tplLastId&&tplById(tplLastId);
+                if(lt&&lt.enabled!==false) return {id:tplLastId, remembered:true};
                 const pinnedCustom = tplPins.filter(function(id){ const t=tplById(id); return isCustomTpl(id)&&t&&t.enabled!==false; });
                 if(pinnedCustom.length) return {id:pinnedCustom[0], remembered:false};
                 const newestCustom = customTpls.filter(function(t){ return t.enabled!==false; }).slice()
@@ -920,7 +930,7 @@
 
         function renderPinChipsModal(){
             const box = document.getElementById('pinChips'); if(!box)return;
-            const pinList = allTpls().filter(function(t){ return tplPins.indexOf(t.id)>-1; });
+            const pinList = allTpls().filter(function(t){ return t.enabled!==false&&tplPins.indexOf(t.id)>-1; });
             if(!pinList.length){ box.innerHTML='<span class="pin-empty">尚無釘選模板</span>'; return; }
             box.innerHTML = pinList.map(function(t){
                 return '<button class="pin-chip'+(t.id===tplLastId?' active':'')+'" data-apply="'+t.id+'"><span class="s">★</span>'+esc(t.name)+'</button>';
@@ -930,8 +940,12 @@
         function applyTemplate(id, opts){
             opts = opts||{};
             const t = tplById(id); if(!t)return;
-            tplLastId = id; store.set(TPL_KEY.last, id);
-            tplRecent = tplRecent.filter(function(x){ return x!==id; }); tplRecent.unshift(id); tplRecent = tplRecent.slice(0,5); saveJSON(TPL_KEY.recent, tplRecent);
+            tplLastId = id;
+            // 開窗自動帶入（silent）不寫入「上次套用」，否則首次套用的 fallback 分支永遠不會觸發
+            if(!opts.silent){
+                store.set(TPL_KEY.last, id);
+                tplRecent = tplRecent.filter(function(x){ return x!==id; }); tplRecent.unshift(id); tplRecent = tplRecent.slice(0,5); saveJSON(TPL_KEY.recent, tplRecent);
+            }
             const content = resolved(t.body);
             document.getElementById('smsContent').value = content;
             currentTemplateName = t.name;
@@ -1361,7 +1375,7 @@
             // 計算發送時間（預約前1小時）
             const appointmentTime = new Date(appointment.date.replace(/\//g, '-') + 'T' + appointment.time);
             appointmentTime.setHours(appointmentTime.getHours() - 1);
-            document.getElementById('sendTime').value = appointmentTime.toISOString().slice(0, 16);
+            document.getElementById('sendTime').value = toLocalInputValue(appointmentTime);
 
             document.getElementById('smsModal').style.display = 'block';
         }
@@ -1465,7 +1479,7 @@
             // 計算發送時間
             const appointmentTime = new Date(replacementAppointment.date.replace(/\//g, '-') + 'T' + replacementAppointment.time);
             appointmentTime.setHours(appointmentTime.getHours() - 1);
-            document.getElementById('sendTime').value = appointmentTime.toISOString().slice(0, 16);
+            document.getElementById('sendTime').value = toLocalInputValue(appointmentTime);
 
             // 注意：不在此處取消原預約，等用戶確認發送後再在 confirmSms() 中處理
 
@@ -1563,6 +1577,12 @@
             if (!content.trim()) {
                 alert('請輸入簡訊內容！');
                 return;
+            }
+
+            // 實際送出才算一次「使用」，此時才寫入上次套用/最近使用
+            if (tplLastId && tplById(tplLastId)) {
+                store.set(TPL_KEY.last, tplLastId);
+                tplRecent = tplRecent.filter(function(x){ return x!==tplLastId; }); tplRecent.unshift(tplLastId); tplRecent = tplRecent.slice(0,5); saveJSON(TPL_KEY.recent, tplRecent);
             }
 
             // 如果是情境5（自動補位），將被取消的預約的 appointmentStatus 設為 'cancelled'
@@ -1794,7 +1814,7 @@
             tplInput.addEventListener('focus', function(){ this.select(); tplComboQ=''; tplComboIsOpen=true; renderTplDropModal(); });
             tplInput.addEventListener('input', function(){ tplComboQ=this.value.trim().toLowerCase(); tplComboIsOpen=true; renderTplDropModal(); });
             tplInput.addEventListener('keydown', function(e){
-                if(e.key==='Escape'){ tplComboIsOpen=false; const t=tplById(tplLastId); if(t)this.value=t.name; renderTplDropModal(); }
+                if(e.key==='Escape'&&tplComboIsOpen){ e.stopPropagation(); tplComboIsOpen=false; const t=tplById(tplLastId); if(t)this.value=t.name; renderTplDropModal(); }
             });
             document.getElementById('tplDrop').addEventListener('mousedown', function(e){
                 const b = e.target.closest('[data-apply]');
@@ -1827,6 +1847,14 @@
                 }
 
                 if (event.target === document.getElementById('smsDetailModal')) {
+                    closeDetailModal();
+                }
+            });
+
+            document.addEventListener('keydown', function(e){
+                if (e.key === 'Escape') {
+                    closeSmsModal();
+                    closeConfirmModal();
                     closeDetailModal();
                 }
             });

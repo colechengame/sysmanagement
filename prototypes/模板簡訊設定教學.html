@@ -452,7 +452,7 @@
       :"已停用：不會出現在「預約操作」發送簡訊視窗的可選清單中，但仍保留於此清單";
   }
   edEnable.addEventListener("click",function(){
-    if(isExt(editingId))return;
+    if(isExt(editingId)||isBuiltin(editingId))return;
     var on=!edEnable.classList.contains("on");
     setEnable(on);
     if(isCustom(editingId)){
@@ -473,7 +473,7 @@
     var cust=isCustom(id),ext_t=isExt(id);
     edName.value=t.name;edDesc.value=t.desc||"";edBody.value=t.body;setEnable(t.enabled!==false);
     edName.readOnly=ext_t;edDesc.readOnly=ext_t;edBody.readOnly=ext_t;
-    document.getElementById("edEnableWrap").classList.toggle("locked",ext_t);
+    document.getElementById("edEnableWrap").classList.toggle("locked",ext_t||isBuiltin(id));
     var edRoBar=document.getElementById("edRoBar"),copyBtn=document.getElementById("copyBtn"),saveBtn=document.getElementById("saveBtn"),newBtn=document.getElementById("newBtn");
     newBtn.textContent="取消編輯";
     if(ext_t){
@@ -486,6 +486,7 @@
     }else{
       edTitle.textContent="編輯模板（系統內建 · 儲存將另存為自訂）";
       edRoBar.style.display="none";
+      document.getElementById("edEnableHint").textContent="系統內建模板固定為啟用；若需停用請先儲存為自訂複本再操作。";
     }
     saveBtn.style.display=ext_t?"none":"";
     newBtn.style.display=ext_t?"none":"";
@@ -524,11 +525,9 @@
   function doSaveAsCopy(name,desc,body,enabled){
     var id="c"+Date.now();
     custom.push({id:id,name:name,desc:desc||"自訂模板",body:body,enabled:enabled,creator:"系統人員",created:todayStr(),scenario:"預約簡訊"});
-    saveJSON(KEY.custom,custom);editingId=id;
-    edTitle.textContent="編輯模板（自訂）";delBtn.style.display="";
-    loadedSnapshot=snapshotEditor();
+    saveJSON(KEY.custom,custom);
+    loadIntoEditor(id);
     toast("已另存為自訂模板「"+name+"」，預約頁即可套用");
-    renderList();
   }
   document.getElementById("saveBtn").addEventListener("click",function(){
     var name=edName.value.trim(),desc=edDesc.value.trim(),body=edBody.value.trim(),enabled=edEnable.classList.contains("on");
