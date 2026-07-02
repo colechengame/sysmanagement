@@ -142,6 +142,8 @@
   table.sched tr.past-row .cell.b-pink{opacity:.42;pointer-events:none}
   /* ---- 即時時鐘 ---- */
   .live-clock{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:3px 10px;letter-spacing:.5px}
+  .reset-btn{font-size:12px;font-weight:650;color:var(--danger);background:var(--danger-wash);border:1px solid var(--danger-line);border-radius:7px;padding:5px 11px;white-space:nowrap}
+  .reset-btn:hover{background:#fbdcdc}
 </style>
 </head>
 <body>
@@ -153,6 +155,7 @@
     <span class="title">預約操作</span>
     <span class="ver">正式</span><span class="vnum">v2.48.0</span>
     <span class="sp"></span>
+    <button class="reset-btn" id="resetBtn" title="清除本機示範資料，恢復成初始狀態">🔄 重置示範資料</button>
     <span class="live-clock" id="liveClock"></span>
     <div class="user"><div class="av"></div><div><div class="nm">鄭楷錚</div><div class="dp">資訊軟體開發課-台灣</div></div></div>
   </header>
@@ -582,6 +585,14 @@
   /* ---------- toast ---------- */
   var toastTimer;
   function toast(msg){var el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove("show");},2600);}
+
+  /* ---------- 重置示範資料（測試/展示用） ---------- */
+  var DEMO_KEYS=["npos_tpl_custom","npos_tpl_pins","npos_tpl_recent","npos_tpl_last","npos_tpl_default","npos_sms_enabled","npos_sms_tele"];
+  document.getElementById("resetBtn").addEventListener("click",function(){
+    if(!confirm("重置示範資料？\n將清除所有自訂模板、釘選、門市預設與上次套用紀錄，恢復成初始示範狀態，此動作無法復原。"))return;
+    DEMO_KEYS.forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});
+    location.reload();
+  });
 })();
 </script>
 </body>

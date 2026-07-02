@@ -155,6 +155,8 @@
   .ed-enable.locked{opacity:.5;pointer-events:none}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
   .live-clock{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;font-weight:700;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:3px 10px;letter-spacing:.5px}
+  .reset-btn{font-size:12px;font-weight:650;color:var(--danger);background:var(--danger-wash);border:1px solid #f0bcbc;border-radius:7px;padding:5px 11px;white-space:nowrap}
+  .reset-btn:hover{background:#fbdcdc}
 </style>
 </head>
 <body>
@@ -163,6 +165,7 @@
     <span class="np">NPOS</span><span class="title">簡訊模板設定</span>
     <span class="ver">正式</span><span class="vnum">v2.48.0</span>
     <span class="sp"></span>
+    <button class="reset-btn" id="resetBtn" title="清除本機示範資料，恢復成初始狀態">🔄 重置示範資料</button>
     <span class="live-clock" id="liveClock"></span>
     <div class="user"><div class="av"></div><div><div class="nm">鄭楷錚</div><div class="dp">資訊軟體開發課-台灣</div></div></div>
   </header>
@@ -607,6 +610,15 @@
 
   /* ---------- 離開頁面前警示未儲存變更 ---------- */
   window.addEventListener("beforeunload",function(e){if(isDirty()){e.preventDefault();e.returnValue="";}});
+
+  /* ---------- 重置示範資料（測試/展示用） ---------- */
+  var DEMO_KEYS=["npos_tpl_custom","npos_tpl_pins","npos_tpl_recent","npos_tpl_last","npos_tpl_default","npos_sms_enabled","npos_sms_tele"];
+  document.getElementById("resetBtn").addEventListener("click",function(){
+    confirmDialog({title:"重置示範資料？",message:"將清除所有自訂模板、釘選、門市預設與開關設定，恢復成初始示範狀態，此動作無法復原。",okText:"重置",cancelText:"取消",danger:true},function(){
+      DEMO_KEYS.forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});
+      location.reload();
+    });
+  });
 
   /* ---------- init ---------- */
   renderList();
