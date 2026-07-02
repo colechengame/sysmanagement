@@ -103,6 +103,7 @@
   .tpl-current-row{display:flex;align-items:center;gap:8px}
   .tpl-current-name{flex:1;font-size:12.5px;color:var(--blue-deep);font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
   .tpl-current-name .rem{font-size:11px;font-weight:700;color:var(--ok);background:var(--ok-wash);border-radius:999px;padding:1px 8px}
+  .tpl-current-name .tag{font-size:10px;font-weight:600;color:var(--faint);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:0 6px}
   .tpl-toggle-btn{font-size:12px;font-weight:600;color:var(--ink);background:#fff;border:1px solid var(--line-strong);border-radius:7px;padding:5px 12px;white-space:nowrap}
   .tpl-toggle-btn:hover{border-color:var(--blue);color:var(--blue)}
   .pin-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
@@ -454,7 +455,8 @@
     smsContent.value=resolved(t.body);refreshRender();
     lastAppliedBody=smsContent.value;
     renderTplOptions();renderPinChips();
-    document.getElementById("tplCurrentName").innerHTML='目前套用：<b>'+esc(t.name)+'</b>'+(opts.remembered?'<span class="rem">已沿用上次選擇</span>':'');
+    var curTag=tagFor(t);
+    document.getElementById("tplCurrentName").innerHTML='目前套用：<b>'+esc(t.name)+'</b>'+(curTag?'<span class="tag">'+curTag+'</span>':'')+(opts.remembered?'<span class="rem">已沿用上次選擇</span>':'');
     if(!opts.silent){
       setPickerOpen(false);
       toast("已套用「"+t.name+"」並帶入預約資料");
