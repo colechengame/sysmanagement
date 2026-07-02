@@ -135,7 +135,10 @@
   .t-tag.bu{background:#e0f2f1;color:#00695c;border-color:#80cbc4}
   .ext-hint{font-size:11.5px;color:var(--faint);padding:2px 4px 10px;line-height:1.5}
   .ext-hint.ext-summary{font-weight:600;color:var(--muted)}
-  .ext-store-h{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11.5px;font-weight:650;color:#4a7ab5;background:#eaf2ff;border-radius:6px;padding:5px 9px;margin:10px 0 6px}
+  .ext-store-h{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11.5px;font-weight:650;color:#4a7ab5;background:#eaf2ff;border-radius:6px;padding:5px 9px;margin:10px 0 6px;cursor:pointer;user-select:none}
+  .ext-store-h:hover{background:#dbe7fb}
+  .ext-store-h-right{display:flex;align-items:center;gap:6px;flex:none}
+  .ext-chevron{font-size:9px;color:#4a7ab5;width:10px;text-align:center}
   .ext-count-badge{font-size:10px;font-weight:700;color:#1565c0;background:#fff;border:1px solid #b3d4f5;border-radius:999px;padding:1px 7px;min-width:18px;text-align:center}
   .ext-more-btn{display:block;width:100%;text-align:center;font-size:12px;font-weight:650;color:var(--blue-deep);background:var(--blue-wash);border:1px dashed #b9d3f7;border-radius:8px;padding:8px;margin-top:4px;cursor:pointer}
   .ext-more-btn:hover{background:#dbe7fb}
@@ -383,7 +386,7 @@
 
   /* ---------- 模板清單 ---------- */
   var search="",editingId=null;
-  var extExpanded=false,EXT_STORE_CAP=6;
+  var extExpanded=false,EXT_STORE_CAP=6,extOpenStores=[];
   var loadedSnapshot=null;
   function snapshotEditor(){return {name:edName.value,desc:edDesc.value,body:edBody.value,enabled:edEnable.classList.contains("on")};}
   function isDirty(){
@@ -396,7 +399,7 @@
     var order=[],byStore={};
     list.forEach(function(t){
       var key=t.storeId||t.storeName||"?";
-      if(!byStore[key]){byStore[key]={storeName:t.storeName,items:[]};order.push(key);}
+      if(!byStore[key]){byStore[key]={storeId:key,storeName:t.storeName,items:[]};order.push(key);}
       byStore[key].items.push(t);
     });
     return order.map(function(k){return byStore[k];});
@@ -426,24 +429,26 @@
     if(pinnedAll.length)h+='<div class="group-t">★ 釘選</div>'+pinnedAll.map(cardHTML).join("");
     if(mine.length)h+='<div class="group-t">本門市自訂</div>'+mine.map(cardHTML).join("");
     if(builtinList.length)h+='<div class="group-t">系統內建</div>'+builtinList.map(cardHTML).join("");
-    if(search){
-      var extGroups=groupByStore(extList);
-      if(extGroups.length){
-        var totalStores=extGroups.length,totalTpls=extList.length;
-        var shownGroups=extExpanded?extGroups:extGroups.slice(0,EXT_STORE_CAP);
-        var hiddenStores=totalStores-shownGroups.length;
-        h+='<div class="group-t">其他門市</div>';
-        h+='<div class="ext-hint ext-summary">符合 '+totalStores+' 家門市、'+totalTpls+' 筆模板</div>';
-        h+=shownGroups.map(function(g){
-          return '<div class="ext-store-h"><span>'+esc(g.storeName)+'</span><span class="ext-count-badge">'+g.items.length+'</span></div>'
-               + g.items.map(cardHTML).join("");
-        }).join("");
-        if(!extExpanded&&hiddenStores>0){
-          h+='<button class="ext-more-btn" id="extMoreBtn" type="button">顯示更多門市（還有 '+hiddenStores+' 家）</button>';
-        }
+    var extGroups=groupByStore(extList);
+    if(extGroups.length){
+      var totalStores=extGroups.length,totalTpls=extList.length;
+      var shownGroups=extExpanded?extGroups:extGroups.slice(0,EXT_STORE_CAP);
+      var hiddenStores=totalStores-shownGroups.length;
+      h+='<div class="group-t">其他門市</div>';
+      h+='<div class="ext-hint ext-summary">'+(search
+        ?('符合 '+totalStores+' 家門市、'+totalTpls+' 筆模板')
+        :('共 '+totalStores+' 家門市、'+totalTpls+' 筆模板，點門市名稱展開查看'))+'</div>';
+      h+=shownGroups.map(function(g){
+        var open=!!search||extOpenStores.indexOf(g.storeId)>-1;
+        return '<div class="ext-store-h'+(open?' open':'')+'" data-store-toggle="'+esc(g.storeId)+'">'
+             + '<span>'+esc(g.storeName)+'</span>'
+             + '<span class="ext-store-h-right"><span class="ext-count-badge">'+g.items.length+'</span><span class="ext-chevron">'+(open?'▾':'▸')+'</span></span>'
+             + '</div>'
+             + (open?g.items.map(cardHTML).join(""):"");
+      }).join("");
+      if(!extExpanded&&hiddenStores>0){
+        h+='<button class="ext-more-btn" id="extMoreBtn" type="button">顯示更多門市（還有 '+hiddenStores+' 家）</button>';
       }
-    }else{
-      h+='<div class="group-t">其他門市</div><div class="ext-hint">輸入關鍵字搜尋跨門市共用模板</div>';
     }
     var noResults=!!search&&!pinnedAll.length&&!mine.length&&!builtinList.length&&!extList.length;
     if(noResults)h='<div style="font-size:12px;color:var(--faint);padding:4px">無符合的模板</div>';
@@ -452,6 +457,13 @@
   document.getElementById("listScroll").addEventListener("click",function(e){
     var moreBtn=e.target.closest("#extMoreBtn");
     if(moreBtn){extExpanded=true;renderList();return;}
+    var storeH=e.target.closest("[data-store-toggle]");
+    if(storeH){
+      var sid=storeH.getAttribute("data-store-toggle"),si=extOpenStores.indexOf(sid);
+      if(si>-1)extOpenStores.splice(si,1);else extOpenStores.push(sid);
+      renderList();
+      return;
+    }
     var p=e.target.closest("[data-pin]");
     if(p){
       var id=p.getAttribute("data-pin");
