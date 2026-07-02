@@ -100,27 +100,19 @@
   .tpl-bar{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:11px 12px;margin-bottom:14px}
   .tpl-bar .tt{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
   .tpl-bar .tt .lk{margin-left:auto;font-size:11px;font-weight:600;color:var(--blue);cursor:pointer}
-  .tpl-combo{position:relative;margin-bottom:8px}
-  .tpl-combo-input{width:100%;padding:8px 28px 8px 10px;border:1px solid var(--line-strong);border-radius:8px;font-size:13px;background:#fff;color:var(--ink);font-family:inherit}
-  .tpl-combo-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-wash)}
-  .tpl-combo::after{content:"▾";position:absolute;right:10px;top:10px;color:var(--faint);pointer-events:none;font-size:12px}
-  .tpl-drop{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid var(--line-strong);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:100;max-height:220px;overflow-y:auto;display:none}
-  .tpl-drop.open{display:block}
-  .tpl-drop-group{font-size:10.5px;font-weight:700;color:var(--faint);padding:6px 10px 3px;text-transform:uppercase;letter-spacing:.4px}
-  .tpl-drop-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;font-size:13px;cursor:pointer}
-  .tpl-drop-item:hover{background:var(--blue-wash);color:var(--blue-deep)}
-  .tpl-drop-item.sel{font-weight:700}
-  .tpl-drop-sub{font-size:10.5px;color:var(--faint);margin-left:8px;white-space:nowrap}
-  .tpl-drop-empty{padding:10px;font-size:12px;color:var(--faint);text-align:center}
-  .pin-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
-  .pin-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;border:1px solid var(--line-strong);background:#fff;color:var(--ink)}
-  .pin-chip:hover{border-color:var(--blue);color:var(--blue)}
-  .pin-chip.active{background:var(--blue-wash);border-color:var(--blue);color:var(--blue-deep)}
-  .pin-chip .s{color:var(--gold)}
-  .pin-empty{font-size:11.5px;color:var(--faint)}
-  .tpl-current{font-size:12.5px;color:var(--blue-deep);font-weight:600;margin-bottom:9px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-  .tpl-current .rem{font-size:11px;font-weight:700;color:var(--ok);background:var(--ok-wash);border-radius:999px;padding:1px 8px}
-  .tpl-hint{font-size:11px;color:var(--faint);margin-top:8px;line-height:1.5}
+  .tpl-filter-input{width:100%;padding:8px 10px;border:1px solid var(--line-strong);border-radius:8px;font-size:13px;background:#fff;color:var(--ink);font-family:inherit;margin-bottom:9px}
+  .tpl-filter-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-wash)}
+  .tpl-options{display:flex;flex-wrap:wrap;gap:8px}
+  .tpl-opt{display:flex;flex-direction:column;gap:2px;max-width:220px;padding:7px 11px;border-radius:10px;border:1px solid var(--line-strong);background:#fff;cursor:pointer;text-align:left}
+  .tpl-opt:hover{border-color:var(--blue);color:var(--blue-deep)}
+  .tpl-opt.active{background:var(--blue-wash);border-color:var(--blue);color:var(--blue-deep)}
+  .tpl-opt .nm{font-size:12.5px;font-weight:650;display:flex;align-items:center;gap:5px}
+  .tpl-opt .nm .s{color:var(--gold)}
+  .tpl-opt .nm .tag{font-size:10px;font-weight:600;color:var(--faint);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:0 6px}
+  .tpl-opt .prev{font-size:11px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tpl-opt-empty{padding:10px;font-size:12px;color:var(--faint);text-align:center;width:100%}
+  .tpl-hint{font-size:11px;color:var(--faint);margin-top:9px;line-height:1.5}
+  .tpl-hint .rem{font-size:11px;font-weight:700;color:var(--ok);background:var(--ok-wash);border-radius:999px;padding:1px 8px}
 
   .char-line{display:flex;justify-content:space-between;font-size:12px;color:var(--faint);margin-top:7px}
   .char-line b{color:var(--muted)}
@@ -230,13 +222,9 @@
       <!-- 多模板選擇（彈窗內下拉 + 釘選列） -->
       <div class="tpl-bar">
         <div class="tt">💬 套用簡訊模板 <span class="lk" id="manageTpl">管理模板 ↗</span></div>
-        <div class="tpl-current" id="tplCurrent"></div>
-        <div class="tpl-combo" id="tplCombo">
-          <input type="text" class="tpl-combo-input" id="tplSearch" placeholder="搜尋或選擇模板…" autocomplete="off">
-          <div class="tpl-drop" id="tplDrop"></div>
-        </div>
-        <div class="pin-chips" id="pinChips"></div>
-        <div class="tpl-hint">開啟時已依優先序自動帶入模板；需更換時再從上方下拉或下方釘選挑選即可。</div>
+        <input type="text" class="tpl-filter-input" id="tplSearch" placeholder="輸入關鍵字篩選，或直接點選下方…" autocomplete="off">
+        <div class="tpl-options" id="tplOptions"></div>
+        <div class="tpl-hint" id="tplHint"></div>
       </div>
 
       <div class="fld">
@@ -432,8 +420,13 @@
   }
   smsContent.addEventListener("input",refreshRender);
 
+  var lastAppliedBody=null;
+  function hasUnsavedEdit(){return lastAppliedBody!==null&&smsContent.value!==lastAppliedBody;}
   function applyTemplate(id,opts){
     opts=opts||{};var t=tplById(id);if(!t)return;
+    if(!opts.silent&&hasUnsavedEdit()){
+      if(!confirm("目前內容已手動修改，套用新模板將覆蓋這些修改，確定要更換嗎？"))return;
+    }
     lastId=id;
     /* 開窗自動帶入（silent）不寫入「上次套用」，否則首次套用的 fallback 分支永遠不會觸發 */
     if(!opts.silent){
@@ -441,64 +434,43 @@
       recent=recent.filter(function(x){return x!==id;});recent.unshift(id);recent=recent.slice(0,5);saveJSON(KEY.recent,recent);
     }
     smsContent.value=resolved(t.body);refreshRender();
-    tplComboIsOpen=false;
-    var si=document.getElementById("tplSearch");if(si)si.value=t.name;
-    renderTplDrop();
-    document.getElementById("tplCurrent").innerHTML='目前套用：<b>'+esc(t.name)+'</b>'+(opts.remembered?'<span class="rem">已沿用上次選擇</span>':'');
-    renderPinChips();
+    lastAppliedBody=smsContent.value;
+    renderTplOptions();
+    document.getElementById("tplHint").innerHTML=opts.remembered
+      ?'<span class="rem">已沿用上次選擇</span> <b>'+esc(t.name)+'</b>'
+      :'點選下方模板可切換套用';
     if(!opts.silent)toast("已套用「"+t.name+"」並帶入預約資料");
   }
 
-  /* combobox：搜尋 + 下拉合一 */
-  var tplComboQ="",tplComboIsOpen=false;
+  /* 篩選 + 平鋪選項列表（取代原本「下拉選單＋釘選 chips」雙重顯示） */
+  var tplComboQ="";
   function matchesTpl(t){if(!tplComboQ)return true;return t.name.toLowerCase().indexOf(tplComboQ)>-1;}
-  function renderTplDrop(){
-    var drop=document.getElementById("tplDrop");if(!drop)return;
-    /* 下拉選單只放：釘選、已啟用的本門市自訂模板、系統預設（BU 指定）這一筆 —— 不再顯示最近使用/其他系統內建模板 */
+  function tplPreview(t){var r=resolved(t.body);return r.length>18?r.slice(0,18)+"…":r;}
+  function tagFor(t){return isCustom(t.id)?"自訂":(t.id===BU_DESIGNATED_ID?"系統預設":"");}
+  function renderTplOptions(){
+    var box=document.getElementById("tplOptions");if(!box)return;
+    /* 只放：釘選、已啟用的本門市自訂模板、系統預設（BU 指定）這一筆 —— 不再顯示最近使用/其他系統內建模板 */
     var pinList=allTpl().filter(function(t){return t.enabled!==false&&pins.indexOf(t.id)>-1&&matchesTpl(t);});
     var pinnedIds=pinList.map(function(t){return t.id;});
     var mine=custom.filter(function(t){return t.enabled!==false&&matchesTpl(t)&&pinnedIds.indexOf(t.id)<0;});
     var sysDefault=builtin.filter(function(t){return t.id===BU_DESIGNATED_ID&&t.enabled!==false&&matchesTpl(t)&&pinnedIds.indexOf(t.id)<0;});
-    function grp(label,list){
-      if(!list.length)return "";
-      return '<div class="tpl-drop-group">'+label+'</div>'+
-        list.map(function(t){
-          var sub=isCustom(t.id)?"自訂":(t.id===BU_DESIGNATED_ID?"系統預設":"");
-          return '<div class="tpl-drop-item'+(t.id===lastId?" sel":"")+'" data-apply="'+t.id+'">'+
-            '<span>'+esc(t.name)+'</span>'+(sub?'<span class="tpl-drop-sub">'+sub+'</span>':'')+
-            '</div>';
-        }).join("");
+    function opt(t){
+      var star=pinnedIds.indexOf(t.id)>-1?'<span class="s">★</span>':'';
+      var tag=tagFor(t);
+      return '<button type="button" class="tpl-opt'+(t.id===lastId?' active':'')+'" data-apply="'+t.id+'">'+
+        '<span class="nm">'+star+esc(t.name)+(tag?'<span class="tag">'+tag+'</span>':'')+'</span>'+
+        '<span class="prev">'+esc(tplPreview(t))+'</span>'+
+        '</button>';
     }
-    var h=grp("★ 釘選",pinList)+grp("本門市自訂",mine)+grp("系統預設",sysDefault);
-    drop.innerHTML=h||'<div class="tpl-drop-empty">無符合的模板</div>';
-    drop.classList.toggle("open",tplComboIsOpen);
+    var h=pinList.concat(mine).concat(sysDefault).map(opt).join("");
+    box.innerHTML=h||'<div class="tpl-opt-empty">無符合的模板</div>';
   }
   var tplInput=document.getElementById("tplSearch");
-  tplInput.addEventListener("focus",function(){this.select();tplComboQ="";tplComboIsOpen=true;renderTplDrop();});
-  tplInput.addEventListener("input",function(){tplComboQ=this.value.trim().toLowerCase();tplComboIsOpen=true;renderTplDrop();});
-  tplInput.addEventListener("keydown",function(e){
-    if(e.key==="Escape"&&tplComboIsOpen){e.stopPropagation();tplComboIsOpen=false;var t=tplById(lastId);if(t)this.value=t.name;renderTplDrop();}
-  });
-  document.getElementById("tplDrop").addEventListener("mousedown",function(e){
+  tplInput.addEventListener("input",function(){tplComboQ=this.value.trim().toLowerCase();renderTplOptions();});
+  document.getElementById("tplOptions").addEventListener("click",function(e){
     var b=e.target.closest("[data-apply]");
-    if(b){e.preventDefault();tplComboIsOpen=false;applyTemplate(b.getAttribute("data-apply"));}
+    if(b)applyTemplate(b.getAttribute("data-apply"));
   });
-  document.addEventListener("mousedown",function(e){
-    var combo=document.getElementById("tplCombo");
-    if(combo&&!combo.contains(e.target)){
-      tplComboIsOpen=false;var t=tplById(lastId);
-      if(tplInput&&t)tplInput.value=t.name;
-      renderTplDrop();
-    }
-  });
-
-  function renderPinChips(){
-    var box=document.getElementById("pinChips");
-    var pinList=allTpl().filter(function(t){return t.enabled!==false&&pins.indexOf(t.id)>-1;});
-    if(!pinList.length){box.innerHTML='<span class="pin-empty">尚無釘選模板，可至「管理模板」釘選常用模板以便快速套用。</span>';return;}
-    box.innerHTML=pinList.map(function(t){return '<button class="pin-chip'+(t.id===lastId?' active':'')+'" data-apply="'+t.id+'"><span class="s">★</span>'+esc(t.name)+'</button>';}).join("");
-  }
-  document.getElementById("pinChips").addEventListener("click",function(e){var b=e.target.closest("[data-apply]");if(b)applyTemplate(b.getAttribute("data-apply"));});
 
   function renderAlert(){
     var box=document.getElementById("smsAlert");
@@ -511,8 +483,9 @@
   function openSms(bk,timeStr){
     custom=loadJSON(KEY.custom,[]);pins=loadJSON(KEY.pins,[]);recent=loadJSON(KEY.recent,[]);lastId=store.get(KEY.last)||null;
     ctx=buildCtx(bk,timeStr,todayShort());
-    tplComboQ="";tplComboIsOpen=false;
-    renderAlert();renderPinChips();
+    tplComboQ="";document.getElementById("tplSearch").value="";
+    lastAppliedBody=null;
+    renderAlert();renderTplOptions();
     var now=new Date();
     document.getElementById("smsTime").value=todayISO()+"T"+pad2(now.getHours())+":"+pad2(now.getMinutes());
     var picked=computeAutoApplyId();
