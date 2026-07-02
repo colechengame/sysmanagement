@@ -1,0 +1,76 @@
+@startuml 套用優先序
+' 單一模板 → 多模板擴增
+' 套用優先序（開啟發送簡訊視窗時）
+' 對應 prototypes/流程圖.html 第 3 節、prototypes/簡報.html 第 3 節
+' 實作參考：computeAutoApplyId()（預約操作模擬.html／預約查詢互動.html 對稱同名函式）
+
+title 套用優先序\n開啟發送簡訊視窗時，自動帶入哪一張模板
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Microsoft JhengHei"
+skinparam activity {
+  BackgroundColor #F5F7F9
+  BorderColor #CFD6DC
+  DiamondBackgroundColor #FFF8E1
+  DiamondBorderColor #C98A14
+  ArrowColor #8A949C
+}
+skinparam note {
+  BackgroundColor #EAF1FE
+  BorderColor #2563EB
+}
+
+start
+:📬 開啟發送簡訊視窗;
+
+if (規則1：門市有設「預設模板」\n且模板還在？) then (是)
+  #E8F5E9:✅ 套用門市預設;
+  stop
+else (否，往下一條規則)
+endif
+
+if (規則2：門市是否有\n任何自訂模板？) then (沒有)
+  #FFF8E1:🏛️ 套用「BU 指定模板」;
+  note right
+    系統層級 fallback，非門市可設定
+    前端寫死常數 ""BU_DESIGNATED_ID""
+    （目前固定指向 ""b1""）
+  end note
+  stop
+else (有自訂模板，往下一條規則)
+endif
+
+if (規則3：有『上次套用』紀錄\n且模板還在？) then (是)
+  #E8F5E9:🔁 套用上次模板;
+  note right
+    標示「已沿用上次選擇」
+    ——4 條規則中**只有這一步**會顯示提示標記
+  end note
+  stop
+else (否，本門市第一次套用\n往下一條規則)
+endif
+
+if (規則4：曾釘選過\n本門市自訂模板？) then (是)
+  #F2E9FF:📌 套用最近釘選的自訂模板;
+  stop
+else (否，最後一條規則)
+  #F2E9FF:🆕 套用最新建立的自訂模板;
+  stop
+endif
+
+legend right
+  <b>判斷順序</b>：由上而下依序判斷，符合就直接套用、不再往下——建議放後端統一算，
+  前端兩個發送入口（預約操作／預約查詢）呼叫同一支邏輯，不要各自實作出不同行為。
+  ==
+  <b>防呆</b>：門市預設或個人上次套用指到的模板可能已被刪除／停用，
+  這時要自動落到下一層 fallback，不能整個畫面壞掉或跳錯誤訊息
+  （對應程式碼："dt&&dt.enabled!==false"、"lt&&lt.enabled!==false" 等檢查）。
+  ==
+  <b>「上次套用」寫入時機</b>：僅在使用者主動選擇模板或實際送出時記錄，
+  開窗自動帶入（"opts.silent"）不寫入——否則開過一次視窗就會產生紀錄，
+  規則 4「首次套用」分支永遠不會觸發。
+  ==
+  <b>提示標記</b>：規則 2、4 的結果套用時不顯示特別提示，只有規則 3 顯示「已沿用上次選擇」。
+end legend
+
+@enduml
