@@ -467,7 +467,6 @@
     tplPickerOpen=open;
     document.getElementById("tplPicker").classList.toggle("open",open);
     document.getElementById("tplToggleBtn").textContent=open?"收合 ▴":"更換 ▾";
-    document.getElementById("pinChips").style.display=open?"none":"";
     if(open){
       tplComboQ="";var si=document.getElementById("tplSearch");
       if(si){si.value="";si.focus();}
@@ -484,21 +483,18 @@
   }
   function renderTplOptions(){
     var box=document.getElementById("tplOptions");if(!box)return;
-    /* 只放：釘選、已啟用的本門市自訂模板、系統預設（BU 指定）這一筆 —— 不再顯示最近使用/其他系統內建模板 */
-    var pinList=allTpl().filter(function(t){return t.enabled!==false&&pins.indexOf(t.id)>-1&&matchesTpl(t);});
-    var pinnedIds=pinList.map(function(t){return t.id;});
-    var mine=custom.filter(function(t){return t.enabled!==false&&matchesTpl(t)&&pinnedIds.indexOf(t.id)<0;});
-    var sysDefault=builtin.filter(function(t){return t.id===BU_DESIGNATED_ID&&t.enabled!==false&&matchesTpl(t)&&pinnedIds.indexOf(t.id)<0;});
+    /* 已釘選的模板外層 pinChips 已經有了，這裡只放「已啟用的本門市自訂（未釘選）」與「系統預設（未釘選）」 */
+    var mine=custom.filter(function(t){return t.enabled!==false&&matchesTpl(t)&&pins.indexOf(t.id)<0;});
+    var sysDefault=builtin.filter(function(t){return t.id===BU_DESIGNATED_ID&&t.enabled!==false&&matchesTpl(t)&&pins.indexOf(t.id)<0;});
     function opt(t){
-      var star=pinnedIds.indexOf(t.id)>-1?'<span class="s">★</span>':'';
       var tag=tagFor(t);
       var now=t.id===lastId?'<span class="tag now">套用中</span>':'';
       return '<button type="button" class="tpl-opt'+(t.id===lastId?' active':'')+'" data-apply="'+t.id+'">'+
-        '<span class="nm">'+star+esc(t.name)+(tag?'<span class="tag">'+tag+'</span>':'')+now+'</span>'+
+        '<span class="nm">'+esc(t.name)+(tag?'<span class="tag">'+tag+'</span>':'')+now+'</span>'+
         '<span class="prev">'+esc(tplPreview(t))+'</span>'+
         '</button>';
     }
-    var h=pinList.concat(mine).concat(sysDefault).map(opt).join("");
+    var h=mine.concat(sysDefault).map(opt).join("");
     box.innerHTML=h||'<div class="tpl-opt-empty">無符合的模板</div>';
   }
   var tplInput=document.getElementById("tplSearch");

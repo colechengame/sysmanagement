@@ -916,7 +916,6 @@
             tplPickerOpen = open;
             document.getElementById('tplPicker').classList.toggle('open', open);
             document.getElementById('tplToggleBtn').textContent = open ? '收合 ▴' : '更換 ▾';
-            document.getElementById('pinChips').style.display = open ? 'none' : '';
             if(open){
                 tplComboQ = '';
                 const si = document.getElementById('tplSearch');
@@ -938,21 +937,18 @@
 
         function renderTplOptions(){
             const box = document.getElementById('tplOptions'); if(!box)return;
-            /* 只放：釘選、已啟用的本門市自訂模板、系統預設（BU 指定）這一筆 —— 不再顯示最近使用/其他系統內建模板 */
-            const pinList     = allTpls().filter(function(t){ return t.enabled!==false&&tplPins.indexOf(t.id)>-1&&matchesTpl(t); });
-            const pinnedIds   = pinList.map(function(t){ return t.id; });
-            const mine        = customTpls.filter(function(t){ return t.enabled!==false&&matchesTpl(t)&&pinnedIds.indexOf(t.id)<0; });
-            const sysDefault  = builtinTpls.filter(function(t){ return t.id===BU_DESIGNATED_ID&&t.enabled!==false&&matchesTpl(t)&&pinnedIds.indexOf(t.id)<0; });
+            /* 已釘選的模板外層 pinChips 已經有了，這裡只放「已啟用的本門市自訂（未釘選）」與「系統預設（未釘選）」 */
+            const mine        = customTpls.filter(function(t){ return t.enabled!==false&&matchesTpl(t)&&tplPins.indexOf(t.id)<0; });
+            const sysDefault  = builtinTpls.filter(function(t){ return t.id===BU_DESIGNATED_ID&&t.enabled!==false&&matchesTpl(t)&&tplPins.indexOf(t.id)<0; });
             function opt(t){
-                const star = pinnedIds.indexOf(t.id)>-1 ? '<span class="s">★</span>' : '';
                 const tag = tagForTpl(t);
                 const now = t.id===tplLastId ? '<span class="tag now">套用中</span>' : '';
                 return '<button type="button" class="tpl-opt'+(t.id===tplLastId?' active':'')+'" data-apply="'+t.id+'">'+
-                       '<span class="nm">'+star+esc(t.name)+(tag?'<span class="tag">'+tag+'</span>':'')+now+'</span>'+
+                       '<span class="nm">'+esc(t.name)+(tag?'<span class="tag">'+tag+'</span>':'')+now+'</span>'+
                        '<span class="prev">'+esc(tplPreview(t))+'</span>'+
                        '</button>';
             }
-            const h = pinList.concat(mine).concat(sysDefault).map(opt).join('');
+            const h = mine.concat(sysDefault).map(opt).join('');
             box.innerHTML = h || '<div class="tpl-opt-empty">無符合的模板</div>';
         }
 
