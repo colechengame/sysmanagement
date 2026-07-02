@@ -134,6 +134,11 @@
   .t-tag.def{background:#fff8e1;color:#7a5400;border-color:#ffe082}
   .t-tag.bu{background:#e0f2f1;color:#00695c;border-color:#80cbc4}
   .ext-hint{font-size:11.5px;color:var(--faint);padding:2px 4px 10px;line-height:1.5}
+  .ext-hint.ext-summary{font-weight:600;color:var(--muted)}
+  .ext-store-h{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11.5px;font-weight:650;color:#4a7ab5;background:#eaf2ff;border-radius:6px;padding:5px 9px;margin:10px 0 6px}
+  .ext-count-badge{font-size:10px;font-weight:700;color:#1565c0;background:#fff;border:1px solid #b3d4f5;border-radius:999px;padding:1px 7px;min-width:18px;text-align:center}
+  .ext-more-btn{display:block;width:100%;text-align:center;font-size:12px;font-weight:650;color:var(--blue-deep);background:var(--blue-wash);border:1px dashed #b9d3f7;border-radius:8px;padding:8px;margin-top:4px;cursor:pointer}
+  .ext-more-btn:hover{background:#dbe7fb}
   .btn-default{background:#fff8e1;color:#7a5400;border:1px solid #ffe082}.btn-default:hover{background:#fff0b3}
   .btn-default.is-default{background:#ffe082;color:#5c4200;font-weight:700}
   .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2933;color:#fff;font-size:13px;font-weight:550;padding:11px 18px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;visibility:hidden;transition:.22s;z-index:90}
@@ -265,6 +270,7 @@
   </div>
 </div>
 
+<script src="/prototypes/shared/ext-templates-data.js"></script>
 <script>
 (function(){
   "use strict";
@@ -310,12 +316,7 @@
     {id:"b4",name:"中醫－門診提醒",desc:"中醫門診當日提醒",enabled:true,
      body:"{{會員姓名}}您好，提醒您今日於{{門市名稱}}有門診預約{{預約時間}}，請依現場叫號順序看診。洽詢{{門市電話}}。"}
   ];
-  var ext=[
-    {id:"e1",name:"示範精緻美容－預約提醒",desc:"示範精緻美容門市自訂",enabled:true,storeId:"s2",storeName:"示範精緻美容",storeAddr:"OO區OO街56號",storePhone:"04-xxxx-xxxx",
-     body:"{{會員姓名}}您好，示範精緻美容提醒您{{預約日期}}{{預約時間}}的{{療程}}預約，請準時蒞臨。洽詢{{門市電話}}。"},
-    {id:"e2",name:"示範光采－療程確認",desc:"示範光采門市自訂",enabled:true,storeId:"s3",storeName:"示範光采",storeAddr:"OO路OO段88號",storePhone:"07-xxxx-xxxx",
-     body:"{{會員姓名}}您好，提醒您{{預約日期}}於示範光采的{{療程}}預約，時間{{預約時間}}。地址：{{門市地址}}。"}
-  ];
+  var ext = window.NPOS_EXT_TEMPLATES || [];
   var custom=loadJSON(KEY.custom,[]);
   var pins=loadJSON(KEY.pins,[]);
   var defaultTplId=store.get(KEY.default)||null;
@@ -382,6 +383,7 @@
 
   /* ---------- 模板清單 ---------- */
   var search="",editingId=null;
+  var extExpanded=false,EXT_STORE_CAP=6;
   var loadedSnapshot=null;
   function snapshotEditor(){return {name:edName.value,desc:edDesc.value,body:edBody.value,enabled:edEnable.classList.contains("on")};}
   function isDirty(){
@@ -389,7 +391,16 @@
     var c=snapshotEditor();
     return c.name!==loadedSnapshot.name||c.desc!==loadedSnapshot.desc||c.body!==loadedSnapshot.body||c.enabled!==loadedSnapshot.enabled;
   }
-  function matches(t){if(!search)return true;var q=search.toLowerCase();return t.name.toLowerCase().indexOf(q)>-1||(t.desc||"").toLowerCase().indexOf(q)>-1;}
+  function matches(t){if(!search)return true;var q=search.toLowerCase();return t.name.toLowerCase().indexOf(q)>-1||(t.desc||"").toLowerCase().indexOf(q)>-1||(t.storeName||"").toLowerCase().indexOf(q)>-1;}
+  function groupByStore(list){
+    var order=[],byStore={};
+    list.forEach(function(t){
+      var key=t.storeId||t.storeName||"?";
+      if(!byStore[key]){byStore[key]={storeName:t.storeName,items:[]};order.push(key);}
+      byStore[key].items.push(t);
+    });
+    return order.map(function(k){return byStore[k];});
+  }
   function starSVG(f){return '<svg viewBox="0 0 24 24" fill="'+(f?"currentColor":"none")+'" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.9l-5.8 3.05 1.1-6.47L2.6 9.9l6.5-.95z"/></svg>';}
   function cardHTML(t){
     var pinned=pins.indexOf(t.id)>-1,cust=isCustom(t.id),ext_t=isExt(t.id);
@@ -416,7 +427,21 @@
     if(mine.length)h+='<div class="group-t">本門市自訂</div>'+mine.map(cardHTML).join("");
     if(builtinList.length)h+='<div class="group-t">系統內建</div>'+builtinList.map(cardHTML).join("");
     if(search){
-      if(extList.length)h+='<div class="group-t">其他門市</div>'+extList.map(cardHTML).join("");
+      var extGroups=groupByStore(extList);
+      if(extGroups.length){
+        var totalStores=extGroups.length,totalTpls=extList.length;
+        var shownGroups=extExpanded?extGroups:extGroups.slice(0,EXT_STORE_CAP);
+        var hiddenStores=totalStores-shownGroups.length;
+        h+='<div class="group-t">其他門市</div>';
+        h+='<div class="ext-hint ext-summary">符合 '+totalStores+' 家門市、'+totalTpls+' 筆模板</div>';
+        h+=shownGroups.map(function(g){
+          return '<div class="ext-store-h"><span>'+esc(g.storeName)+'</span><span class="ext-count-badge">'+g.items.length+'</span></div>'
+               + g.items.map(cardHTML).join("");
+        }).join("");
+        if(!extExpanded&&hiddenStores>0){
+          h+='<button class="ext-more-btn" id="extMoreBtn" type="button">顯示更多門市（還有 '+hiddenStores+' 家）</button>';
+        }
+      }
     }else{
       h+='<div class="group-t">其他門市</div><div class="ext-hint">輸入關鍵字搜尋跨門市共用模板</div>';
     }
@@ -425,6 +450,8 @@
     document.getElementById("listScroll").innerHTML=h;
   }
   document.getElementById("listScroll").addEventListener("click",function(e){
+    var moreBtn=e.target.closest("#extMoreBtn");
+    if(moreBtn){extExpanded=true;renderList();return;}
     var p=e.target.closest("[data-pin]");
     if(p){
       var id=p.getAttribute("data-pin");
@@ -441,7 +468,7 @@
       }else loadIntoEditor(id);
     }
   });
-  document.getElementById("searchInput").addEventListener("input",function(e){search=e.target.value.trim();renderList();});
+  document.getElementById("searchInput").addEventListener("input",function(e){search=e.target.value.trim();extExpanded=false;renderList();});
 
   /* ---------- 編輯器載入/儲存 ---------- */
   var edName=document.getElementById("edName"),edDesc=document.getElementById("edDesc"),edBody=document.getElementById("edBody"),edEnable=document.getElementById("edEnable"),delBtn=document.getElementById("delBtn"),edTitle=document.getElementById("edTitle");

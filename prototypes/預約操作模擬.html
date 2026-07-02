@@ -257,6 +257,7 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="/prototypes/shared/ext-templates-data.js"></script>
 <script>
 (function(){
   "use strict";
@@ -278,12 +279,7 @@
     {id:"b4",name:"中醫－門診提醒",desc:"中醫門診當日提醒",
      body:"{{會員姓名}}您好，提醒您今日於{{門市名稱}}有門診預約{{預約時間}}，請依現場叫號順序看診。洽詢{{門市電話}}。"}
   ];
-  var ext=[
-    {id:"e1",name:"示範精緻美容－預約提醒",desc:"示範精緻美容門市自訂",storeId:"s2",storeName:"示範精緻美容",
-     body:"{{會員姓名}}您好，示範精緻美容提醒您{{預約日期}}{{預約時間}}的{{療程}}預約，請準時蒞臨。洽詢{{門市電話}}。"},
-    {id:"e2",name:"示範光采－療程確認",desc:"示範光采門市自訂",storeId:"s3",storeName:"示範光采",
-     body:"{{會員姓名}}您好，提醒您{{預約日期}}於示範光采的{{療程}}預約，時間{{預約時間}}。地址：{{門市地址}}。"}
-  ];
+  var ext = window.NPOS_EXT_TEMPLATES || [];
   var custom=loadJSON(KEY.custom,[]);
   var pins=loadJSON(KEY.pins,[]);
   var recent=loadJSON(KEY.recent,[]);
