@@ -750,7 +750,6 @@
         ✓ 操作成功
     </div>
 
-    <script src="shared/ext-templates-data.js"></script>
     <script>
         const appointments = [
             // ========== 昨天 2025/10/30 的預約（都已過期）==========
@@ -864,15 +863,13 @@
             {id:'b4', name:'中醫－門診提醒', desc:'中醫門診當日提醒', enabled:true,
              body:'{{會員姓名}}您好，提醒您今日於{{門市名稱}}有門診預約{{預約時間}}，請依現場叫號順序看診。洽詢{{門市電話}}。'}
         ];
-        const extTpls = window.NPOS_EXT_TEMPLATES || [];
         let customTpls = loadJSON(TPL_KEY.custom, []);
         let tplPins    = loadJSON(TPL_KEY.pins, []);
         let tplRecent  = loadJSON(TPL_KEY.recent, []);
         let tplLastId  = store.get(TPL_KEY.last) || null;
 
-        function allTpls(){ return customTpls.concat(extTpls).concat(builtinTpls); }
+        function allTpls(){ return customTpls.concat(builtinTpls); }
         function tplById(id){ return allTpls().find(function(t){ return t.id===id; })||null; }
-        function isExtTpl(id){ return id && id.indexOf('e')===0; }
         function isCustomTpl(id){ return id && id.indexOf('c')===0; }
         const BU_DESIGNATED_ID = 'b1'; // KEEP IN SYNC with 模板簡訊設定教學.html / 預約操作模擬.html
         function customCreatedTs(t){ return parseInt(String(t.id).slice(1),10)||0; }
@@ -900,11 +897,11 @@
         }
 
         let tplComboQ = '', tplComboIsOpen = false;
-        function matchesTpl(t){ if(!tplComboQ)return true; return t.name.toLowerCase().indexOf(tplComboQ)>-1||(t.storeName||'').toLowerCase().indexOf(tplComboQ)>-1; }
+        function matchesTpl(t){ if(!tplComboQ)return true; return t.name.toLowerCase().indexOf(tplComboQ)>-1; }
 
         function renderTplDropModal(){
             const drop = document.getElementById('tplDrop'); if(!drop)return;
-            /* 下拉選單只放：釘選、已啟用的本門市自訂模板、系統預設（BU 指定）這一筆 —— 不再顯示最近使用/其他門市/其他系統內建模板 */
+            /* 下拉選單只放：釘選、已啟用的本門市自訂模板、系統預設（BU 指定）這一筆 —— 不再顯示最近使用/其他系統內建模板 */
             const pinList     = allTpls().filter(function(t){ return t.enabled!==false&&tplPins.indexOf(t.id)>-1&&matchesTpl(t); });
             const pinnedIds   = pinList.map(function(t){ return t.id; });
             const mine        = customTpls.filter(function(t){ return t.enabled!==false&&matchesTpl(t)&&pinnedIds.indexOf(t.id)<0; });

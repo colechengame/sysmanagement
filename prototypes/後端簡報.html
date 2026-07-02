@@ -81,10 +81,11 @@
     </div>
     <div class="card">
       <p style="font-size:13.5px;color:var(--muted)">
-        前端那份規格（<code>prototypes/簡報.html</code>）已經定義了三個畫面（模板管理／預約操作發送／預約查詢管理）要做的功能、模板的三種來源（系統內建／本門市自訂／其他門市唯讀）、套用優先序邏輯。
+        前端那份規格（<code>prototypes/簡報.html</code>）已經定義了三個畫面（模板管理／預約操作發送／預約查詢管理）要做的功能、模板的兩種來源（系統內建／本門市自訂）、套用優先序邏輯。
         目前 prototype 全部用 localStorage 模擬資料層，這份文件要討論的是：<b>正式串接後端時，這些資料該長在哪張表、要開哪些 API、有哪些規則不能只靠前端擋，後端必須驗證</b>。
       </p>
-      <div class="callout warn">重點提醒：前端 prototype 裡「系統內建不可編輯」「刪除門市預設要連動清空」「其他門市唯讀」這些規則目前都只在前端 JS 裡擋。正式環境這些規則必須在後端也驗證一次，否則繞過前端直接打 API 就能破壞資料完整性。</div>
+      <div class="callout warn">重點提醒：前端 prototype 裡「系統內建不可編輯」「刪除門市預設要連動清空」這些規則目前都只在前端 JS 裡擋。正式環境這些規則必須在後端也驗證一次，否則繞過前端直接打 API 就能破壞資料完整性。</div>
+      <div class="callout"><b>範圍決策（已定案）</b>：原規劃過「其他門市共用模板」（跨門市瀏覽/複製唯讀模板），已<b>移除</b>此範圍，本文件不再包含對應的資料表/API/權限設計。若未來要推廣更好的模板組合，走法是擴充系統內建模板（<code>is_builtin=true</code>），不需要額外的跨門市可見性/複製機制。</div>
     </div>
   </section>
 
@@ -157,7 +158,7 @@
       <div class="api-row">
         <span class="pill get">GET</span><code>/stores/:storeId/templates</code>
         <div>
-          <div class="desc">回傳該門市可用的完整清單（系統內建 + 本門市自訂 + 其他門市唯讀），後端依規則決定「其他門市」的可見範圍（見第 5 節待討論），前端只負責分組顯示、不做權限判斷。「其他門市」正式環境資料量會很大（prototype 已模擬 40 門市、約 100 筆），前端改為「依門市分組＋預設收合、點門市展開」而非早期版本的「需輸入搜尋字才顯示」（實測發現使用者不知道關鍵字，等於找不到功能）；建議 <code>?q=</code> 搜尋參數仍要保留（用於跨門市關鍵字/店名過濾），但**不需要**用「沒有 q 就不回傳其他門市分組」來擋預設瀏覽——前端本來就會先只展開/顯示前 6 家門市名稱，若要避免一次回傳全部 40+ 家的完整模板內容，可考慮讓這支 API 在無 <code>q</code> 時只回傳「門市清單＋模板筆數」（不含 body 全文），使用者點開特定門市展開時才用 <code>?storeId=</code> 補抓該店模板細節，把「輕量索引」與「重量內容」分兩段拉。<b>注意：這支只給模板管理頁用</b>——預約操作／預約查詢的發送下拉選單刻意精簡成只給「釘選」「已啟用的本門市自訂」「系統預設（BU 指定）」，不需要也不該回傳其他門市或其他系統內建模板，避免每次開發送視窗都撈一份不會用到的大清單</div>
+          <div class="desc">回傳該門市可用的完整清單（系統內建 + 本門市自訂），前端只負責分組顯示、不做權限判斷。<b>注意：這支只給模板管理頁用</b>——預約操作／預約查詢的發送下拉選單刻意精簡成只給「釘選」「已啟用的本門市自訂」「系統預設（BU 指定）」，不需要也不該回傳其他系統內建模板，避免每次開發送視窗都撈一份不會用到的大清單</div>
         </div>
       </div>
       <div class="api-row">
@@ -175,10 +176,6 @@
       <div class="api-row">
         <span class="pill put">PATCH</span><code>/templates/:id/enabled</code>
         <div><div class="desc">切換啟用/停用</div></div>
-      </div>
-      <div class="api-row">
-        <span class="pill post">POST</span><code>/templates/:id/copy</code>
-        <div><div class="desc">把其他門市的唯讀模板複製成本門市的自訂模板（新建一筆 <code>store_id</code>＝本店、內容複製過去的新紀錄）</div></div>
       </div>
       <div class="api-row">
         <span class="pill put">PATCH</span><code>/stores/:storeId/default-template</code>
@@ -218,7 +215,6 @@
         <li><b>只能改自己門市的模板</b>：<code>store_id</code> 跟登入者所屬門市不符，一律拒絕，避免 A 門市改到 B 門市的自訂模板</li>
         <li><b>刪除的原子性</b>：刪模板、清門市預設、清釘選要在同一個交易內完成，避免刪到一半留下 dangling 的 <code>default_template_id</code></li>
         <li><b>歷史記錄不可變</b>：<code>appointment_sms_log</code> 一旦寫入（尤其 <code>sent_at</code> 之後）不應該再被模板的後續變更影響，靠快照欄位而非外鍵 join 保證這件事</li>
-        <li><b>其他門市可見範圍</b>：<code>GET /stores/:storeId/templates</code> 回傳「其他門市」清單時，範圍規則要在後端算，不能讓前端自己決定要不要顯示某門市的模板</li>
       </ul>
     </div>
   </section>
@@ -230,7 +226,6 @@
     </div>
     <div class="card">
       <ol class="q">
-        <li><b>其他門市可見範圍</b>：<code>GET /stores/:storeId/templates</code> 裡「其他門市」清單，是全集團互相可見，還是要總部審核/白名單機制？這會決定 <code>sms_templates</code> 要不要多一張可見範圍的關聯表</li>
         <li><b>「個人上次套用」要綁什麼</b>：<code>template_usage_log.user_id</code> 綁登入帳號，還是像現在 prototype 一樣綁裝置？如果同門市多人共用一台電腦，帳號制才有意義，但要確認登入系統能不能穩定拿到 user id</li>
         <li><b>簡訊閘道回傳機制</b>：<code>/webhooks/sms-gateway</code> 的回傳格式、重試/逾時怎麼判定失敗、要不要有補發機制</li>
         <li><b>模板變更是否需要版本歷史/稽核</b>：醫美診所的簡訊內容可能涉及法規遵循，模板每次修改是否需要留存完整歷史（誰在何時改了什麼），而不只是 <code>updated_at</code> 一個時間戳</li>

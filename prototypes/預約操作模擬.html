@@ -257,7 +257,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="shared/ext-templates-data.js"></script>
 <script>
 (function(){
   "use strict";
@@ -279,14 +278,12 @@
     {id:"b4",name:"中醫－門診提醒",desc:"中醫門診當日提醒",
      body:"{{會員姓名}}您好，提醒您今日於{{門市名稱}}有門診預約{{預約時間}}，請依現場叫號順序看診。洽詢{{門市電話}}。"}
   ];
-  var ext = window.NPOS_EXT_TEMPLATES || [];
   var custom=loadJSON(KEY.custom,[]);
   var pins=loadJSON(KEY.pins,[]);
   var recent=loadJSON(KEY.recent,[]);
   var lastId=store.get(KEY.last)||null;
-  function allTpl(){return custom.concat(ext).concat(builtin);}
+  function allTpl(){return custom.concat(builtin);}
   function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
-  function isExt(id){return id&&id.indexOf("e")===0;}
   function isCustom(id){return id&&id.indexOf("c")===0;}
   var BU_DESIGNATED_ID="b1"; // KEEP IN SYNC with 模板簡訊設定教學.html / 預約查詢互動.html
   function customCreatedTs(t){return parseInt(String(t.id).slice(1),10)||0;}
@@ -454,10 +451,10 @@
 
   /* combobox：搜尋 + 下拉合一 */
   var tplComboQ="",tplComboIsOpen=false;
-  function matchesTpl(t){if(!tplComboQ)return true;return t.name.toLowerCase().indexOf(tplComboQ)>-1||(t.storeName||"").toLowerCase().indexOf(tplComboQ)>-1;}
+  function matchesTpl(t){if(!tplComboQ)return true;return t.name.toLowerCase().indexOf(tplComboQ)>-1;}
   function renderTplDrop(){
     var drop=document.getElementById("tplDrop");if(!drop)return;
-    /* 下拉選單只放：釘選、已啟用的本門市自訂模板、系統預設（BU 指定）這一筆 —— 不再顯示最近使用/其他門市/其他系統內建模板 */
+    /* 下拉選單只放：釘選、已啟用的本門市自訂模板、系統預設（BU 指定）這一筆 —— 不再顯示最近使用/其他系統內建模板 */
     var pinList=allTpl().filter(function(t){return t.enabled!==false&&pins.indexOf(t.id)>-1&&matchesTpl(t);});
     var pinnedIds=pinList.map(function(t){return t.id;});
     var mine=custom.filter(function(t){return t.enabled!==false&&matchesTpl(t)&&pinnedIds.indexOf(t.id)<0;});

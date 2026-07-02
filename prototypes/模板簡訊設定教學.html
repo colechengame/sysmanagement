@@ -117,31 +117,9 @@
   .legend .sw{width:14px;height:14px;border-radius:4px}
   .legend .sw.sys{background:var(--blue-wash);border:1px solid var(--blue)}
 
-  /* 其他門市模板 */
-  .t-card.ext{background:#f8fbff;border-color:#d6e4f7}
-  .t-card.ext:hover{border-color:#a8c7ef}
-  .t-card.ext.active{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-wash)}
-  .t-tag.ext{background:#e3f0ff;color:#1565c0;border-color:#b3d4f5}
-  .t-store-badge{font-size:9.5px;color:#4a7ab5;background:#eaf2ff;border-radius:4px;padding:1px 6px;font-weight:600;display:inline-block;margin-top:4px}
   .star.locked{opacity:.3;pointer-events:none}
-  /* 唯讀 banner */
-  .ed-ro-bar{background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 13px;font-size:12.5px;color:#795800;margin-bottom:12px;display:flex;align-items:center;gap:8px;line-height:1.4}
-  .ed-ro-bar b{color:#5c4200}
-  .btn-copy{background:#e3f0ff;color:#1565c0;border:1px solid #b3d4f5}
-  .btn-copy:hover{background:#cce0ff}
-  .ed-input[readonly],.ed-area[readonly]{background:var(--surface-2);color:var(--muted);cursor:default}
-  .ed-input[readonly]:focus,.ed-area[readonly]:focus{border-color:var(--line-strong);box-shadow:none}
   .t-tag.def{background:#fff8e1;color:#7a5400;border-color:#ffe082}
   .t-tag.bu{background:#e0f2f1;color:#00695c;border-color:#80cbc4}
-  .ext-hint{font-size:11.5px;color:var(--faint);padding:2px 4px 10px;line-height:1.5}
-  .ext-hint.ext-summary{font-weight:600;color:var(--muted)}
-  .ext-store-h{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11.5px;font-weight:650;color:#4a7ab5;background:#eaf2ff;border-radius:6px;padding:5px 9px;margin:10px 0 6px;cursor:pointer;user-select:none}
-  .ext-store-h:hover{background:#dbe7fb}
-  .ext-store-h-right{display:flex;align-items:center;gap:6px;flex:none}
-  .ext-chevron{font-size:9px;color:#4a7ab5;width:10px;text-align:center}
-  .ext-count-badge{font-size:10px;font-weight:700;color:#1565c0;background:#fff;border:1px solid #b3d4f5;border-radius:999px;padding:1px 7px;min-width:18px;text-align:center}
-  .ext-more-btn{display:block;width:100%;text-align:center;font-size:12px;font-weight:650;color:var(--blue-deep);background:var(--blue-wash);border:1px dashed #b9d3f7;border-radius:8px;padding:8px;margin-top:4px;cursor:pointer}
-  .ext-more-btn:hover{background:#dbe7fb}
   .btn-default{background:#fff8e1;color:#7a5400;border:1px solid #ffe082}.btn-default:hover{background:#fff0b3}
   .btn-default.is-default{background:#ffe082;color:#5c4200;font-weight:700}
   .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2933;color:#fff;font-size:13px;font-weight:550;padding:11px 18px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;visibility:hidden;transition:.22s;z-index:90}
@@ -216,7 +194,6 @@
       <div class="card">
         <div class="card-h" id="edTitle">編輯模板</div>
         <div class="card-b">
-          <div class="ed-ro-bar" id="edRoBar" style="display:none"></div>
           <div class="ed-field"><label>模板名稱 <span style="color:var(--danger)">*</span></label><input class="ed-input" id="edName" placeholder="例如：醫美－療程提醒"></div>
           <div class="ed-field"><label>用途說明</label><input class="ed-input" id="edDesc" placeholder="一句話描述何時使用"></div>
           <div class="ed-field">
@@ -229,7 +206,6 @@
             <button class="btn btn-primary" id="saveBtn">儲存為共用模板</button>
             <button class="btn btn-ghost" id="newBtn">清空</button>
             <button class="btn btn-default" id="defaultBtn" style="display:none">設為門市預設</button>
-            <button class="btn btn-copy" id="copyBtn" style="display:none">複製到本門市</button>
             <button class="btn btn-danger" id="delBtn" style="display:none">刪除</button>
             <label class="ed-enable" id="edEnableWrap"><span>啟用</span><span class="switch on" id="edEnable" role="switch" aria-checked="true" style="width:42px;height:23px"></span></label>
           </div>
@@ -273,7 +249,6 @@
   </div>
 </div>
 
-<script src="shared/ext-templates-data.js"></script>
 <script>
 (function(){
   "use strict";
@@ -319,20 +294,15 @@
     {id:"b4",name:"中醫－門診提醒",desc:"中醫門診當日提醒",enabled:true,
      body:"{{會員姓名}}您好，提醒您今日於{{門市名稱}}有門診預約{{預約時間}}，請依現場叫號順序看診。洽詢{{門市電話}}。"}
   ];
-  var ext = window.NPOS_EXT_TEMPLATES || [];
   var custom=loadJSON(KEY.custom,[]);
   var pins=loadJSON(KEY.pins,[]);
   var defaultTplId=store.get(KEY.default)||null;
   var BU_DESIGNATED_ID="b1"; // KEEP IN SYNC with 預約操作模擬.html / 預約查詢互動.html
-  function allTpl(){return custom.concat(ext).concat(builtin);}
+  function allTpl(){return custom.concat(builtin);}
   function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
   function isCustom(id){return id&&id.indexOf("c")===0;}
-  function isExt(id){return id&&id.indexOf("e")===0;}
   function isBuiltin(id){return id&&id.indexOf("b")===0;}
   function todayStr(){var d=new Date();return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate();}
-  function contextStoreName(){var t=isExt(editingId)&&tplById(editingId);return (t&&t.storeName)||STORE_NAME;}
-  function contextStoreAddr(){var t=isExt(editingId)&&tplById(editingId);return (t&&t.storeAddr)||STORE_ADDR;}
-  function contextStorePhone(){var t=isExt(editingId)&&tplById(editingId);return (t&&t.storePhone)||STORE_PHONE;}
 
   /* ---------- 全域開關 ---------- */
   var swMain=document.getElementById("swMain"),swTele=document.getElementById("swTele");
@@ -358,7 +328,6 @@
     document.getElementById("pvSample").innerHTML='已套用範例資料：會員 <b>'+esc(sample["會員姓名"])+'</b>／<b>'+esc(sample["門市名稱"])+'</b>／'+esc(sample["預約日期"])+' '+esc(sample["預約時間"])+'（'+esc(sample["時段"])+'第'+esc(sample["派號"])+'號）／'+esc(sample["療程"]);
   }
   function updatePreview(){
-    sample["門市名稱"]=contextStoreName();sample["門市地址"]=contextStoreAddr();sample["門市電話"]=contextStorePhone();
     document.getElementById("pvSender").textContent=sample["門市名稱"];
     renderSampleSummary();
     var body=document.getElementById("edBody").value;
@@ -386,88 +355,46 @@
 
   /* ---------- 模板清單 ---------- */
   var search="",editingId=null;
-  var extExpanded=false,EXT_STORE_CAP=6,extOpenStores=[];
   var loadedSnapshot=null;
   function snapshotEditor(){return {name:edName.value,desc:edDesc.value,body:edBody.value,enabled:edEnable.classList.contains("on")};}
   function isDirty(){
-    if(!loadedSnapshot||isExt(editingId))return false;
+    if(!loadedSnapshot)return false;
     var c=snapshotEditor();
     return c.name!==loadedSnapshot.name||c.desc!==loadedSnapshot.desc||c.body!==loadedSnapshot.body||c.enabled!==loadedSnapshot.enabled;
   }
-  function matches(t){if(!search)return true;var q=search.toLowerCase();return t.name.toLowerCase().indexOf(q)>-1||(t.desc||"").toLowerCase().indexOf(q)>-1||(t.storeName||"").toLowerCase().indexOf(q)>-1;}
-  function groupByStore(list){
-    var order=[],byStore={};
-    list.forEach(function(t){
-      var key=t.storeId||t.storeName||"?";
-      if(!byStore[key]){byStore[key]={storeId:key,storeName:t.storeName,items:[]};order.push(key);}
-      byStore[key].items.push(t);
-    });
-    return order.map(function(k){return byStore[k];});
-  }
+  function matches(t){if(!search)return true;var q=search.toLowerCase();return t.name.toLowerCase().indexOf(q)>-1||(t.desc||"").toLowerCase().indexOf(q)>-1;}
   function starSVG(f){return '<svg viewBox="0 0 24 24" fill="'+(f?"currentColor":"none")+'" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.9l-5.8 3.05 1.1-6.47L2.6 9.9l6.5-.95z"/></svg>';}
   function cardHTML(t){
-    var pinned=pins.indexOf(t.id)>-1,cust=isCustom(t.id),ext_t=isExt(t.id);
-    return '<div class="t-card'+(ext_t?' ext':'')+(t.id===editingId?' active':'')+(t.enabled===false?' off':'')+'" data-edit="'+t.id+'">'+
+    var pinned=pins.indexOf(t.id)>-1,cust=isCustom(t.id);
+    return '<div class="t-card'+(t.id===editingId?' active':'')+(t.enabled===false?' off':'')+'" data-edit="'+t.id+'">'+
       '<div class="t-top"><div style="flex:1"><div class="t-name">'+esc(t.name)+'</div>'+
       (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
       (cust?'<div class="t-meta">'+esc(t.creator||"自訂")+' · '+esc(t.created||"")+'</div>':'')+
-      (ext_t?'<div class="t-store-badge">'+esc(t.storeName||"")+'</div>':'')+
-      '</div><button class="star'+(pinned?' pinned':'')+((ext_t||isBuiltin(t.id))?' locked':'')+'" data-pin="'+t.id+'" aria-label="'+(isBuiltin(t.id)?'系統內建模板需先另存為自訂複本才能釘選':ext_t?'其他門市模板僅供檢視，無法釘選':'釘選')+'">'+starSVG(pinned)+'</button></div>'+
+      '</div><button class="star'+(pinned?' pinned':'')+(isBuiltin(t.id)?' locked':'')+'" data-pin="'+t.id+'" aria-label="'+(isBuiltin(t.id)?'系統內建模板需先另存為自訂複本才能釘選':'釘選')+'">'+starSVG(pinned)+'</button></div>'+
       '<div style="display:flex;justify-content:flex-end;gap:4px;margin-top:7px">'+
       (t.id===defaultTplId?'<span class="t-tag def">預設</span>':'')+
       (t.id===BU_DESIGNATED_ID?'<span class="t-tag bu">BU 指定</span>':'')+
-      '<span class="t-tag'+(ext_t?' ext':'')+'">'+
-      (cust?"本門市自訂":ext_t?"其他門市":"系統內建")+'</span></div></div>';
+      '<span class="t-tag">'+
+      (cust?"本門市自訂":"系統內建")+'</span></div></div>';
   }
   function renderList(){
     var pinnedAll=allTpl().filter(function(t){return pins.indexOf(t.id)>-1&&matches(t);});
     var pinnedIds=pinnedAll.map(function(t){return t.id;});
     var mine=custom.filter(function(t){return pinnedIds.indexOf(t.id)<0&&matches(t);});
     var builtinList=builtin.filter(function(t){return pinnedIds.indexOf(t.id)<0&&matches(t);});
-    var extList=ext.filter(function(t){return pinnedIds.indexOf(t.id)<0&&matches(t);});
     var h="";
     if(pinnedAll.length)h+='<div class="group-t">★ 釘選</div>'+pinnedAll.map(cardHTML).join("");
     if(mine.length)h+='<div class="group-t">本門市自訂</div>'+mine.map(cardHTML).join("");
     if(builtinList.length)h+='<div class="group-t">系統內建</div>'+builtinList.map(cardHTML).join("");
-    var extGroups=groupByStore(extList);
-    if(extGroups.length){
-      var totalStores=extGroups.length,totalTpls=extList.length;
-      var shownGroups=extExpanded?extGroups:extGroups.slice(0,EXT_STORE_CAP);
-      var hiddenStores=totalStores-shownGroups.length;
-      h+='<div class="group-t">其他門市</div>';
-      h+='<div class="ext-hint ext-summary">'+(search
-        ?('符合 '+totalStores+' 家門市、'+totalTpls+' 筆模板')
-        :('共 '+totalStores+' 家門市、'+totalTpls+' 筆模板，點門市名稱展開查看'))+'</div>';
-      h+=shownGroups.map(function(g){
-        var open=!!search||extOpenStores.indexOf(g.storeId)>-1;
-        return '<div class="ext-store-h'+(open?' open':'')+'" data-store-toggle="'+esc(g.storeId)+'">'
-             + '<span>'+esc(g.storeName)+'</span>'
-             + '<span class="ext-store-h-right"><span class="ext-count-badge">'+g.items.length+'</span><span class="ext-chevron">'+(open?'▾':'▸')+'</span></span>'
-             + '</div>'
-             + (open?g.items.map(cardHTML).join(""):"");
-      }).join("");
-      if(!extExpanded&&hiddenStores>0){
-        h+='<button class="ext-more-btn" id="extMoreBtn" type="button">顯示更多門市（還有 '+hiddenStores+' 家）</button>';
-      }
-    }
-    var noResults=!!search&&!pinnedAll.length&&!mine.length&&!builtinList.length&&!extList.length;
+    var noResults=!!search&&!pinnedAll.length&&!mine.length&&!builtinList.length;
     if(noResults)h='<div style="font-size:12px;color:var(--faint);padding:4px">無符合的模板</div>';
     document.getElementById("listScroll").innerHTML=h;
   }
   document.getElementById("listScroll").addEventListener("click",function(e){
-    var moreBtn=e.target.closest("#extMoreBtn");
-    if(moreBtn){extExpanded=true;renderList();return;}
-    var storeH=e.target.closest("[data-store-toggle]");
-    if(storeH){
-      var sid=storeH.getAttribute("data-store-toggle"),si=extOpenStores.indexOf(sid);
-      if(si>-1)extOpenStores.splice(si,1);else extOpenStores.push(sid);
-      renderList();
-      return;
-    }
     var p=e.target.closest("[data-pin]");
     if(p){
       var id=p.getAttribute("data-pin");
-      if(isExt(id)||isBuiltin(id))return;
+      if(isBuiltin(id))return;
       if(pins.indexOf(id)>-1)pins=pins.filter(function(x){return x!==id;});else pins.unshift(id);saveJSON(KEY.pins,pins);renderList();toast(pins.indexOf(id)>-1?"已釘選":"已取消釘選");
       return;
     }
@@ -480,7 +407,7 @@
       }else loadIntoEditor(id);
     }
   });
-  document.getElementById("searchInput").addEventListener("input",function(e){search=e.target.value.trim();extExpanded=false;renderList();});
+  document.getElementById("searchInput").addEventListener("input",function(e){search=e.target.value.trim();renderList();});
 
   /* ---------- 編輯器載入/儲存 ---------- */
   var edName=document.getElementById("edName"),edDesc=document.getElementById("edDesc"),edBody=document.getElementById("edBody"),edEnable=document.getElementById("edEnable"),delBtn=document.getElementById("delBtn"),edTitle=document.getElementById("edTitle");
@@ -491,7 +418,7 @@
       :"已停用：不會出現在「預約操作」發送簡訊視窗的可選清單中，但仍保留於此清單";
   }
   edEnable.addEventListener("click",function(){
-    if(isExt(editingId)||isBuiltin(editingId))return;
+    if(isBuiltin(editingId))return;
     var on=!edEnable.classList.contains("on");
     setEnable(on);
     if(isCustom(editingId)){
@@ -509,30 +436,22 @@
   function loadIntoEditor(id){
     var t=tplById(id);if(!t)return;
     editingId=id;
-    var cust=isCustom(id),ext_t=isExt(id);
+    var cust=isCustom(id);
     edName.value=t.name;edDesc.value=t.desc||"";edBody.value=t.body;setEnable(t.enabled!==false);
-    edName.readOnly=ext_t;edDesc.readOnly=ext_t;edBody.readOnly=ext_t;
-    document.getElementById("edEnableWrap").classList.toggle("locked",ext_t||isBuiltin(id));
-    var edRoBar=document.getElementById("edRoBar"),copyBtn=document.getElementById("copyBtn"),saveBtn=document.getElementById("saveBtn"),newBtn=document.getElementById("newBtn");
+    document.getElementById("edEnableWrap").classList.toggle("locked",isBuiltin(id));
+    var saveBtn=document.getElementById("saveBtn"),newBtn=document.getElementById("newBtn");
     newBtn.textContent="取消編輯";
-    if(ext_t){
-      edTitle.textContent="檢視模板（其他門市）";
-      edRoBar.innerHTML='⚠ 此為「<b>'+esc(t.storeName||"其他門市")+'</b>」的模板，僅供檢視。若需使用請複製至本門市後再編輯。';
-      edRoBar.style.display="";
-    }else if(cust){
+    if(cust){
       edTitle.textContent="編輯模板（本門市自訂）";
-      edRoBar.style.display="none";
     }else{
       edTitle.textContent="編輯模板（系統內建 · 儲存將另存為自訂）";
-      edRoBar.style.display="none";
       document.getElementById("edEnableHint").textContent="系統內建模板固定為啟用；若需停用請先儲存為自訂複本再操作。";
     }
-    saveBtn.style.display=ext_t?"none":"";
-    newBtn.style.display=ext_t?"none":"";
-    copyBtn.style.display=ext_t?"":"none";
+    saveBtn.style.display="";
+    newBtn.style.display="";
     delBtn.style.display=cust?"":"none";
     var defaultBtn=document.getElementById("defaultBtn");
-    defaultBtn.style.display=ext_t?"none":"";
+    defaultBtn.style.display="";
     defaultBtn.textContent=id===defaultTplId?"✓ 已是門市預設":"設為門市預設";
     defaultBtn.className="btn btn-default"+(id===defaultTplId?" is-default":"");
     updatePreview();renderList();
@@ -540,14 +459,11 @@
   }
   function newTemplate(){
     editingId=null;edName.value="";edDesc.value="";edBody.value="";setEnable(true);
-    edName.readOnly=false;edDesc.readOnly=false;edBody.readOnly=false;
     document.getElementById("edEnableWrap").classList.remove("locked");
     edTitle.textContent="新增模板";
-    document.getElementById("edRoBar").style.display="none";
     document.getElementById("saveBtn").style.display="";
     document.getElementById("newBtn").style.display="";
     document.getElementById("newBtn").textContent="清空表單";
-    document.getElementById("copyBtn").style.display="none";
     document.getElementById("defaultBtn").style.display="none";
     delBtn.style.display="none";
     updatePreview();renderList();
@@ -619,15 +535,6 @@
       toast("已將「"+(t?t.name:"")+"」設為門市預設");
     }
   });
-  document.getElementById("copyBtn").addEventListener("click",function(){
-    var t=tplById(editingId);if(!t)return;
-    var id="c"+Date.now();
-    custom.push({id:id,name:t.name+"（複製）",desc:t.desc||"",body:t.body,enabled:true,creator:"系統人員",created:todayStr()});
-    saveJSON(KEY.custom,custom);
-    toast("已複製「"+t.name+"」至本門市，可進行編輯");
-    loadIntoEditor(id);
-  });
-
   /* ---------- toast ---------- */
   var toastTimer;
   function toast(msg){var el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove("show");},2400);}
