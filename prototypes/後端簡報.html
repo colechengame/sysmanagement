@@ -86,6 +86,7 @@
       </p>
       <div class="callout warn">重點提醒：前端 prototype 裡「系統內建不可編輯」「刪除門市預設要連動清空」這些規則目前都只在前端 JS 裡擋。正式環境這些規則必須在後端也驗證一次，否則繞過前端直接打 API 就能破壞資料完整性。</div>
       <div class="callout"><b>範圍決策（已定案）</b>：原規劃過「其他門市共用模板」（跨門市瀏覽/複製唯讀模板），已<b>移除</b>此範圍，本文件不再包含對應的資料表/API/權限設計。若未來要推廣更好的模板組合，走法是擴充系統內建模板（<code>is_builtin=true</code>），不需要額外的跨門市可見性/複製機制。</div>
+      <div class="callout">2026-07-07 更新：依 <code>docs/擴增需求/後端規格書（PM視角）.md</code> v1.1 同步「預約查詢頁簡訊詳情」相關規則——簡訊取消不等於預約取消、同日多筆預約僅最早一筆可操作、取消最早預約時的補位順序、重新發送＝重新走一次發送流程、拒收覆蓋發送需留痕。詳見第 3、4 節。</div>
     </div>
   </section>
 
@@ -144,6 +145,7 @@
         <tr><td><code>send_time</code></td><td>timestamp</td><td>排定發送時間</td></tr>
         <tr><td><code>sent_at</code> / <code>cancelled_at</code> / <code>fail_reason</code></td><td></td><td>依狀態補值</td></tr>
         <tr><td><code>created_by</code></td><td>FK</td><td>建立排程的員工</td></tr>
+        <tr><td><code>override_opt_out</code></td><td>bool，預設 false</td><td>會員已設定拒收，人員仍強制送出時寫 <code>true</code>；跟一般發送分開才能稽核追查覆蓋動作</td></tr>
       </table>
       <div class="callout">關鍵設計：<code>appointment_sms_log</code> 存的是<b>快照</b>（模板名稱、送出內容），不是外鍵 join 現查。這樣模板被刪除、改名、停用都不會讓歷史發送記錄「壞掉」或顯示錯誤。（先前規劃的「套用後是否手動修改」追蹤欄位已確認不需要，故不再保留 <code>applied_content_snapshot</code>/<code>is_modified</code>。）</div>
     </div>
@@ -187,15 +189,15 @@
       </div>
       <div class="api-row">
         <span class="pill post">POST</span><code>/appointments/:id/sms</code>
-        <div><div class="desc">建立發送排程：寫入 <code>appointment_sms_log</code>（含快照內容），並觸發實際簡訊發送（走簡訊閘道）</div></div>
+        <div><div class="desc">建立發送排程：寫入 <code>appointment_sms_log</code>（含快照內容），並觸發實際簡訊發送（走簡訊閘道）。<b>後端需驗證</b>：若同一會員同一天有多筆未取消的預約，此 <code>:id</code> 必須是時間最早的一筆，否則回 4xx（<code>not_earliest_appointment</code>）——判斷「最早」只看預約本身是否取消，跟這筆的簡訊狀態無關</div></div>
       </div>
       <div class="api-row">
         <span class="pill put">PATCH</span><code>/appointments/:id/sms/cancel</code>
-        <div><div class="desc">取消排程中的簡訊</div></div>
+        <div><div class="desc">取消排程中的簡訊。<b>取消的是簡訊本身，不是預約</b>——呼叫後只改 <code>appointment_sms_log.status</code>，預約狀態不受影響；同樣受「僅最早一筆可操作」限制</div></div>
       </div>
       <div class="api-row">
         <span class="pill post">POST</span><code>/appointments/:id/sms/resend</code>
-        <div><div class="desc">針對已取消/發送失敗的記錄重新排程發送</div></div>
+        <div><div class="desc">針對已取消/發送失敗的記錄重新排程發送。<b>語意上等同重新呼叫一次 <code>POST /appointments/:id/sms</code></b>：會重新跑第 3 節的 <code>templates/suggested</code> 套用優先序、重新判斷會員拒收/同日排程衝突情境，內容可能跟上一筆不同；後端應建立一筆全新的 <code>appointment_sms_log</code>，不是修改舊那筆</div></div>
       </div>
       <div class="api-row">
         <span class="pill post">POST</span><code>/webhooks/sms-gateway</code>
@@ -215,6 +217,10 @@
         <li><b>只能改自己門市的模板</b>：<code>store_id</code> 跟登入者所屬門市不符，一律拒絕，避免 A 門市改到 B 門市的自訂模板</li>
         <li><b>刪除的原子性</b>：刪模板、清門市預設、清釘選要在同一個交易內完成，避免刪到一半留下 dangling 的 <code>default_template_id</code></li>
         <li><b>歷史記錄不可變</b>：<code>appointment_sms_log</code> 一旦寫入（尤其 <code>sent_at</code> 之後）不應該再被模板的後續變更影響，靠快照欄位而非外鍵 join 保證這件事</li>
+        <li><b>同日多預約僅最早一筆可操作簡訊</b>：同一會員同一天有多筆未取消的預約時，<code>POST .../sms</code>、<code>PATCH .../sms/cancel</code> 只接受最早那筆的 <code>appointment_id</code>；前端雖然已經鎖住其他預約的操作入口，後端仍要獨立擋下，避免繞過 UI 直接打 API</li>
+        <li><b>簡訊取消不等於預約取消</b>：<code>PATCH .../sms/cancel</code> 只改簡訊記錄狀態，預約本身的狀態欄位不受影響——這是兩個獨立動作，不要合併成同一次寫入</li>
+        <li><b>取消最早預約時的補位順序</b>：使用者若要取消同會員同日最早那筆「預約」，且同日還有其他有效預約，前端會先對次早那筆呼叫 <code>POST .../sms</code> 讓人員確認發送，等這筆成功建立後才呼叫預約取消 API 把原本最早那筆標記取消。<b>不需要新增「轉移」端點</b>，但工程實作上要注意這兩個既有呼叫的順序（先送出、後取消），避免中途失敗留下不一致狀態</li>
+        <li><b>拒收覆蓋發送要留痕</b>：會員設定拒絕簡訊、但人員選擇強制送出時，<code>appointment_sms_log.override_opt_out</code> 要寫 <code>true</code>，不能跟一般正常發送混在一起看不出差異</li>
       </ul>
     </div>
   </section>
