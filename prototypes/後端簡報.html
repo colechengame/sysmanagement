@@ -87,7 +87,6 @@
       <div class="callout warn">重點提醒：前端 prototype 裡「系統內建不可編輯」「刪除門市預設要連動清空」這些規則目前都只在前端 JS 裡擋。正式環境這些規則必須在後端也驗證一次，否則繞過前端直接打 API 就能破壞資料完整性。</div>
       <div class="callout"><b>範圍決策（已定案）</b>：原規劃過「其他門市共用模板」（跨門市瀏覽/複製唯讀模板），已<b>移除</b>此範圍，本文件不再包含對應的資料表/API/權限設計。若未來要推廣更好的模板組合，走法是擴充系統內建模板（<code>is_builtin=true</code>），不需要額外的跨門市可見性/複製機制。</div>
       <div class="callout">2026-07-07 更新：依 <code>docs/擴增需求/後端規格書（PM視角）.md</code> v1.1 同步「預約查詢頁簡訊詳情」相關規則——簡訊取消不等於預約取消、同日多筆預約僅最早一筆可操作、取消最早預約時的補位順序、重新發送＝重新走一次發送流程、拒收覆蓋發送需留痕。詳見第 3、4 節。</div>
-      <div class="callout">2026-07-07 再更新（v1.2）：<b>派號、同日多預約僅最早一筆可操作</b>後端已實作完成。這次補上三塊「需要後端參與」的新範圍：① <b>簡訊系統參數與多模板組合規則</b>（10 個 token 定案清單、字數/則數換算公式、編輯系統內建模板＝建立新複本）—— 詳見第 2 節；② <b>診別（早/午/晚，即時段判斷）</b>——邏輯維持既有時間換算公式不變，只是需要正式落地成後端程式，不再只活在原型 JS 裡；③ <b>簡訊詳情擴充查詢</b>——新增單筆查詢端點與完整回應欄位契約，詳見第 3 節。</div>
     </div>
   </section>
 
@@ -97,21 +96,7 @@
       <div><h2>資料表設計（建議）</h2><p>把 localStorage 的鍵值換成正式資料表</p></div>
     </div>
     <div class="card">
-      <p style="font-size:13px;font-weight:700;margin-bottom:8px">簡訊系統參數（<code>{{token}}</code> 白名單，已定案）</p>
-      <table>
-        <tr><th>Token</th><th>說明</th><th>來源／計算方式</th></tr>
-        <tr><td><code>{{會員姓名}}</code></td><td>會員全名</td><td>預約資料</td></tr>
-        <tr><td><code>{{門市名稱}}</code> / <code>{{門市地址}}</code> / <code>{{門市電話}}</code></td><td>門市基本資料</td><td>門市資料</td></tr>
-        <tr><td><code>{{預約日期}}</code> / <code>{{預約時間}}</code></td><td>格式 <code>MM/DD（星期）</code> / <code>HH:MM</code></td><td>預約資料</td></tr>
-        <tr><td><code>{{療程}}</code> / <code>{{診間}}</code></td><td>施做療程／診療室</td><td>預約資料</td></tr>
-        <tr><td><code>{{時段}}</code></td><td>早診／午診／晚診（診別，見下方時段判斷）</td><td>後端計算</td></tr>
-        <tr><td><code>{{派號}}</code></td><td>同一診間/時段內依建立順序遞增的奇數序號</td><td>後端已實作</td></tr>
-      </table>
-      <div class="callout">共 <b>10 個 token</b>，對照 <code>prototypes/模板簡訊設定教學.html</code> 的 <code>SYS</code> 陣列，已是最終定案清單——不會再新增「發送前才手動填寫」的參數（早期草稿曾規劃過 <code>{{注意事項}}</code>/<code>{{其他備註}}</code> 這類欄位，已確認不需要）。</div>
-      <div class="callout warn"><b>時段判斷（診別）</b>：<code>appointment.time &lt; 13:00</code> → 早診；<code>&lt; 17:00</code> → 午診；其餘 → 晚診。這條公式<b>維持不變</b>，只是先前只存在於原型 JS（<code>shiftFromTimeStr()</code>），現在需要正式落地為後端程式，由後端計算 <code>{{時段}}</code> 回傳，不是前端自己算。跟已經修正過的「派號」不同——時段不需要改邏輯，也跟診間排班表無關，純粹是時間帶判斷。</div>
-      <div class="callout"><b>簡訊字數／則數換算</b>：已代入所有 token 的最終字數（字元數，中文/半形都算 1）≤70 字 → 1 則；超過則每 <code>ceil(len/67)</code> 則。此公式同時用在模板編輯頁即時預覽與 <code>appointment_sms_log.segments</code>（見下方），兩邊算法必須一致。</div>
-
-      <p style="font-size:13px;font-weight:700;margin:16px 0 8px"><code>sms_templates</code> — 模板本體</p>
+      <p style="font-size:13px;font-weight:700;margin-bottom:8px"><code>sms_templates</code> — 模板本體</p>
       <table>
         <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
         <tr><td><code>id</code></td><td>PK</td><td>模板 id</td></tr>
@@ -156,7 +141,6 @@
         <tr><td><code>template_id</code></td><td>FK，nullable</td><td>套用的模板；<b>可為 null</b>（模板之後被刪除也不影響已發送記錄）</td></tr>
         <tr><td><code>template_name_snapshot</code></td><td>string</td><td>發送當下的模板名稱快照，不要用 join 現查（模板改名/被刪都不能影響歷史記錄顯示）</td></tr>
         <tr><td><code>sent_content</code></td><td>text</td><td>實際送出的內容</td></tr>
-        <tr><td><code>char_count</code> / <code>segments</code></td><td>int</td><td>字數／預估則數，換算公式見上方「簡訊字數／則數換算」</td></tr>
         <tr><td><code>status</code></td><td>enum</td><td>scheduled／delivered／cancelled／failed</td></tr>
         <tr><td><code>send_time</code></td><td>timestamp</td><td>排定發送時間</td></tr>
         <tr><td><code>sent_at</code> / <code>cancelled_at</code> / <code>fail_reason</code></td><td></td><td>依狀態補值</td></tr>
@@ -185,7 +169,7 @@
       </div>
       <div class="api-row">
         <span class="pill put">PUT</span><code>/templates/:id</code>
-        <div><div class="desc">編輯模板。<b>後端必須驗證</b>：若目標是系統內建（<code>is_builtin</code>）或不屬於這個門市，一律拒絕直接覆蓋，前端要另外呼叫「另存複本」的建立端點。<b>「另存複本」就是同一支 <code>POST /stores/:storeId/templates</code></b>，前端把系統內建模板目前的 name/desc/body 當初始值帶進去建立新自訂模板，不需要另開一支「複本」專用端點，資料庫也不需要記錄複本跟來源內建模板的關聯</div></div>
+        <div><div class="desc">編輯模板。<b>後端必須驗證</b>：若目標是系統內建（<code>is_builtin</code>）或不屬於這個門市，一律拒絕直接覆蓋，前端要另外呼叫「另存複本」的建立端點</div></div>
       </div>
       <div class="api-row">
         <span class="pill del">DELETE</span><code>/templates/:id</code>
@@ -202,10 +186,6 @@
       <div class="api-row">
         <span class="pill get">GET</span><code>/stores/:storeId/templates/suggested?userId=</code>
         <div><div class="desc"><b>建議把套用優先序邏輯搬到後端算好直接回傳</b>：門市預設 →（門市有自訂模板：個人上次套用 → 首次套用時改用最近釘選的自訂模板 → 否則最新建立的自訂模板）→（門市完全沒有自訂模板：BU 指定模板 <code>BU_DESIGNATED_ID</code>）。前端 B、C 兩個畫面都呼叫同一支，不用各自實作、也不用擔心兩邊 fallback 邏輯跑不同步</div></div>
-      </div>
-      <div class="api-row">
-        <span class="pill get">GET</span><code>/appointments/:id/sms</code>
-        <div><div class="desc"><b>簡訊詳情擴充查詢（v1.2 新增）</b>：對應預約查詢頁的簡訊詳情彈窗，回傳這筆預約目前/最近一筆簡訊記錄的完整內容——收件人（姓名＋隱碼手機）、內容、字數、套用的模板名稱（模板已被刪除時回 <code>null</code>，前端顯示「自訂」，<b>不是錯誤</b>）、建立時間/建立人、依狀態而定的時間或原因（排程時間／送達時間／取消時間／失敗原因）、<code>override_opt_out</code>。這支<b>沒有「已過期不可查」的限制</b>，只要記錄存在就能查，過期後要不要顯示查詢入口是前端的事</div></div>
       </div>
       <div class="api-row">
         <span class="pill post">POST</span><code>/appointments/:id/sms</code>
@@ -241,9 +221,6 @@
         <li><b>簡訊取消不等於預約取消</b>：<code>PATCH .../sms/cancel</code> 只改簡訊記錄狀態，預約本身的狀態欄位不受影響——這是兩個獨立動作，不要合併成同一次寫入</li>
         <li><b>取消最早預約時的補位順序</b>：使用者若要取消同會員同日最早那筆「預約」，且同日還有其他有效預約，前端會先對次早那筆呼叫 <code>POST .../sms</code> 讓人員確認發送，等這筆成功建立後才呼叫預約取消 API 把原本最早那筆標記取消。<b>不需要新增「轉移」端點</b>，但工程實作上要注意這兩個既有呼叫的順序（先送出、後取消），避免中途失敗留下不一致狀態</li>
         <li><b>拒收覆蓋發送要留痕</b>：會員設定拒絕簡訊、但人員選擇強制送出時，<code>appointment_sms_log.override_opt_out</code> 要寫 <code>true</code>，不能跟一般正常發送混在一起看不出差異</li>
-        <li><b>時段（診別）由後端計算，不信任前端傳入</b>：<code>{{時段}}</code> 一律用 <code>appointment.time</code> 依既有公式（13:00/17:00 分界）後端算好回傳，不接受前端算好傳過來的值</li>
-        <li><b>字數／則數算法前後端要一致</b>：<code>char_count</code>/<code>segments</code> 用同一套公式（見第 2 節），避免模板編輯頁預覽跟正式發送記錄的則數對不起來</li>
-        <li><b><code>GET /appointments/:id/sms</code> 對已刪除模板要優雅降級</b>：<code>template_name_snapshot</code> 對應的模板被刪除不是錯誤情境，正常回傳 <code>null</code> 讓前端顯示「自訂」，不要因此讓整支查詢失敗</li>
       </ul>
     </div>
   </section>
