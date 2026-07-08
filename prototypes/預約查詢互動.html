@@ -763,29 +763,29 @@
         const appointments = [
             // ========== 昨天 2025/10/30 的預約（都已過期）==========
             // 已過期 + 已送達
-            {id: 1, date: '2025/10/30', member: 'GT0000001', name: '【VIP】王小明', phone: '0912345678', time: '09:00', treatment: '★3樓-醫美諮詢', staff: '張醫師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false},
+            {id: 1, date: '2025/10/30', member: 'GT0000001', name: '【VIP】王小明', phone: '0912345678', time: '09:00', treatment: '★3樓-醫美諮詢', staff: '張醫師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false, smsDetail: {content: '提醒您：有在【示範麗雅醫學美容】2025/10/30 09:00 預約★3樓-醫美諮詢，02-xxxx-xxxx，請提前30分鐘蒞臨現場報到。', sendTime: '2025-10-30T08:00', template: '標準預約提醒', createdAt: '2025-10-29T09:15', createdBy: '張醫師', sentAt: '2025-10-30T08:00'}},
             // 已過期 + 已送達
-            {id: 2, date: '2025/10/30', member: 'GT0000002', name: '林美麗', phone: '0923456789', time: '10:30', treatment: '雷射除斑', staff: '李護理師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false},
+            {id: 2, date: '2025/10/30', member: 'GT0000002', name: '林美麗', phone: '0923456789', time: '10:30', treatment: '雷射除斑', staff: '李護理師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false, smsDetail: {content: '提醒您有預約【示範麗雅】2025/10/30 10:30 XX區XX路1號，有任何疑問請撥打02-xxxx-xxxx，示範麗雅關心您。', sendTime: '2025-10-30T09:30', template: '標準預約提醒', createdAt: '2025-10-29T10:02', createdBy: '李護理師', sentAt: '2025-10-30T09:30'}},
             // 已過期 + 已取消（不可重發）
-            {id: 3, date: '2025/10/30', member: 'GT0000003', name: '陳大華', phone: '0934567890', time: '13:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '2', smsStatus: 'cancelled', noSmsPreference: false},
+            {id: 3, date: '2025/10/30', member: 'GT0000003', name: '陳大華', phone: '0934567890', time: '13:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '2', smsStatus: 'cancelled', noSmsPreference: false, smsDetail: {content: '陳大華您好，提醒您於示範麗雅的★5樓-純美療程預約：2025/10/30 13:00。請提前30分鐘蒞臨現場報到。洽詢02-xxxx-xxxx。', sendTime: '2025-10-30T12:00', template: '醫美－療程提醒', createdAt: '2025-10-29T13:40', createdBy: 'AB魔', cancelledAt: '2025-10-29T18:20'}},
             // 已過期 + 發送失敗（不可重發）
-            {id: 4, date: '2025/10/30', member: 'GT0000004', name: '劉小芳', phone: '0945678901', time: '14:30', treatment: '電痛衝導入', staff: '王技師', contactStatus: '1', smsStatus: 'failed', noSmsPreference: false},
+            {id: 4, date: '2025/10/30', member: 'GT0000004', name: '劉小芳', phone: '0945678901', time: '14:30', treatment: '電痛衝導入', staff: '王技師', contactStatus: '1', smsStatus: 'failed', noSmsPreference: false, smsDetail: {content: '提醒您有預約【示範麗雅】2025/10/30 14:30 XX區XX路1號，有任何疑問請撥打02-xxxx-xxxx，示範麗雅關心您。', sendTime: '2025-10-30T13:30', template: '標準預約提醒', createdAt: '2025-10-29T15:10', createdBy: '門市員工', failReason: '號碼不在服務範圍'}},
             // 已過期 + 未發送
             {id: 5, date: '2025/10/30', member: 'GT0000005', name: '張志明', phone: '0956789012', time: '16:00', treatment: '2樓總店-【醫美】', staff: '電痛衝導入', contactStatus: '', smsStatus: '', noSmsPreference: false},
-            // 已過期 + 排程中（特殊狀況：來不及取消）
-            {id: 6, date: '2025/10/30', member: 'GT0000006', name: '黃美惠', phone: '0967890123', time: '17:30', treatment: '★5樓-純美療程', staff: '超音波導入', contactStatus: '1', smsStatus: 'scheduled', noSmsPreference: false},
+            // 已過期 + 排程中（特殊狀況：來不及取消，過期後僅能唯讀查詢，不可再取消排程）
+            {id: 6, date: '2025/10/30', member: 'GT0000006', name: '黃美惠', phone: '0967890123', time: '17:30', treatment: '★5樓-純美療程', staff: '超音波導入', contactStatus: '1', smsStatus: 'scheduled', noSmsPreference: false, smsDetail: {content: '提醒您：有在【示範麗雅醫學美容】2025/10/30 17:30 預約★5樓-純美療程，02-xxxx-xxxx，請提前30分鐘蒞臨現場報到。', sendTime: '2025-10-30T16:30', template: '標準預約提醒', createdAt: '2025-10-29T10:20', createdBy: '超音波導入'}},
             // 已過期 + 已送達
-            {id: 7, date: '2025/10/30', member: 'GT0000007', name: '吳建宏', phone: '0978901234', time: '19:00', treatment: '雷射除毛', staff: '陳技師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false},
+            {id: 7, date: '2025/10/30', member: 'GT0000007', name: '吳建宏', phone: '0978901234', time: '19:00', treatment: '雷射除毛', staff: '陳技師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false, smsDetail: {content: '提醒您有預約【示範麗雅】2025/10/30 19:00 XX區XX路1號，有任何疑問請撥打02-xxxx-xxxx，示範麗雅關心您。', sendTime: '2025-10-30T18:00', template: '標準預約提醒', createdAt: '2025-10-29T20:05', createdBy: '陳技師', sentAt: '2025-10-30T18:00'}},
             
             // ========== 今天 2025/10/31 的預約（14:00前已過期，之後未過期）==========
             // 已過期 + 已送達
-            {id: 8, date: '2025/10/31', member: 'GT0000008', name: '蔡淑女', phone: '0989012345', time: '09:00', treatment: '★3樓-醫美諮詢', staff: '李醫師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false},
+            {id: 8, date: '2025/10/31', member: 'GT0000008', name: '蔡淑女', phone: '0989012345', time: '09:00', treatment: '★3樓-醫美諮詢', staff: '李醫師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false, smsDetail: {content: '提醒您：有在【示範麗雅醫學美容】2025/10/31 09:00 預約★3樓-醫美諮詢，02-xxxx-xxxx，請提前30分鐘蒞臨現場報到。', sendTime: '2025-10-31T08:00', template: '標準預約提醒', createdAt: '2025-10-30T09:40', createdBy: '李醫師', sentAt: '2025-10-31T08:00'}},
             // 已過期 + 已送達
-            {id: 9, date: '2025/10/31', member: 'GT0000009', name: '鄭大明', phone: '0990123456', time: '10:30', treatment: '電波拉提', staff: '張技師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false},
+            {id: 9, date: '2025/10/31', member: 'GT0000009', name: '鄭大明', phone: '0990123456', time: '10:30', treatment: '電波拉提', staff: '張技師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false, smsDetail: {content: '鄭大明您好，提醒您於示範麗雅的電波拉提預約：2025/10/31 10:30。請提前30分鐘蒞臨現場報到。洽詢02-xxxx-xxxx。', sendTime: '2025-10-31T09:30', template: '醫美－療程提醒', createdAt: '2025-10-30T11:00', createdBy: '張技師', sentAt: '2025-10-31T09:30'}},
             // 已過期 + 已取消
-            {id: 10, date: '2025/10/31', member: 'GT0000010', name: '許雅芬', phone: '0901234567', time: '12:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '2', smsStatus: 'cancelled', noSmsPreference: false},
+            {id: 10, date: '2025/10/31', member: 'GT0000010', name: '許雅芬', phone: '0901234567', time: '12:00', treatment: '★5樓-純美療程', staff: 'AB魔', contactStatus: '2', smsStatus: 'cancelled', noSmsPreference: false, smsDetail: {content: '許雅芬您好，提醒您於示範麗雅的★5樓-純美療程預約：2025/10/31 12:00。請提前30分鐘蒞臨現場報到。洽詢02-xxxx-xxxx。', sendTime: '2025-10-31T11:00', template: '醫美－療程提醒', createdAt: '2025-10-30T13:25', createdBy: 'AB魔', cancelledAt: '2025-10-30T16:10'}},
             // 已過期 + 發送失敗（客人拒收設定 - 測試情境2）
-            {id: 11, date: '2025/10/31', member: 'GT0000011', name: '【不可約】陳...', phone: '0916795179', time: '13:30', treatment: '★5樓-純美療程', staff: '電痛衝導入', contactStatus: '1', smsStatus: 'failed', noSmsPreference: true},
+            {id: 11, date: '2025/10/31', member: 'GT0000011', name: '【不可約】陳...', phone: '0916795179', time: '13:30', treatment: '★5樓-純美療程', staff: '電痛衝導入', contactStatus: '1', smsStatus: 'failed', noSmsPreference: true, smsDetail: {content: '提醒您有預約【示範麗雅】2025/10/31 13:30 XX區XX路1號，有任何疑問請撥打02-xxxx-xxxx，示範麗雅關心您。', sendTime: '2025-10-31T12:30', template: '標準預約提醒', createdAt: '2025-10-30T14:50', createdBy: '門市員工', failReason: '客戶設定拒收簡訊'}},
             
             // --- 今天 14:00 之後（未過期）---
             // 未過期 + 未發送（可發送 - 測試情境1標準發送）
@@ -1036,15 +1036,17 @@
                 return '<span class="sms-status-block status-expired" style="background:#f5f5f5;color:#9e9e9e;">已取消</span>';
             }
 
-            // 時間已過
+            // 時間已過：終態（已送達/已取消/發送失敗）與排程中，只要有簡訊紀錄，皆可唯讀查詢；未發送則無紀錄可查
             if (isExpired) {
                 var expiredText = smsStatus === 'delivered' ? '已送達' :
                                   smsStatus === 'cancelled' ? '已取消' :
-                                  smsStatus === 'failed'    ? '發送失敗' : '已過期';
+                                  smsStatus === 'failed'    ? '發送失敗' :
+                                  smsStatus === 'scheduled' ? '排程中' : '未發送';
                 var expClass = smsStatus === 'delivered' ? 'status-delivered' :
                                smsStatus === 'cancelled' ? 'status-cancelled' :
-                               smsStatus === 'failed'    ? 'status-failed' : 'status-expired';
-                if (appointment.smsDetail && smsStatus !== 'scheduled' && smsStatus !== '') {
+                               smsStatus === 'failed'    ? 'status-failed' :
+                               smsStatus === 'scheduled' ? 'status-scheduled' : 'status-expired';
+                if (appointment.smsDetail && smsStatus !== '') {
                     return '<span class="sms-status-block ' + expClass + ' clickable" onclick="viewSmsDetail(' + appointmentId + ')">' + expiredText + '</span>';
                 }
                 return '<span class="sms-status-block ' + expClass + '">' + expiredText + '</span>';
@@ -1722,9 +1724,12 @@
                 statusRow.style.display = 'none';
             }
 
-            // 頁腳按鈕
+            // 頁腳按鈕：預約已過期一律唯讀，僅能關閉，不提供取消排程/重新發送等互動操作
             var footerBtns = document.getElementById('detailFooterBtns');
-            if (status === 'scheduled') {
+            if (isAppointmentExpired(appointmentId)) {
+                footerBtns.innerHTML =
+                    '<button class="btn btn-secondary" onclick="closeDetailModal()">關閉</button>';
+            } else if (status === 'scheduled') {
                 footerBtns.innerHTML =
                     '<button class="btn btn-secondary" onclick="closeDetailModal()">關閉</button>' +
                     '<button class="btn btn-danger" onclick="closeDetailAndCancel()">取消此排程</button>';
