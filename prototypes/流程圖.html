@@ -112,7 +112,7 @@
   <div class="hero">
     <span class="tag">視覺化簡報 · 給 PM 對工程師說明用</span>
     <h1>單一模板 → 多模板擴增：流程圖總覽</h1>
-    <p>5 張圖看懂整個功能：架構分層、模板來源、套用邏輯、使用者旅程、CRUD 規則</p>
+    <p>6 張圖看懂整個功能：架構分層、模板來源、套用邏輯、使用者旅程、CRUD 規則、同日多預約規則</p>
   </div>
 
   <nav class="toc" aria-label="章節快速跳轉">
@@ -121,6 +121,7 @@
     <a href="#sec3">3️⃣ 套用優先序</a>
     <a href="#sec4">4️⃣ 操作旅程</a>
     <a href="#sec5">5️⃣ CRUD 規則</a>
+    <a href="#sec6">6️⃣ 同日多預約規則</a>
   </nav>
 
   <section id="sec1">
@@ -273,6 +274,43 @@
         </div>
       </div>
       <div class="caption">這三條規則<b>前端要擋、後端也要擋</b>，避免有人繞過畫面直接打 API 破壞資料</div>
+    </div>
+  </section>
+
+  <section id="sec6">
+    <div class="sec-h"><div class="n">6</div><div><h2>同日多預約與簡訊詳情規則</h2><p>預約查詢頁專屬——已實作驗收，非新增需求</p></div></div>
+    <div class="diagram">
+      <div class="timeline" style="flex-wrap:wrap">
+        <div class="hnode blue"><div class="ic">✅</div><div class="lb">09:00 預約</div><div class="sub">最早一筆＝可操作</div></div>
+        <div class="hnode ghost"><div class="ic">🔒</div><div class="lb">14:00 預約</div><div class="sub">鎖定唯讀</div></div>
+        <div class="hnode ghost"><div class="ic">🔒</div><div class="lb">17:00 預約</div><div class="sub">鎖定唯讀</div></div>
+      </div>
+      <div class="caption">同一會員、同一天有多筆<b>未取消</b>的預約時，只有時間最早的一筆能發送/查看簡訊，其餘鎖定唯讀（灰階、不可點擊）。判斷「最早」只看預約本身是否被取消，跟簡訊自己的狀態無關</div>
+
+      <div class="cols2" style="margin-top:22px">
+        <div class="col custom">
+          <div class="ic">✉️</div>
+          <div class="ttl">取消「簡訊」</div>
+          <div class="rule">只改簡訊狀態為已取消</div>
+          <div class="rule"><b>預約本身不受影響</b>，仍維持進行中</div>
+        </div>
+        <div class="col ext">
+          <div class="ic">📅</div>
+          <div class="ttl">取消「預約」</div>
+          <div class="rule">是完全獨立的另一個動作</div>
+          <div class="rule">若取消的是同日最早一筆 → 觸發右方自動補位</div>
+        </div>
+      </div>
+      <div class="caption">「取消簡訊」跟「取消預約」是<b>兩個獨立按鈕/流程</b>，不可合併成同一個動作</div>
+
+      <div class="flow-v" style="margin-top:22px">
+        <div class="node danger"><div class="ic">🗑️</div><div class="lb">取消同日最早一筆「預約」</div><div class="sub">且同日還有其他有效預約</div></div>
+        <div class="arrow-d"></div>
+        <div class="node gold"><div class="ic">🔁</div><div class="lb">自動導向次早一筆</div><div class="sub">開發送簡訊視窗詢問確認</div></div>
+        <div class="arrow-d"></div>
+        <div class="node ok"><div class="ic">📤</div><div class="lb">確認送出後</div><div class="sub">原本最早那筆才正式標記「已取消」</div></div>
+      </div>
+      <div class="caption">自動補位（情境 5）：確認送出前，原預約狀態<b>不會</b>提前變更；若中途取消發送視窗，原預約維持不變</div>
     </div>
   </section>
 

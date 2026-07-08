@@ -71,7 +71,7 @@
   <div class="hero">
     <span class="tag">討論用簡報 · 給後端工程師</span>
     <h1>預約簡訊模板：單一模板 → 多模板擴增（後端規格）</h1>
-    <p>對應前端功能規格：<code style="background:rgba(255,255,255,.18);color:#fff;border:none">prototypes/簡報.html</code>　目的：資料表設計、API 端點、需要後端把關的業務邏輯</p>
+    <p>對應前端功能規格：<code style="background:rgba(255,255,255,.18);color:#fff;border:none">prototypes/前端簡報.html</code>　目的：資料表設計、API 端點、需要後端把關的業務邏輯</p>
   </div>
 
   <section>
@@ -81,7 +81,7 @@
     </div>
     <div class="card">
       <p style="font-size:13.5px;color:var(--muted)">
-        前端那份規格（<code>prototypes/簡報.html</code>）已經定義了三個畫面（模板管理／預約操作發送／預約查詢管理）要做的功能、模板的兩種來源（系統內建／本門市自訂）、套用優先序邏輯。
+        前端那份規格（<code>prototypes/前端簡報.html</code>）已經定義了三個畫面（模板管理／預約操作發送／預約查詢管理）要做的功能、模板的兩種來源（系統內建／本門市自訂）、套用優先序邏輯。
         目前 prototype 全部用 localStorage 模擬資料層，這份文件要討論的是：<b>正式串接後端時，這些資料該長在哪張表、要開哪些 API、有哪些規則不能只靠前端擋，後端必須驗證</b>。
       </p>
       <div class="callout warn">重點提醒：前端 prototype 裡「系統內建不可編輯」「刪除門市預設要連動清空」這些規則目前都只在前端 JS 裡擋。正式環境這些規則必須在後端也驗證一次，否則繞過前端直接打 API 就能破壞資料完整性。</div>
