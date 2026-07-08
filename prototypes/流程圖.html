@@ -28,7 +28,6 @@
   .sec-h h2{font-size:19px;font-weight:800}
   .sec-h p{font-size:12.5px;color:var(--muted);margin-top:2px}
 
-  /* 置頂快速跳轉列 */
   .toc{position:sticky;top:0;z-index:50;display:flex;gap:8px;flex-wrap:wrap;background:rgba(245,247,249,.96);backdrop-filter:blur(4px);padding:10px 2px;margin-bottom:20px;border-bottom:1px solid var(--line)}
   .toc a{font-size:12.5px;font-weight:700;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;text-decoration:none;white-space:nowrap;transition:.15s}
   .toc a:hover{border-color:var(--blue);color:var(--blue-deep)}
@@ -38,8 +37,9 @@
   .caption{margin-top:18px;background:var(--blue-wash);border-left:4px solid var(--blue);border-radius:0 8px 8px 0;padding:11px 15px;font-size:13px;color:var(--ink);text-align:left;line-height:1.75;font-weight:500}
   .caption::before{content:"💡 重點　";font-weight:800;color:var(--blue-deep)}
   .caption b{color:var(--blue-deep)}
+  .caption.warn{background:var(--gold-wash);border-color:var(--gold)}
+  .caption.warn::before{content:"⚠️ 提醒　";color:#7a5400}
 
-  /* ---- vertical flow ---- */
   .flow-v{display:flex;flex-direction:column;align-items:center}
   .node{border-radius:14px;padding:14px 26px;text-align:center;min-width:220px;border:2px solid var(--line);background:var(--surface-2)}
   .node .ic{font-size:26px;line-height:1}
@@ -55,7 +55,6 @@
   .arrow-d{width:2px;height:26px;background:var(--line);position:relative}
   .arrow-d::after{content:"";position:absolute;left:50%;bottom:-1px;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--line)}
 
-  /* ---- priority cascade（由上而下逐條判斷，符合「優先序」的實際語意：不成立才往下一條，成立就直接跳出結果） ---- */
   .cascade{max-width:640px;margin:0 auto}
   .cascade-row{display:flex;align-items:center;gap:14px}
   .cascade-num{flex:none;width:30px;height:30px;border-radius:50%;background:var(--gold-wash);border:2px solid var(--gold);color:#7a5400;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
@@ -80,7 +79,6 @@
     .cascade-result{min-width:0}
   }
 
-  /* ---- horizontal timeline ---- */
   .timeline{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px}
   .hnode{border-radius:14px;padding:14px 18px;text-align:center;min-width:130px;border:2px solid var(--line);background:var(--surface-2)}
   .hnode .ic{font-size:22px}
@@ -88,10 +86,9 @@
   .hnode .sub{font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.4}
   .harrow{font-size:20px;color:var(--faint);padding:0 2px}
 
-  /* ---- three-column compare ---- */
   .cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
   @media (max-width:760px){.cols3{grid-template-columns:1fr}}
-  .cols2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:620px;margin:0 auto}
+  .cols2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:680px;margin:0 auto}
   @media (max-width:600px){.cols2{grid-template-columns:1fr}}
   .col{border-radius:14px;padding:18px 16px;text-align:center;border:2px solid var(--line)}
   .col .ic{font-size:32px}
@@ -103,6 +100,17 @@
   .col.ext{border-color:var(--purple);background:var(--purple-wash)}
   .lockrow{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:700;margin-top:10px}
 
+  /* 責任切分表 */
+  .split{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px}
+  .split th{background:var(--surface-2);text-align:left;padding:10px 12px;font-size:11.5px;color:var(--faint);font-weight:700;border-bottom:2px solid var(--line)}
+  .split td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  .split td.fe{background:rgba(37,99,235,.05)}
+  .split td.be{background:rgba(124,58,237,.05)}
+  .split-head{display:flex;justify-content:center;gap:0;margin-bottom:2px}
+  .split-tag{flex:1;text-align:center;font-size:12.5px;font-weight:800;padding:8px;border-radius:8px 8px 0 0}
+  .split-tag.fe{background:var(--blue-wash);color:var(--blue-deep)}
+  .split-tag.be{background:var(--purple-wash);color:var(--purple)}
+
   footer{text-align:center;font-size:12px;color:var(--faint);margin-top:40px}
 </style>
 </head>
@@ -110,22 +118,24 @@
 <div class="wrap">
 
   <div class="hero">
-    <span class="tag">視覺化簡報 · 給 PM 對工程師說明用</span>
+    <span class="tag">視覺化簡報 · PM／主管／前後端工程師溝通用</span>
     <h1>單一模板 → 多模板擴增：流程圖總覽</h1>
-    <p>6 張圖看懂整個功能：架構分層、模板來源、套用邏輯、使用者旅程、CRUD 規則、同日多預約規則</p>
+    <p>8 張圖看懂整個功能：架構、模板來源、套用邏輯、操作旅程、C 頁規則、取消分流、自動補位、前後端責任切分</p>
   </div>
 
   <nav class="toc" aria-label="章節快速跳轉">
-    <a href="#sec1">1️⃣ 三層架構</a>
+    <a href="#sec1">1️⃣ 功能總覽</a>
     <a href="#sec2">2️⃣ 模板來源</a>
     <a href="#sec3">3️⃣ 套用優先序</a>
     <a href="#sec4">4️⃣ 操作旅程</a>
-    <a href="#sec5">5️⃣ CRUD 規則</a>
-    <a href="#sec6">6️⃣ 同日多預約規則</a>
+    <a href="#sec5">5️⃣ 同日多預約規則</a>
+    <a href="#sec6">6️⃣ 取消分流</a>
+    <a href="#sec7">7️⃣ 自動補位</a>
+    <a href="#sec8">8️⃣ 責任切分</a>
   </nav>
 
   <section id="sec1">
-    <div class="sec-h"><div class="n">1</div><div><h2>三層架構</h2><p>誰跟誰講話：3 個前端畫面 → 同一組 API → 5 張資料表</p></div></div>
+    <div class="sec-h"><div class="n">1</div><div><h2>功能總覽圖</h2><p>誰跟誰講話：3 個前端畫面 → 同一組 API → 資料表（建議設計，非最終 schema）</p></div></div>
     <div class="diagram">
       <div class="timeline" style="flex-wrap:wrap">
         <div class="hnode blue"><div class="ic">🛠️</div><div class="lb">模板管理</div><div class="sub">建立／維護模板</div></div>
@@ -133,39 +143,40 @@
         <div class="hnode blue"><div class="ic">🔍</div><div class="lb">預約查詢管理</div><div class="sub">發送入口 2＋事後管理</div></div>
       </div>
       <div class="flow-v"><div class="arrow-d"></div></div>
-      <div class="timeline"><div class="hnode purple" style="min-width:340px"><div class="ic">🔌</div><div class="lb">API 層（模板 CRUD／套用建議／簡訊發送）</div></div></div>
+      <div class="timeline"><div class="hnode purple" style="min-width:340px"><div class="ic">🔌</div><div class="lb">API 層（模板 CRUD／個人偏好／簡訊發送）</div></div></div>
       <div class="flow-v"><div class="arrow-d"></div></div>
       <div class="timeline" style="flex-wrap:wrap">
         <div class="hnode"><div class="ic">🗂️</div><div class="lb">sms_templates</div><div class="sub">模板本體</div></div>
-        <div class="hnode"><div class="ic">⭐</div><div class="lb">pins / default</div><div class="sub">釘選／門市預設</div></div>
-        <div class="hnode"><div class="ic">🕓</div><div class="lb">usage_log</div><div class="sub">上次套用</div></div>
-        <div class="hnode"><div class="ic">📨</div><div class="lb">sms_log（快照）</div><div class="sub">發送紀錄（不可變）</div></div>
+        <div class="hnode"><div class="ic">⭐</div><div class="lb">sms_user_preferences</div><div class="sub">釘選／最近使用／上次套用</div></div>
+        <div class="hnode"><div class="ic">🏪</div><div class="lb">sms_store_settings</div><div class="sub">門市層級設定</div></div>
+        <div class="hnode"><div class="ic">📨</div><div class="lb">sms_send_log</div><div class="sub">發送紀錄</div></div>
       </div>
-      <div class="caption">3 個前端畫面 → 都打同一組 API → 落在 5 張資料表，<b>不要讓任何畫面直接繞過 API 動資料表</b></div>
+      <div class="caption warn">以上資料表名稱／欄位取自 <b>docs/擴增需求/後端規格書.md</b>，仍是<b>建議設計，非最終 schema</b>——「模板」整套系統在公司既有 POS 架構裡完全沒有對應表；<code>sms_send_log</code> 是否沿用/擴充既有的 <code>CC_ProjectShortMessage</code>、<code>appointments</code> 概念是否對應既有的 <code>AP_DRSchdule</code>/<code>AP_BASchdule</code>，都需要後端工程師依真實 schema 核對，詳見第 8 節。</div>
+      <div class="caption">3 個前端畫面 → 都打同一組 API → <b>不要讓任何畫面直接繞過 API 動資料表</b></div>
     </div>
   </section>
 
   <section id="sec2">
-    <div class="sec-h"><div class="n">2</div><div><h2>模板兩種來源</h2><p>看 ID 前綴就知道權限：b_ 系統內建／c_ 本門市自訂</p></div></div>
+    <div class="sec-h"><div class="n">2</div><div><h2>模板兩種來源</h2><p>看 ID 前綴就知道權限：b_ / builtin_ 系統內建／c_ 本門市自訂</p></div></div>
     <div class="diagram">
       <div class="cols2">
         <div class="col builtin">
           <div class="ic">🏛️</div>
           <div class="ttl">系統內建</div>
-          <div class="prefix">id: b_</div>
+          <div class="prefix">store_id = NULL</div>
           <div class="rule">全系統共用</div>
           <div class="rule">其中一筆為「BU 指定模板」</div>
-          <div class="lockrow">🔒 不可直接改</div>
+          <div class="lockrow">🔒 不可直接改 body/name</div>
         </div>
         <div class="col custom">
           <div class="ic">🏪</div>
           <div class="ttl">本門市自訂</div>
-          <div class="prefix">id: c_</div>
+          <div class="prefix">store_id = 該門市</div>
           <div class="rule">只有自己看得到</div>
           <div class="lockrow">✏️ 可編輯／刪除</div>
         </div>
       </div>
-      <div class="caption">編輯「系統內建」存檔 → <b>自動變成一份本門市自訂複本</b>，原始內建不受影響。曾規劃過「其他門市共用模板」（跨門市瀏覽/複製），已決定<b>移除</b>——未來若有更好的模板組合，直接擴充系統內建模板即可</div>
+      <div class="caption">編輯「系統內建」存檔 → <b>自動變成一份本門市自訂複本</b>，原始內建不受影響。曾規劃過「其他門市共用模板」（跨門市瀏覽/複製），已決定<b>移除</b>——未來若有更好的模板組合，直接擴充系統內建模板即可，不重啟跨門市機制。</div>
     </div>
   </section>
 
@@ -222,12 +233,12 @@
           <div class="cascade-result purple">🆕 套用最新建立的自訂模板</div>
         </div>
       </div>
-      <div class="caption">4 條規則<b>由上而下依序判斷</b>，符合就直接套用、不再往下——這段邏輯建議放後端統一算，前端兩個發送畫面呼叫同一支 API；規則 2-4 的結果套用時不顯示特別提示標記（只有規則 3「上次套用」會標示）；「上次套用」僅在使用者<b>主動選擇模板或實際送出</b>時寫入，開窗自動帶入不算</div>
+      <div class="caption">4 條規則<b>由上而下依序判斷</b>，符合就直接套用、不再往下；規則 2-4 的結果套用時不顯示特別提示標記（只有規則 3「上次套用」會標示）；「上次套用」僅在使用者<b>主動選擇模板或實際送出</b>時寫入，開窗自動帶入不算</div>
     </div>
   </section>
 
   <section id="sec4">
-    <div class="sec-h"><div class="n">4</div><div><h2>店員操作旅程（端到端）</h2><p>從建立預約、套用模板到事後查閱的完整路徑</p></div></div>
+    <div class="sec-h"><div class="n">4</div><div><h2>前端三畫面操作旅程圖</h2><p>從建立預約、套用模板到事後查閱的完整路徑</p></div></div>
     <div class="diagram">
       <div class="timeline">
         <div class="hnode blue"><div class="ic">📅</div><div class="lb">開啟預約</div><div class="sub">預約操作／預約查詢皆可</div></div>
@@ -255,39 +266,21 @@
   </section>
 
   <section id="sec5">
-    <div class="sec-h"><div class="n">5</div><div><h2>模板 CRUD 規則簡圖</h2><p>新增／編輯／刪除各自的把關規則，前後端都要擋</p></div></div>
-    <div class="diagram">
-      <div class="cols3">
-        <div class="col custom" style="text-align:left">
-          <div style="text-align:center"><div class="ic">➕</div><div class="ttl" style="text-align:center">新增</div></div>
-          <div class="rule">直接建立為本門市自訂模板</div>
-        </div>
-        <div class="col ext" style="text-align:left">
-          <div style="text-align:center"><div class="ic">✏️</div><div class="ttl" style="text-align:center">編輯</div></div>
-          <div class="rule">本門市自訂 → 直接更新</div>
-          <div class="rule">系統內建 → <b>另存為新複本</b>，原始內建不變</div>
-        </div>
-        <div class="col builtin" style="text-align:left">
-          <div style="text-align:center"><div class="ic">🗑️</div><div class="ttl" style="text-align:center">刪除</div></div>
-          <div class="rule">先二次確認</div>
-          <div class="rule">若是門市預設 → <b>連動清空預設設定</b></div>
-        </div>
-      </div>
-      <div class="caption">這三條規則<b>前端要擋、後端也要擋</b>，避免有人繞過畫面直接打 API 破壞資料</div>
-    </div>
-  </section>
-
-  <section id="sec6">
-    <div class="sec-h"><div class="n">6</div><div><h2>同日多預約與簡訊詳情規則</h2><p>預約查詢頁專屬——已實作驗收，非新增需求</p></div></div>
+    <div class="sec-h"><div class="n">5</div><div><h2>預約查詢 C 頁：同日多預約規則圖</h2><p>已實作驗收，非新增需求</p></div></div>
     <div class="diagram">
       <div class="timeline" style="flex-wrap:wrap">
         <div class="hnode blue"><div class="ic">✅</div><div class="lb">09:00 預約</div><div class="sub">最早一筆＝可操作</div></div>
         <div class="hnode ghost"><div class="ic">🔒</div><div class="lb">14:00 預約</div><div class="sub">鎖定唯讀</div></div>
         <div class="hnode ghost"><div class="ic">🔒</div><div class="lb">17:00 預約</div><div class="sub">鎖定唯讀</div></div>
       </div>
-      <div class="caption">同一會員、同一天有多筆<b>未取消</b>的預約時，只有時間最早的一筆能發送/查看簡訊，其餘鎖定唯讀（灰階、不可點擊）。判斷「最早」只看預約本身是否被取消，跟簡訊自己的狀態無關</div>
+      <div class="caption">同一會員、同一天有多筆<b>未取消</b>的預約時，只有時間最早的一筆能發送/查看簡訊，其餘鎖定唯讀（灰階、不可點擊）。判斷「最早」只看預約本身是否被取消，跟簡訊自己的狀態無關。前端鎖住操作入口，<b>後端 API 也獨立驗證同一規則</b>（見第 8 節）。</div>
+    </div>
+  </section>
 
-      <div class="cols2" style="margin-top:22px">
+  <section id="sec6">
+    <div class="sec-h"><div class="n">6</div><div><h2>簡訊取消 vs 預約取消分流圖</h2><p>兩個獨立按鈕/流程，不可合併</p></div></div>
+    <div class="diagram">
+      <div class="cols2">
         <div class="col custom">
           <div class="ic">✉️</div>
           <div class="ttl">取消「簡訊」</div>
@@ -298,19 +291,78 @@
           <div class="ic">📅</div>
           <div class="ttl">取消「預約」</div>
           <div class="rule">是完全獨立的另一個動作</div>
-          <div class="rule">若取消的是同日最早一筆 → 觸發右方自動補位</div>
+          <div class="rule">若取消的是同日最早一筆 → 觸發第 7 節自動補位</div>
         </div>
       </div>
-      <div class="caption">「取消簡訊」跟「取消預約」是<b>兩個獨立按鈕/流程</b>，不可合併成同一個動作</div>
+      <div class="caption">「取消簡訊」跟「取消預約」是<b>兩個獨立按鈕/流程</b>，前端分開觸發、後端分開寫入，不可合併成同一個動作或同一次交易。</div>
+    </div>
+  </section>
 
-      <div class="flow-v" style="margin-top:22px">
+  <section id="sec7">
+    <div class="sec-h"><div class="n">7</div><div><h2>取消最早預約後自動補位圖</h2><p>前端協調的兩步驟，非後端單一端點</p></div></div>
+    <div class="diagram">
+      <div class="flow-v">
         <div class="node danger"><div class="ic">🗑️</div><div class="lb">取消同日最早一筆「預約」</div><div class="sub">且同日還有其他有效預約</div></div>
         <div class="arrow-d"></div>
         <div class="node gold"><div class="ic">🔁</div><div class="lb">自動導向次早一筆</div><div class="sub">開發送簡訊視窗詢問確認</div></div>
         <div class="arrow-d"></div>
         <div class="node ok"><div class="ic">📤</div><div class="lb">確認送出後</div><div class="sub">原本最早那筆才正式標記「已取消」</div></div>
       </div>
-      <div class="caption">自動補位（情境 5）：確認送出前，原預約狀態<b>不會</b>提前變更；若中途取消發送視窗，原預約維持不變</div>
+      <div class="caption">確認送出前，原預約狀態<b>不會</b>提前變更；若中途取消發送視窗，原預約維持不變。<b>後端不需要新增「轉移」端點</b>——這是前端依序呼叫「先發送、後取消」兩支既有 API 完成的，順序由前端保證。</div>
+    </div>
+  </section>
+
+  <section id="sec8">
+    <div class="sec-h"><div class="n">8</div><div><h2>前後端責任切分圖</h2><p>同一條規則，前端擋一次、後端也要獨立驗證一次</p></div></div>
+    <div class="diagram">
+      <div class="split-head">
+        <div class="split-tag fe">🧩 前端負責</div>
+        <div class="split-tag be">🔌 後端負責</div>
+      </div>
+      <table class="split">
+        <tr><th>規則</th><th>前端</th><th>後端</th></tr>
+        <tr>
+          <td>系統內建模板不可變更</td>
+          <td class="fe">編輯內建模板時導向「另存複本」流程，不提供直接覆蓋 UI</td>
+          <td class="be"><code>PUT /api/sms-templates/:id</code> 若 <code>is_builtin=true</code> 一律 403（admin 例外）</td>
+        </tr>
+        <tr>
+          <td>只能改自己門市的模板</td>
+          <td class="fe">畫面只顯示本門市與系統內建模板，不提供其他門市入口</td>
+          <td class="be">驗證 <code>template.store_id === token.store_id</code>，不符一律 403</td>
+        </tr>
+        <tr>
+          <td>刪除門市預設模板</td>
+          <td class="fe">刪除後立即清空畫面上的門市預設顯示</td>
+          <td class="be">同一交易內清空對應設定，避免 dangling 參照</td>
+        </tr>
+        <tr>
+          <td>同日多預約僅最早一筆可操作</td>
+          <td class="fe">鎖住非最早預約的操作入口（灰階、不可點擊）</td>
+          <td class="be"><code>POST /api/sms/send</code>、<code>DELETE /api/sms/scheduled/:log_id</code> 對非最早筆一律 409（<code>not_earliest_appointment</code>）</td>
+        </tr>
+        <tr>
+          <td>簡訊取消 ≠ 預約取消</td>
+          <td class="fe">「取消此排程」「取消預約」為兩個獨立按鈕/流程</td>
+          <td class="be">分開寫入：只改 <code>sms_send_log.status</code>，不動預約狀態欄位</td>
+        </tr>
+        <tr>
+          <td>取消最早預約時的自動補位</td>
+          <td class="fe">先呼叫次早那筆的發送 API 並取得確認，成功後才呼叫預約取消 API</td>
+          <td class="be">兩支既有 API 各自獨立驗證，<b>不提供轉移端點</b>，順序保證由前端負責</td>
+        </tr>
+        <tr>
+          <td>拒收覆蓋發送需留痕</td>
+          <td class="fe">顯示拒收阻擋提示，人員可選擇 <code>force</code> 強制送出</td>
+          <td class="be"><code>override_opt_out</code> 寫入 <code>true</code>，供稽核追查</td>
+        </tr>
+        <tr>
+          <td>手動編輯內容後切換模板</td>
+          <td class="fe">跳覆蓋確認對話框，取消則不套用</td>
+          <td class="be">（純前端行為，後端不涉入這條 UI 規則）</td>
+        </tr>
+      </table>
+      <div class="caption warn">前端擋得住多數誤操作，但<b>不能取代後端驗證</b>——凡是能被繞過前端直接打 API 的規則，後端都必須獨立驗證一次；本圖只視覺化 <code>後端規格書.md</code>／<code>前端規格書.md</code> 已記載的事實，未新增任何後端流程、補償機制或狀態機。</div>
     </div>
   </section>
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>單一模板 → 多模板擴增 - 後端規格</title>
+<title>單一模板 → 多模板擴增 - 後端派案規格</title>
 <style>
   :root{
     --blue:#2563EB;--blue-deep:#1D4ED8;--blue-wash:#EAF1FE;
@@ -15,13 +15,17 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Microsoft JhengHei',-apple-system,"PingFang TC",sans-serif;background:var(--surface-2);color:var(--ink);line-height:1.6;padding:32px 20px 80px}
-  .wrap{max-width:980px;margin:0 auto}
+  .wrap{max-width:1000px;margin:0 auto}
   .hero{background:linear-gradient(135deg,#1f2933,#374a5c);color:#fff;border-radius:14px;padding:34px 38px;margin-bottom:26px;box-shadow:0 8px 24px rgba(31,41,51,.25)}
   .hero .tag{font-size:12px;font-weight:700;background:rgba(255,255,255,.18);display:inline-block;padding:4px 11px;border-radius:999px;letter-spacing:.5px;margin-bottom:12px}
   .hero h1{font-size:26px;font-weight:800;margin-bottom:8px}
   .hero p{font-size:14px;opacity:.92}
 
-  section{margin-bottom:30px}
+  .toc{position:sticky;top:0;z-index:50;display:flex;gap:8px;flex-wrap:wrap;background:rgba(245,247,249,.96);backdrop-filter:blur(4px);padding:10px 2px;margin-bottom:22px;border-bottom:1px solid var(--line)}
+  .toc a{font-size:12px;font-weight:700;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 13px;text-decoration:none;white-space:nowrap;transition:.15s}
+  .toc a:hover{border-color:#374a5c;color:#1f2933}
+
+  section{margin-bottom:30px;scroll-margin-top:56px}
   .sec-h{display:flex;align-items:center;gap:10px;margin-bottom:14px}
   .sec-h .n{width:28px;height:28px;border-radius:8px;background:#374a5c;color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex:none}
   .sec-h h2{font-size:18px;font-weight:800}
@@ -31,8 +35,6 @@
   .card + .card{margin-top:12px}
 
   code,.code{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--blue-deep)}
-  pre.code-block{font-family:var(--mono);font-size:12px;background:#1f2933;color:#e3e7eb;border-radius:9px;padding:14px 16px;overflow:auto;line-height:1.7;margin-top:10px}
-  pre.code-block .c{color:#8a949c}
 
   table{width:100%;border-collapse:collapse;font-size:13px}
   th{background:var(--surface-2);text-align:left;padding:9px 12px;font-size:12px;color:var(--faint);font-weight:700;border-bottom:1px solid var(--line)}
@@ -44,6 +46,7 @@
   .pill.post{background:var(--ok-wash);color:var(--ok)}
   .pill.put{background:var(--gold-wash);color:var(--gold)}
   .pill.del{background:var(--danger-wash);color:var(--danger)}
+  .pill.draft{background:var(--gold-wash);color:#7a5400;font-family:inherit}
 
   .callout{border-left:4px solid var(--blue);background:var(--blue-wash);border-radius:0 8px 8px 0;padding:12px 16px;font-size:13px;color:var(--blue-deep);margin-top:12px}
   .callout.warn{border-color:var(--gold);background:var(--gold-wash);color:#7a5400}
@@ -62,6 +65,12 @@
   ol.q li{margin-bottom:10px}
   ol.q li b{color:var(--ink)}
 
+  .check{list-style:none;font-size:13px;color:var(--ink)}
+  .check li{padding-left:24px;position:relative;margin-bottom:7px}
+  .check li::before{content:"☐";position:absolute;left:0;color:#374a5c}
+
+  .banner-draft{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:#7a5400;background:var(--gold-wash);border:1px dashed var(--gold);border-radius:8px;padding:8px 12px;margin-bottom:12px}
+
   footer{text-align:center;font-size:12px;color:var(--faint);margin-top:40px}
 </style>
 </head>
@@ -69,179 +78,215 @@
 <div class="wrap">
 
   <div class="hero">
-    <span class="tag">討論用簡報 · 給後端工程師</span>
-    <h1>預約簡訊模板：單一模板 → 多模板擴增（後端規格）</h1>
-    <p>對應前端功能規格：<code style="background:rgba(255,255,255,.18);color:#fff;border:none">prototypes/前端簡報.html</code>　目的：資料表設計、API 端點、需要後端把關的業務邏輯</p>
+    <span class="tag">派案簡報 · 給後端工程師</span>
+    <h1>預約簡訊模板：單一模板 → 多模板擴增（後端派案規格）</h1>
+    <p>對應前端規格：<code style="background:rgba(255,255,255,.18);color:#fff;border:none">prototypes/前端簡報.html</code>　權威規格：<code style="background:rgba(255,255,255,.18);color:#fff;border:none">docs/擴增需求/後端規格書.md</code>（v1.7）</p>
   </div>
 
-  <section>
-    <div class="sec-h">
-      <div class="n">1</div>
-      <div><h2>背景與範圍</h2><p>跟前端規格是同一件事的兩面</p></div>
-    </div>
+  <nav class="toc" aria-label="章節快速跳轉">
+    <a href="#s1">1 後端負責範圍</a>
+    <a href="#s2">2 已確認業務規則</a>
+    <a href="#s3">3 建議資料模型</a>
+    <a href="#s4">4 建議 API 分層</a>
+    <a href="#s5">5 C 頁後端注意事項</a>
+    <a href="#s6">6 一致性風險</a>
+    <a href="#s7">7 需核對 POS 項目</a>
+    <a href="#s8">8 派案前確認清單</a>
+  </nav>
+
+  <section id="s1">
+    <div class="sec-h"><div class="n">1</div><div><h2>後端負責範圍</h2><p>跟前端規格是同一件事的兩面</p></div></div>
     <div class="card">
+      <div class="banner-draft">⚠️ 本文件第 3、4 節所有資料表／API 皆為<b>建議設計，非最終 schema</b>，尚未與後端工程師逐項核對，也沒有對照過公司既有 POS 架構</div>
       <p style="font-size:13.5px;color:var(--muted)">
-        前端那份規格（<code>prototypes/前端簡報.html</code>）已經定義了三個畫面（模板管理／預約操作發送／預約查詢管理）要做的功能、模板的兩種來源（系統內建／本門市自訂）、套用優先序邏輯。
-        目前 prototype 全部用 localStorage 模擬資料層，這份文件要討論的是：<b>正式串接後端時，這些資料該長在哪張表、要開哪些 API、有哪些規則不能只靠前端擋，後端必須驗證</b>。
+        前端規格（<code>prototypes/前端簡報.html</code>）已定義三個畫面（模板管理／預約操作發送／預約查詢管理）要做的功能、模板的兩種來源、套用優先序邏輯。
+        後端要負責的是：<b>資料表設計、API 端點、以及哪些規則不能只靠前端擋、後端必須獨立驗證一次</b>。
       </p>
-      <div class="callout warn">重點提醒：前端 prototype 裡「系統內建不可編輯」「刪除門市預設要連動清空」這些規則目前都只在前端 JS 裡擋。正式環境這些規則必須在後端也驗證一次，否則繞過前端直接打 API 就能破壞資料完整性。</div>
-      <div class="callout"><b>範圍決策（已定案）</b>：原規劃過「其他門市共用模板」（跨門市瀏覽/複製唯讀模板），已<b>移除</b>此範圍，本文件不再包含對應的資料表/API/權限設計。若未來要推廣更好的模板組合，走法是擴充系統內建模板（<code>is_builtin=true</code>），不需要額外的跨門市可見性/複製機制。</div>
-      <div class="callout">2026-07-07 更新：依 <code>docs/擴增需求/後端規格書（PM視角）.md</code> v1.1 同步「預約查詢頁簡訊詳情」相關規則——簡訊取消不等於預約取消、同日多筆預約僅最早一筆可操作、取消最早預約時的補位順序、重新發送＝重新走一次發送流程、拒收覆蓋發送需留痕。詳見第 3、4 節。</div>
-      <div class="callout">2026-07-07 再更新（v1.2）：<b>派號、同日多預約僅最早一筆可操作</b>後端已實作完成。<b>診別（早/午/晚，即時段判斷）</b>邏輯維持既有時間換算公式不變，只是需要正式落地成後端程式。另外，「多模板組合」這整套模板系統（自訂模板、釘選、門市預設、套用優先序等）目前在公司既有 POS 架構裡<b>完全沒有對應資料表</b>，是全新設計，本文件第 2、3 節的表格/端點都只是建議，實際欄位與型別要跟後端工程師依真實 schema 對照確認，不是定案契約。</div>
+      <div class="callout warn"><b>「模板」整套系統在公司既有 POS 架構裡完全沒有對應資料表，是全新設計。</b>依 <code>後端規格書.md</code> v1.7：<code>sms_templates</code>／<code>appointments</code>／<code>stores</code>／<code>sms_send_log</code> 等都是示意用資料表，實際串接時需對照 <code>docs/pos_schema_exports/</code> 的真實 schema 重新評估欄位/型別/命名，不是已拍板的契約。</div>
+      <div class="callout">跨門市共用模板功能已定案<b>移除</b>：各門市只能讀取/管理本門市自訂模板與系統內建模板（<code>store_id = NULL</code>），資料完全隔離，本文件不包含跨店瀏覽/複製的資料表或 API 設計。</div>
     </div>
   </section>
 
-  <section>
-    <div class="sec-h">
-      <div class="n">2</div>
-      <div><h2>資料表設計（建議）</h2><p>把 localStorage 的鍵值換成正式資料表</p></div>
-    </div>
-    <div class="card">
-      <p style="font-size:13px;font-weight:700;margin-bottom:8px"><code>sms_templates</code> — 模板本體</p>
-      <table>
-        <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
-        <tr><td><code>id</code></td><td>PK</td><td>模板 id</td></tr>
-        <tr><td><code>store_id</code></td><td>FK，nullable</td><td><b>null＝系統內建</b>；有值＝該門市自訂／該門市擁有的模板</td></tr>
-        <tr><td><code>name</code></td><td>string</td><td>模板名稱</td></tr>
-        <tr><td><code>description</code></td><td>string, nullable</td><td>用途說明</td></tr>
-        <tr><td><code>body</code></td><td>text</td><td>簡訊內容（含 <code>{{token}}</code>）</td></tr>
-        <tr><td><code>enabled</code></td><td>bool</td><td>停用後不進發送用清單，管理清單仍看得到</td></tr>
-        <tr><td><code>is_builtin</code></td><td>bool</td><td>與 <code>store_id is null</code> 等價，但獨立欄位讓查詢/權限判斷更明確</td></tr>
-        <tr><td><code>created_by</code> / <code>created_at</code> / <code>updated_at</code></td><td></td><td>稽核用</td></tr>
-      </table>
-
-      <p style="font-size:13px;font-weight:700;margin:16px 0 8px"><code>store_template_settings</code> — 門市層級狀態</p>
-      <table>
-        <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
-        <tr><td><code>store_id</code></td><td>PK/FK</td><td>門市</td></tr>
-        <tr><td><code>default_template_id</code></td><td>FK，nullable</td><td>門市預設模板；模板被刪除時要連動設回 null</td></tr>
-      </table>
-      <div class="callout">「BU 指定模板」（門市完全沒有自訂模板時的最終 fallback）本階段<b>沒有對應的資料表欄位</b>——前端寫死一個常數 id（例如固定指向某筆系統內建模板），不需要後端參與。若未來要開放各 BU 各自設定，才需要新增一張 <code>bu_template_settings</code> 之類的表。</div>
-
-      <p style="font-size:13px;font-weight:700;margin:16px 0 8px"><code>store_template_pins</code> — 釘選</p>
-      <table>
-        <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
-        <tr><td><code>store_id</code></td><td>FK</td><td>門市</td></tr>
-        <tr><td><code>template_id</code></td><td>FK</td><td>被釘選的模板；模板刪除時要連動移除對應列</td></tr>
-        <tr><td><code>pinned_at</code></td><td>timestamp</td><td>排序用（新釘選排前面）</td></tr>
-      </table>
-
-      <p style="font-size:13px;font-weight:700;margin:16px 0 8px"><code>template_usage_log</code> — 「個人上次套用」</p>
-      <table>
-        <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
-        <tr><td><code>store_id</code></td><td>FK</td><td>門市</td></tr>
-        <tr><td><code>user_id</code></td><td>FK，<span class="pill get">待討論</span></td><td>目前 prototype 是綁裝置，正式環境建議綁登入帳號，見第 5 節</td></tr>
-        <tr><td><code>template_id</code></td><td>FK</td><td>套用的模板</td></tr>
-        <tr><td><code>used_at</code></td><td>timestamp</td><td>只需要取單筆最新＝個人上次套用；不需要保留歷史多筆（原本設計的「最近使用」清單已確認不需要顯示）。<b>寫入時機</b>：使用者主動選擇模板或實際送出時才記錄，開發送視窗的自動帶入不記錄，避免污染「首次套用」的 fallback 判斷</td></tr>
-      </table>
-
-      <p style="font-size:13px;font-weight:700;margin:16px 0 8px"><code>appointment_sms_log</code> — 每筆簡訊發送記錄（擴充既有預約簡訊資料）</p>
-      <table>
-        <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
-        <tr><td><code>appointment_id</code></td><td>FK</td><td>對應預約</td></tr>
-        <tr><td><code>template_id</code></td><td>FK，nullable</td><td>套用的模板；<b>可為 null</b>（模板之後被刪除也不影響已發送記錄）</td></tr>
-        <tr><td><code>template_name_snapshot</code></td><td>string</td><td>發送當下的模板名稱快照，不要用 join 現查（模板改名/被刪都不能影響歷史記錄顯示）</td></tr>
-        <tr><td><code>sent_content</code></td><td>text</td><td>實際送出的內容</td></tr>
-        <tr><td><code>status</code></td><td>enum</td><td>scheduled／delivered／cancelled／failed</td></tr>
-        <tr><td><code>send_time</code></td><td>timestamp</td><td>排定發送時間</td></tr>
-        <tr><td><code>sent_at</code> / <code>cancelled_at</code> / <code>fail_reason</code></td><td></td><td>依狀態補值</td></tr>
-        <tr><td><code>created_by</code></td><td>FK</td><td>建立排程的員工</td></tr>
-        <tr><td><code>override_opt_out</code></td><td>bool，預設 false</td><td>會員已設定拒收，人員仍強制送出時寫 <code>true</code>；跟一般發送分開才能稽核追查覆蓋動作</td></tr>
-      </table>
-      <div class="callout">關鍵設計：<code>appointment_sms_log</code> 存的是<b>快照</b>（模板名稱、送出內容），不是外鍵 join 現查。這樣模板被刪除、改名、停用都不會讓歷史發送記錄「壞掉」或顯示錯誤。（先前規劃的「套用後是否手動修改」追蹤欄位已確認不需要，故不再保留 <code>applied_content_snapshot</code>/<code>is_modified</code>。）</div>
-    </div>
-  </section>
-
-  <section>
-    <div class="sec-h">
-      <div class="n">3</div>
-      <div><h2>API 端點（建議）</h2><p>對應前端三個畫面會打的請求</p></div>
-    </div>
-    <div class="card">
-      <div class="api-row">
-        <span class="pill get">GET</span><code>/stores/:storeId/templates</code>
-        <div>
-          <div class="desc">回傳該門市可用的完整清單（系統內建 + 本門市自訂），前端只負責分組顯示、不做權限判斷。<b>注意：這支只給模板管理頁用</b>——預約操作／預約查詢的發送模板選擇器刻意精簡成只給「釘選」「已啟用的本門市自訂」「系統預設（BU 指定）」，不需要也不該回傳其他系統內建模板，避免每次開發送視窗都撈一份不會用到的大清單。前端這三組資料現在會拆成兩處呈現：釘選那組固定顯示成快速套用 chips，已啟用本門市自訂＋系統預設兩組收在預設收合的展開清單裡（不重複顯示釘選項目）——後端仍是一支 API 回傳同一份清單，怎麼分兩處呈現是前端的事，不需要為此多開端點</div>
-        </div>
-      </div>
-      <div class="api-row">
-        <span class="pill post">POST</span><code>/stores/:storeId/templates</code>
-        <div><div class="desc">新增本門市自訂模板</div></div>
-      </div>
-      <div class="api-row">
-        <span class="pill put">PUT</span><code>/templates/:id</code>
-        <div><div class="desc">編輯模板。<b>後端必須驗證</b>：若目標是系統內建（<code>is_builtin</code>）或不屬於這個門市，一律拒絕直接覆蓋，前端要另外呼叫「另存複本」的建立端點</div></div>
-      </div>
-      <div class="api-row">
-        <span class="pill del">DELETE</span><code>/templates/:id</code>
-        <div><div class="desc">刪除本門市自訂模板。後端需要在同一個交易內：① 若是門市預設，同步清空 <code>store_template_settings.default_template_id</code>；② 清掉 <code>store_template_pins</code> 對應列；③ 不動 <code>appointment_sms_log</code> 裡的快照記錄（快照不依賴外鍵存在）</div></div>
-      </div>
-      <div class="api-row">
-        <span class="pill put">PATCH</span><code>/templates/:id/enabled</code>
-        <div><div class="desc">切換啟用/停用</div></div>
-      </div>
-      <div class="api-row">
-        <span class="pill put">PATCH</span><code>/stores/:storeId/default-template</code>
-        <div><div class="desc">設定/取消門市預設模板</div></div>
-      </div>
-      <div class="api-row">
-        <span class="pill get">GET</span><code>/stores/:storeId/templates/suggested?userId=</code>
-        <div><div class="desc"><b>建議把套用優先序邏輯搬到後端算好直接回傳</b>：門市預設 →（門市有自訂模板：個人上次套用 → 首次套用時改用最近釘選的自訂模板 → 否則最新建立的自訂模板）→（門市完全沒有自訂模板：BU 指定模板 <code>BU_DESIGNATED_ID</code>）。前端 B、C 兩個畫面都呼叫同一支，不用各自實作、也不用擔心兩邊 fallback 邏輯跑不同步</div></div>
-      </div>
-      <div class="api-row">
-        <span class="pill post">POST</span><code>/appointments/:id/sms</code>
-        <div><div class="desc">建立發送排程：寫入 <code>appointment_sms_log</code>（含快照內容），並觸發實際簡訊發送（走簡訊閘道）。<b>後端需驗證</b>：若同一會員同一天有多筆未取消的預約，此 <code>:id</code> 必須是時間最早的一筆，否則回 4xx（<code>not_earliest_appointment</code>）——判斷「最早」只看預約本身是否取消，跟這筆的簡訊狀態無關</div></div>
-      </div>
-      <div class="api-row">
-        <span class="pill put">PATCH</span><code>/appointments/:id/sms/cancel</code>
-        <div><div class="desc">取消排程中的簡訊。<b>取消的是簡訊本身，不是預約</b>——呼叫後只改 <code>appointment_sms_log.status</code>，預約狀態不受影響；同樣受「僅最早一筆可操作」限制</div></div>
-      </div>
-      <div class="api-row">
-        <span class="pill post">POST</span><code>/appointments/:id/sms/resend</code>
-        <div><div class="desc">針對已取消/發送失敗的記錄重新排程發送。<b>語意上等同重新呼叫一次 <code>POST /appointments/:id/sms</code></b>：會重新跑第 3 節的 <code>templates/suggested</code> 套用優先序、重新判斷會員拒收/同日排程衝突情境，內容可能跟上一筆不同；後端應建立一筆全新的 <code>appointment_sms_log</code>，不是修改舊那筆</div></div>
-      </div>
-      <div class="api-row">
-        <span class="pill post">POST</span><code>/webhooks/sms-gateway</code>
-        <div><div class="desc"><span class="pill get">待討論</span> 簡訊閘道回傳實際送達/失敗結果，非同步更新 <code>appointment_sms_log.status</code>，取代目前 prototype 用 <code>setTimeout</code> 模擬 8 秒後隨機成功/失敗的作法</div></div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="sec-h">
-      <div class="n">4</div>
-      <div><h2>後端必須把關的業務規則</h2><p>不能只靠前端擋，避免繞過 UI 直接打 API 破壞資料</p></div>
-    </div>
+  <section id="s2">
+    <div class="sec-h"><div class="n">2</div><div><h2>已確認的業務規則</h2><p>依 <code>後端規格書.md</code> 已定案/已實作的規則，非待討論項目</p></div></div>
     <div class="card">
       <ul class="plain">
-        <li><b>系統內建模板不可變更</b>：<code>PUT /templates/:id</code> 若目標 <code>is_builtin=true</code> 一律回 4xx，前端邏輯繞過去也擋得住</li>
-        <li><b>只能改自己門市的模板</b>：<code>store_id</code> 跟登入者所屬門市不符，一律拒絕，避免 A 門市改到 B 門市的自訂模板</li>
-        <li><b>刪除的原子性</b>：刪模板、清門市預設、清釘選要在同一個交易內完成，避免刪到一半留下 dangling 的 <code>default_template_id</code></li>
-        <li><b>歷史記錄不可變</b>：<code>appointment_sms_log</code> 一旦寫入（尤其 <code>sent_at</code> 之後）不應該再被模板的後續變更影響，靠快照欄位而非外鍵 join 保證這件事</li>
-        <li><b>同日多預約僅最早一筆可操作簡訊</b>：同一會員同一天有多筆未取消的預約時，<code>POST .../sms</code>、<code>PATCH .../sms/cancel</code> 只接受最早那筆的 <code>appointment_id</code>；前端雖然已經鎖住其他預約的操作入口，後端仍要獨立擋下，避免繞過 UI 直接打 API</li>
-        <li><b>簡訊取消不等於預約取消</b>：<code>PATCH .../sms/cancel</code> 只改簡訊記錄狀態，預約本身的狀態欄位不受影響——這是兩個獨立動作，不要合併成同一次寫入</li>
-        <li><b>取消最早預約時的補位順序</b>：使用者若要取消同會員同日最早那筆「預約」，且同日還有其他有效預約，前端會先對次早那筆呼叫 <code>POST .../sms</code> 讓人員確認發送，等這筆成功建立後才呼叫預約取消 API 把原本最早那筆標記取消。<b>不需要新增「轉移」端點</b>，但工程實作上要注意這兩個既有呼叫的順序（先送出、後取消），避免中途失敗留下不一致狀態</li>
-        <li><b>拒收覆蓋發送要留痕</b>：會員設定拒絕簡訊、但人員選擇強制送出時，<code>appointment_sms_log.override_opt_out</code> 要寫 <code>true</code>，不能跟一般正常發送混在一起看不出差異</li>
+        <li><b>模板可見性隔離</b>：各門市只能讀取/管理本門市自訂模板（<code>store_id</code> 相符）與系統內建模板（<code>store_id = NULL</code>）；寫入類操作驗證 <code>template.store_id === token.store_id</code>，不符一律 403</li>
+        <li><b>系統內建模板不可變更 body/name</b>：僅 <code>role = admin</code> 可調整 <code>enabled</code>；一般門市編輯後存檔會另存為自訂複本</li>
+        <li><b>時段判斷公式</b>（早診 &lt;13:00／午診 &lt;17:00／晚診 ≥17:00）：維持既有公式不變，只是需要正式落地成後端程式（先前只在原型 JS）</li>
+        <li><b>派號規則（後端已實作）</b>：<b>不是</b>依預約時間換算，而是依同一診間/同一時段內，預約建立的先後順序，遞增產生奇數序號（1、3、5、7…）</li>
+        <li><b>同日多預約僅最早一筆可發送/取消（後端已實作）</b>：同一會員同一天有多筆未取消預約時，發送與取消排程 API 只接受時間最早那筆的 <code>appointment_id</code>，判斷「最早」只看預約本身是否 cancelled，跟簡訊自己的狀態無關</li>
+        <li><b>簡訊取消 ≠ 預約取消</b>：取消排程只改 <code>sms_send_log.status</code>，預約本身的狀態欄位不受影響，兩者是獨立寫入</li>
+        <li><b>重新發送＝重新呼叫發送 API</b>：不是針對舊 log 重寄，而是對同一 <code>appointment_id</code> 建立一筆全新 <code>sms_send_log</code>，內容可能因套用優先序/情境判斷不同而跟上一筆不同</li>
+        <li><b>拒收覆蓋發送需留痕</b>：會員拒絕簡訊、人員仍強制送出時，<code>sms_send_log.override_opt_out</code> 需寫 <code>true</code></li>
+        <li><b>個資保護</b>：手機號碼由後端從 <code>appointment_id</code> 關聯取得，不接受前端傳入完整號碼；Log 僅存隱碼末四碼，API Response 不回傳完整號碼</li>
+        <li><b>發送安全</b>：同一 <code>appointment_id</code> 5 分鐘內重複發送需擋下（可 <code>force:true</code> 覆蓋）；單一門市每小時發送則數有上限（<span class="pill draft">起始值可調整</span> 目前建議 200 則，見第 8 節）</li>
       </ul>
     </div>
   </section>
 
-  <section>
-    <div class="sec-h">
-      <div class="n">5</div>
-      <div><h2>待討論問題</h2><p>需要跟後端工程師一起拍板的地方</p></div>
-    </div>
+  <section id="s3">
+    <div class="sec-h"><div class="n">3</div><div><h2>建議資料模型，非最終 schema</h2><p>資料表名稱/欄位取自 <code>後端規格書.md</code> 三、資料模型，供工程核對用</p></div></div>
     <div class="card">
-      <ol class="q">
-        <li><b>「個人上次套用」要綁什麼</b>：<code>template_usage_log.user_id</code> 綁登入帳號，還是像現在 prototype 一樣綁裝置？如果同門市多人共用一台電腦，帳號制才有意義，但要確認登入系統能不能穩定拿到 user id</li>
-        <li><b>簡訊閘道回傳機制</b>：<code>/webhooks/sms-gateway</code> 的回傳格式、重試/逾時怎麼判定失敗、要不要有補發機制</li>
-        <li><b>模板變更是否需要版本歷史/稽核</b>：醫美診所的簡訊內容可能涉及法規遵循，模板每次修改是否需要留存完整歷史（誰在何時改了什麼），而不只是 <code>updated_at</code> 一個時間戳</li>
-        <li><b>套用優先序邏輯放哪</b>：第 3 節建議搬到後端的 <code>GET .../templates/suggested</code>，需要跟前端工程師確認要不要這樣切，還是維持前端各自判斷（目前兩邊各有一份重複邏輯，容易跑不同步）</li>
-      </ol>
+      <div class="banner-draft">⚠️ 以下欄位為建議設計，需與後端工程師依真實 POS schema 核對，不代表最終契約（詳見第 7 節）</div>
+
+      <p style="font-size:13px;font-weight:700;margin-bottom:8px"><code>sms_templates</code> — 模板本體</p>
+      <table>
+        <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+        <tr><td><code>id</code></td><td>VARCHAR(36) PK</td><td>系統內建前綴 <code>builtin_</code>，自訂前綴 <code>c_</code></td></tr>
+        <tr><td><code>store_id</code></td><td>INT FK，nullable</td><td>NULL＝全系統共用</td></tr>
+        <tr><td><code>name</code></td><td>VARCHAR(64)</td><td>同門市範圍唯一</td></tr>
+        <tr><td><code>body</code></td><td>TEXT</td><td>含 <code>{{Token}}</code> 的模板內容</td></tr>
+        <tr><td><code>enabled</code></td><td>BOOLEAN</td><td>false 時不出現在前端下拉</td></tr>
+        <tr><td><code>is_builtin</code></td><td>BOOLEAN</td><td>true 時不可刪除、不可改 body</td></tr>
+      </table>
+
+      <p style="font-size:13px;font-weight:700;margin:16px 0 8px"><code>sms_user_preferences</code> — 個人偏好（釘選／最近使用／上次套用）</p>
+      <table>
+        <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+        <tr><td><code>user_id</code></td><td>INT PK</td><td>綁登入帳號，非裝置</td></tr>
+        <tr><td><code>pinned_ids</code></td><td>JSON Array</td><td>釘選模板 ID</td></tr>
+        <tr><td><code>recent_ids</code></td><td>JSON Array</td><td>最近使用（上限 5）</td></tr>
+        <tr><td><code>last_used_id</code></td><td>VARCHAR(36)</td><td>上次套用的模板 ID</td></tr>
+      </table>
+
+      <p style="font-size:13px;font-weight:700;margin:16px 0 8px"><code>sms_store_settings</code> — 門市層級設定</p>
+      <table>
+        <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+        <tr><td><code>store_id</code></td><td>INT PK</td><td></td></tr>
+        <tr><td><code>sms_enabled</code></td><td>BOOLEAN</td><td>全域發送開關</td></tr>
+        <tr><td><code>include_tele</code></td><td>BOOLEAN</td><td>包含電訪推廣附加語</td></tr>
+      </table>
+      <div class="callout">「門市預設模板」「BU 指定模板」欄位目前<b>不在</b> <code>後端規格書.md</code> 既有資料表清單裡明確列出獨立欄位；BU 指定模板本階段為前端寫死常數，非資料庫欄位。若門市預設要落地成資料表欄位，需與後端工程師另行核對放在哪張表。</div>
+
+      <p style="font-size:13px;font-weight:700;margin:16px 0 8px"><code>sms_send_log</code> — 每筆簡訊發送記錄</p>
+      <table>
+        <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+        <tr><td><code>appointment_id</code></td><td>INT FK</td><td>用於查手機號碼，不直接儲存完整號碼</td></tr>
+        <tr><td><code>recipient_masked</code></td><td>VARCHAR(20)</td><td>隱碼：<code>09xx-ooo-NNNN</code>（僅末四碼）</td></tr>
+        <tr><td><code>content</code></td><td>TEXT</td><td>已解析的最終簡訊文字</td></tr>
+        <tr><td><code>segments</code></td><td>INT</td><td>簡訊則數</td></tr>
+        <tr><td><code>scheduled_at</code></td><td>DATETIME</td><td>NULL＝立即發送</td></tr>
+        <tr><td><code>status</code></td><td>ENUM</td><td><code>pending</code> / <code>sent</code> / <code>failed</code></td></tr>
+        <tr><td><code>override_opt_out</code></td><td>BOOLEAN</td><td>會員已拒收、人員仍強制送出；預設 false，供稽核追查</td></tr>
+      </table>
+
+      <p style="font-size:13px;font-weight:700;margin:16px 0 8px">稽核日誌（模板 CREATE/UPDATE/DELETE）</p>
+      <table>
+        <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+        <tr><td><code>actor_id</code></td><td>INT</td><td>操作者 user_id</td></tr>
+        <tr><td><code>action</code></td><td>ENUM</td><td><code>create</code> / <code>update</code> / <code>delete</code></td></tr>
+        <tr><td><code>target_id</code></td><td>VARCHAR(36)</td><td>被操作的 template id</td></tr>
+        <tr><td><code>payload</code></td><td>JSON</td><td>變更前後 diff（name／body／enabled）</td></tr>
+        <tr><td><code>created_at</code></td><td>DATETIME</td><td>操作時間</td></tr>
+      </table>
+      <div class="callout">兩類 Log（發送 Log、模板稽核 Log）建議保留至少 12 個月。</div>
     </div>
   </section>
 
-  <footer>單一模板 → 多模板擴增 · 後端規格討論簡報 · prototypes/後端簡報.html</footer>
+  <section id="s4">
+    <div class="sec-h"><div class="n">4</div><div><h2>建議 API 分層</h2><p>取自 <code>後端規格書.md</code> 四、API 端點速查，同樣為建議設計</p></div></div>
+    <div class="card">
+      <div class="api-row">
+        <span class="pill get">GET</span><code>/api/sms-templates</code>
+        <div><div class="desc">取得本門市與系統內建模板清單（全員權限）。<b>只回傳本門市＋系統內建，不可回傳其他門市自訂模板</b>（跨店功能已移除）</div></div>
+      </div>
+      <div class="api-row">
+        <span class="pill post">POST</span><code>/api/sms-templates</code>
+        <div><div class="desc">新增自訂模板（門市主管以上）</div></div>
+      </div>
+      <div class="api-row">
+        <span class="pill put">PUT</span><code>/api/sms-templates/:id</code>
+        <div><div class="desc">更新模板（門市主管以上）；只能改自己門市的；系統內建僅可改 <code>enabled</code></div></div>
+      </div>
+      <div class="api-row">
+        <span class="pill del">DELETE</span><code>/api/sms-templates/:id</code>
+        <div><div class="desc">刪除自訂模板（門市主管以上）；只能刪自己門市的，內建不可刪</div></div>
+      </div>
+      <div class="api-row">
+        <span class="pill get">GET</span><code>/api/user/sms-preferences</code> / <span class="pill put">PUT</span><code>/api/user/sms-preferences</code>
+        <div><div class="desc">取得/更新個人偏好（釘選、上次套用等），全員權限</div></div>
+      </div>
+      <div class="api-row">
+        <span class="pill post">POST</span><code>/api/sms/send</code>
+        <div><div class="desc">發送簡訊（全員）。Body：<code>appointment_id</code>、<code>template_id</code>、<code>content</code>（前端可能已手動修改，長度上限 670 字）、<code>scheduled_at</code>（null＝立即發送）。<code>appointment_id</code> 後端自行取手機號碼，前端不傳</div></div>
+      </div>
+      <div class="api-row">
+        <span class="pill get">GET</span><code>/api/sms/scheduled?appointment_id=</code>
+        <div><div class="desc">查詢待發排程（全員，只回傳自己門市的）</div></div>
+      </div>
+      <div class="api-row">
+        <span class="pill del">DELETE</span><code>/api/sms/scheduled/:log_id</code>
+        <div><div class="desc">取消排程發送（全員）；<code>status</code> 必須為 <code>pending</code>，否則 409</div></div>
+      </div>
+      <div class="api-row">
+        <span class="pill get">GET</span><code>/api/sms/logs?appointment_id=&page=</code>
+        <div><div class="desc">查詢發送記錄（門市主管以上）；含隱碼手機，不含完整號碼</div></div>
+      </div>
+      <div class="api-row">
+        <span class="pill get">GET</span><code>/api/store/settings</code> / <span class="pill put">PUT</span><code>/api/store/settings</code>
+        <div><div class="desc">取得/更新門市設定（PUT 需門市主管以上）</div></div>
+      </div>
+      <div class="callout">錯誤碼速查（節錄）：<code>400</code> 欄位格式/長度違規、非白名單 token、內容超 670 字、會員拒收；<code>403</code> 角色不足或寫入他門市/系統內建模板；<code>404</code> id 不存在；<code>409</code> 模板名稱重複、5 分鐘 dedup、取消非 pending 排程、<code>not_earliest_appointment</code>；<code>422</code> <code>scheduled_at</code> 為過去時間；<code>429</code> 超速率上限；<code>503</code> Gateway 無法連線。完整版見 <code>後端規格書.md</code> 十一、錯誤碼速查。</div>
+    </div>
+  </section>
+
+  <section id="s5">
+    <div class="sec-h"><div class="n">5</div><div><h2>預約查詢 C 頁相關後端注意事項</h2><p>依 <code>後端規格書（PM視角）.md</code> 三、預約查詢與簡訊相關功能</p></div></div>
+    <div class="card">
+      <ul class="plain">
+        <li><b>查詢待發排程</b>：依預約 ID 查詢是否有排程中的簡訊，供前台顯示「排程中」狀態</li>
+        <li><b>查看簡訊詳情</b>：需回傳收件人（姓名＋隱碼手機）、簡訊內容與字數、套用的模板名稱（無對應模板顯示「自訂」）、建立時間與建立人、依狀態而定的時間或原因；<b>即使預約診療時間已過期，只要簡訊狀態是終態（已送達/已取消/發送失敗）仍可唯讀點閱</b>，「排程中」或「未發送」的過期紀錄則不可互動</li>
+        <li><b>重新發送</b>：語意上等同重新呼叫一次 <code>POST /api/sms/send</code>，會重新跑套用優先序與拒收/同日排程衝突判斷，人員可在送出前修改內容；後端應建立全新記錄，不是修改舊那筆</li>
+        <li><b>立即發送／預約發送</b>：<code>scheduled_at</code> 為 null 或省略＝立即發送，非 null 需為未來時間（否則 422）</li>
+        <li><b>會員拒收判斷</b>：後端判斷拒絕狀態並回 400；前端可加 <code>"force": true</code> 強制送出，此時 <code>override_opt_out</code> 需寫 <code>true</code></li>
+        <li><b>個資保護</b>：手機號碼由後端依 <code>appointment_id</code> 取得，查詢/顯示一律隱碼</li>
+      </ul>
+      <div class="callout">同日多預約僅最早一筆可操作、簡訊取消≠預約取消、取消最早預約自動補位——這三條規則的資料一致性風險獨立整理在第 6 節。</div>
+    </div>
+  </section>
+
+  <section id="s6">
+    <div class="sec-h"><div class="n">6</div><div><h2>簡訊取消／預約取消／自動補位資料一致性風險</h2><p>後端必須把關，不能只靠前端擋</p></div></div>
+    <div class="card">
+      <ul class="plain">
+        <li><b>同日多預約僅最早一筆可操作（後端已實作）</b>：<code>POST /api/sms/send</code>、<code>DELETE /api/sms/scheduled/:log_id</code> 只接受最早那筆的 <code>appointment_id</code>，其餘一律回 409（<code>not_earliest_appointment</code>）。前端雖已鎖住其他預約的操作入口，<b>後端仍需獨立驗證</b>，避免繞過前端直接打 API 破壞規則</li>
+        <li><b>簡訊取消不等於預約取消</b>：<code>DELETE /api/sms/scheduled/:log_id</code> 只改 <code>sms_send_log.status</code>，預約本身的狀態欄位不受影響——這是兩個獨立寫入，不要合併成同一次交易</li>
+        <li><b>取消最早預約時的補位順序（前端協調兩步驟，非單一端點）</b>：使用者取消同會員同日最早一筆「預約」且同日仍有其他有效預約時，前端會先對<b>次早</b>那筆呼叫 <code>POST /api/sms/send</code>，等這筆成功建立（拿到 <code>log_id</code>）後，前端才呼叫（既有、非本文件範圍的）預約取消 API 把原本最早那筆標記為 <code>cancelled</code>。<b>後端不需要新增「轉移」端點</b>，但要留意這個順序是<b>前端負責協調</b>的兩次獨立呼叫——若前端在兩步驟之間失敗（例如送出成功但取消 API 逾時），可能造成「兩筆都有效」的暫時不一致狀態，這是現有設計已知的風險點，本文件不新增補償機制，如需處理需另外討論</li>
+        <li><b>重新發送需建立全新記錄</b>：不可對舊 <code>log_id</code> 做更新，否則會讓「重新發送」跟「原始發送」的歷史記錄互相覆蓋，影響稽核追溯</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="s7">
+    <div class="sec-h"><div class="n">7</div><div><h2>後端需核對 POS 既有架構的項目</h2><p>依 <code>後端規格書.md</code> v1.7 修改紀錄；不可自行延伸欄位或結論</p></div></div>
+    <div class="card">
+      <div class="callout danger"><b>本節僅引用 <code>後端規格書.md</code> v1.7 已明文記載的內容，不自行延伸欄位或結論。</b></div>
+      <ul class="plain">
+        <li>本文件第 3、4 節的 <code>sms_templates</code>／<code>appointments</code>／<code>stores</code>／<code>sms_send_log</code> 等皆為<b>示意用資料表</b>，實際串接時請對照公司既有 POS 架構（<code>docs/pos_schema_exports/</code>）</li>
+        <li><b><code>CC_ProjectShortMessage</code></b>（既有專案簡訊發送紀錄表）：目前<b>沒有</b>模板系統或診間/時段/派號欄位；<code>sms_send_log</code> 這個建議設計是否要沿用/擴充此既有表、或另建新表，需與後端工程師依真實 schema 確認，本文件不代為假設欄位對應</li>
+        <li><b><code>AP_DRSchdule</code> / <code>AP_BASchdule</code></b>（既有預約排程表）：目前<b>沒有</b>模板系統或診間/時段/派號欄位；本文件示意的 <code>appointments</code> 概念是否對應這兩張既有表、或需要哪些擴充欄位，同樣需依真實 schema 確認</li>
+        <li>派號、時段（診別）判斷邏輯本身已由後端在既有預約流程中實作，但正式落地到 <code>{{診間}}</code>/<code>{{時段}}</code>/<code>{{派號}}</code> 三個模板參數時，仍需確認這些值實際從哪張既有表的哪個欄位取得</li>
+      </ul>
+      <div class="callout">核對起點：<code>docs/pos_schema_exports/POS_schema_dictionary.md</code>、<code>POS_schema_relations.md</code>、<code>schema_tables.csv</code> 等匯出檔案。</div>
+    </div>
+  </section>
+
+  <section id="s8">
+    <div class="sec-h"><div class="n">8</div><div><h2>派案前確認清單</h2><p>業務規則已確認，不代表 schema 已確認</p></div></div>
+    <div class="card">
+      <ul class="check">
+        <li>已明確告知後端工程師：第 3、4 節資料表/API 是<b>建議設計</b>，需要逐項核對，不是已拍板契約</li>
+        <li>已排定與後端工程師核對 <code>CC_ProjectShortMessage</code>／<code>AP_DRSchdule</code>／<code>AP_BASchdule</code> 的實際對應與欄位（第 7 節）</li>
+        <li>已確認發送速率限制（目前建議 200 則/小時）是否需依實際門市發送量調整</li>
+        <li>已確認 SMS Gateway 連續 3 次失敗降級為 <code>failed</code> 後的重試/補發機制歸屬（<code>後端規格書.md</code> 未涵蓋此範圍，如需要需另外討論）</li>
+        <li>已確認正式環境上線前 <code>SMS_SANDBOX</code> 沙箱模式已關閉</li>
+        <li>已對照 <code>後端規格書（PM視角）.md</code> 五、驗收標準逐項確認可驗收</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>單一模板 → 多模板擴增 · 後端派案簡報 · prototypes/後端簡報.html · 權威規格：docs/擴增需求/後端規格書.md</footer>
 </div>
 </body>
 </html>

@@ -1,7 +1,7 @@
 @startuml 套用優先序
 ' 單一模板 → 多模板擴增
 ' 套用優先序（開啟發送簡訊視窗時）
-' 對應 prototypes/流程圖.html 第 3 節、prototypes/簡報.html 第 3 節
+' 對應 prototypes/流程圖.html 第 3 節、prototypes/前端簡報.html 第 3 節
 ' 實作參考：computeAutoApplyId()（預約操作模擬.html／預約查詢互動.html 對稱同名函式）
 
 title 套用優先序\n開啟發送簡訊視窗時，自動帶入哪一張模板
