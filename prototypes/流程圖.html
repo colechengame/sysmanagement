@@ -151,7 +151,7 @@
         <div class="hnode"><div class="ic">🏪</div><div class="lb">sms_store_settings</div><div class="sub">門市層級設定</div></div>
         <div class="hnode"><div class="ic">📨</div><div class="lb">sms_send_log</div><div class="sub">發送紀錄</div></div>
       </div>
-      <div class="caption warn">以上資料表名稱／欄位取自 <b>docs/擴增需求/後端規格書.md</b>，仍是<b>建議設計，非最終 schema</b>——「模板」整套系統在公司既有 POS 架構裡完全沒有對應表；<code>sms_send_log</code> 是否沿用/擴充既有的 <code>CC_ProjectShortMessage</code>、<code>appointments</code> 概念是否對應既有的 <code>AP_DRSchdule</code>/<code>AP_BASchdule</code>，都需要後端工程師依真實 schema 核對，詳見第 8 節。</div>
+      <div class="caption warn">以上資料表名稱／欄位仍是<b>建議設計，非最終 schema</b>——「模板」整套系統在公司既有 POS 架構裡完全沒有對應表；<code>sms_send_log</code> 是否沿用/擴充既有的 <code>CC_ProjectShortMessage</code>、<code>appointments</code> 概念是否對應既有的 <code>AP_DRSchdule</code>/<code>AP_BASchdule</code>，都需要後端工程師依真實 schema 核對，詳見第 8 節。</div>
       <div class="caption">3 個前端畫面 → 都打同一組 API → <b>不要讓任何畫面直接繞過 API 動資料表</b></div>
     </div>
   </section>
@@ -362,7 +362,7 @@
           <td class="be">（純前端行為，後端不涉入這條 UI 規則）</td>
         </tr>
       </table>
-      <div class="caption warn">前端擋得住多數誤操作，但<b>不能取代後端驗證</b>——凡是能被繞過前端直接打 API 的規則，後端都必須獨立驗證一次；本圖只視覺化 <code>後端規格書.md</code>／<code>前端規格書.md</code> 已記載的事實，未新增任何後端流程、補償機制或狀態機。</div>
+      <div class="caption warn">前端擋得住多數誤操作，但<b>不能取代後端驗證</b>——凡是能被繞過前端直接打 API 的規則，後端都必須獨立驗證一次；本圖只視覺化既有已確認的規則，未新增任何後端流程、補償機制或狀態機。</div>
     </div>
   </section>
 

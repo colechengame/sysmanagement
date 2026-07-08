@@ -87,7 +87,7 @@
   <div class="hero">
     <span class="tag">溝通簡報 · 給 PM／主管</span>
     <h1>預約簡訊模板：單一模板 → 多模板擴增（前端功能說明）</h1>
-    <p>權威規格：<code style="background:rgba(255,255,255,.18);color:#fff;border:none">docs/擴增需求/前端規格書（PM視角）.md</code>　元件實作/函式命名等工程細節請改看 <code style="background:rgba(255,255,255,.18);color:#fff;border:none">前端規格書.md</code></p>
+    <p>範圍：模板管理、預約操作發送、預約查詢管理 三個畫面　目的：讓 PM 掌握功能範圍、核心邏輯與驗收標準</p>
   </div>
 
   <nav class="toc" aria-label="章節快速跳轉">
@@ -114,7 +114,7 @@
       </div>
       <p style="font-size:13.5px;color:var(--muted);margin-top:10px">現況每間門市只能用同一套固定簡訊內容；本次擴增後，每間門市可以擁有自己的自訂模板、設定門市預設，並在兩個發送入口用同一套模板選擇器挑選要套用的模板。</p>
       <div class="callout warn"><b>範圍決策提醒（勿走回頭路）</b>：跨門市瀏覽／複製模板功能已於 2026-07-02 定案<b>移除</b>，聚焦在系統內建模板。各門市只能讀取/管理本門市自訂模板與系統內建模板，資料完全隔離，不做跨店機制。未來若有更好的模板組合值得推廣，做法是<b>直接擴充系統內建模板清單</b>，不重新討論加回跨門市瀏覽或複製機制。</div>
-      <div class="callout">本文件<b>不涉及</b>元件實作、函式命名、CSS/DOM 選擇器這類工程實作細節——這些請見 <code>前端規格書.md</code>。</div>
+      <div class="callout">本文件<b>不涉及</b>元件實作、函式命名、CSS/DOM 選擇器這類工程實作細節，僅聚焦於功能範圍與規則本身。</div>
     </div>
   </section>
 
@@ -250,18 +250,17 @@
   </section>
 
   <section id="s6">
-    <div class="sec-h"><div class="n">6</div><div><h2>參考資料</h2><p>需要更深入的細節時去哪裡找</p></div></div>
+    <div class="sec-h"><div class="n">6</div><div><h2>相關視覺化文件</h2><p>需要更深入的細節時去哪裡找</p></div></div>
     <div class="card">
       <ul class="plain">
-        <li>元件實作、函式命名、互動細節、共用邏輯建議：<code>前端規格書.md</code></li>
         <li>套用優先序完整 activity diagram：<code>prototypes/套用優先序.puml</code></li>
-        <li>後端對應規格（PM 視角）：<code>後端規格書（PM視角）.md</code></li>
+        <li>對應後端功能說明：<code>prototypes/後端簡報.html</code></li>
         <li>PM／主管／前後端工程師溝通用流程圖：<code>prototypes/流程圖.html</code></li>
       </ul>
     </div>
   </section>
 
-  <footer>單一模板 → 多模板擴增 · 前端溝通簡報 · prototypes/前端簡報.html · 權威規格：docs/擴增需求/前端規格書（PM視角）.md</footer>
+  <footer>單一模板 → 多模板擴增 · 前端溝通簡報 · prototypes/前端簡報.html</footer>
 </div>
 </body>
 </html>

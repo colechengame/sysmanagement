@@ -84,7 +84,7 @@
   <div class="hero">
     <span class="tag">溝通簡報 · 給 PM／主管</span>
     <h1>預約簡訊模板：單一模板 → 多模板擴增（後端功能說明）</h1>
-    <p>權威規格：<code style="background:rgba(255,255,255,.18);color:#fff;border:none">docs/擴增需求/後端規格書（PM視角）.md</code>　工程細節（資料表/API/SQL）請改看 <code style="background:rgba(255,255,255,.18);color:#fff;border:none">後端規格書.md</code></p>
+    <p>目的：讓 PM 掌握後端要支援的業務規則、預約查詢頁相關能力、操作紀錄與驗收標準</p>
   </div>
 
   <nav class="toc" aria-label="章節快速跳轉">
@@ -106,7 +106,7 @@
         <li>後端要留存哪些操作紀錄（Log），供稽核與客服追查</li>
       </ul>
       <div class="callout warn"><b>範圍決策提醒（勿走回頭路）</b>：跨門市瀏覽／複製模板功能已於 2026-07-02 定案<b>移除</b>。各門市只能讀取/管理<b>本門市自訂模板</b>與<b>系統內建模板</b>（<code>store_id = NULL</code>），資料完全隔離，不做跨店機制。</div>
-      <div class="callout"><b>本文件不涉及</b> Schema 型別、SQL、API Request/Response 這類工程實作細節——這些連同「模板系統在真實 POS 架構裡沒有對應資料表、需要與後端工程師依真實 schema 核對」的提醒，都在 <code>後端規格書.md</code>（工程用權威規格）。</div>
+      <div class="callout"><b>本文件不涉及</b> Schema 型別、SQL、API Request/Response 這類工程實作細節，僅聚焦於業務規則本身。</div>
     </div>
   </section>
 
@@ -135,7 +135,7 @@
         <tr><td>系統內建</td><td>不可直接改內容</td><td>全系統共用；門市編輯後存檔會另存一份自訂複本，原始內建不受影響</td></tr>
         <tr><td>本門市自訂</td><td>可編輯／刪除</td><td>只有建立的門市看得到、能改；其他門市看不到</td></tr>
       </table>
-      <p style="font-size:12.5px;color:var(--muted);margin-top:8px">CRUD 權限：一般人員只能查看與套用；新增/編輯/刪除自訂模板需<b>門市主管以上</b>權限；系統內建模板只有<b>系統管理員</b>能調整（工程細節見 <code>後端規格書.md</code>）。</p>
+      <p style="font-size:12.5px;color:var(--muted);margin-top:8px">CRUD 權限：一般人員只能查看與套用；新增/編輯/刪除自訂模板需<b>門市主管以上</b>權限；系統內建模板只有<b>系統管理員</b>能調整。</p>
 
       <p style="font-size:13px;font-weight:700;margin:16px 0 8px">套用優先序（模板組合擴充功能核心邏輯：發送簡訊視窗開啟時，由上而下判斷，符合就套用、不再往下）</p>
       <div class="cascade">
@@ -247,15 +247,15 @@
     <div class="card">
       <ul class="plain">
         <li><b>跨門市瀏覽／複製模板已定案移除，不要重新討論加回來</b>——2026-07-02 曾實作又整個移除，目前是各門市完全獨立管理本門市自訂模板 + 系統內建模板</li>
-        <li><b>「模板」這整套系統在公司既有 POS 架構裡完全沒有對應資料表，是全新設計</b>；有既有前例可參考的部分（例如簡訊發送紀錄、預約排程）留給工程端在 <code>後端規格書.md</code> 對照真實 schema 確認，本文件不代為假設欄位細節</li>
+        <li><b>「模板」這整套系統在公司既有 POS 架構裡完全沒有對應資料表，是全新設計</b>；有既有前例可參考的部分（例如簡訊發送紀錄、預約排程）留給工程端對照真實 schema 確認，本文件不代為假設欄位細節</li>
         <li><b>「時段」與「診別」是同一件事的兩種說法</b>：判斷公式維持不變（早診/午診/晚診由預約時間換算），只是需要正式落地成後端程式（先前只在原型 JS）</li>
-        <li>資料表設計、API 端點、SQL/欄位型別、與後端工程師的逐項核對清單——請改看 <code>docs/擴增需求/後端規格書.md</code>（工程用權威規格）</li>
+        <li>資料表設計、API 端點、SQL/欄位型別的逐項核對，屬於工程規格範疇，不在本文件呈現</li>
       </ul>
-      <div class="callout">參考資料：模板系統參數/CRUD 隔離規則/API 端點工程細節見 <code>後端規格書.md</code>；套用優先序完整 activity diagram 見 <code>prototypes/套用優先序.puml</code>；前端三個畫面的完整互動規格見 <code>前端規格書.md</code>。</div>
+      <div class="callout">套用優先序完整 activity diagram 另見 <code>prototypes/套用優先序.puml</code>。</div>
     </div>
   </section>
 
-  <footer>單一模板 → 多模板擴增 · 後端溝通簡報 · prototypes/後端簡報.html · 權威規格：docs/擴增需求/後端規格書（PM視角）.md</footer>
+  <footer>單一模板 → 多模板擴增 · 後端溝通簡報 · prototypes/後端簡報.html</footer>
 </div>
 </body>
 </html>
