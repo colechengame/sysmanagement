@@ -2,6 +2,12 @@
 
 ## 📌 Recent Critical Updates
 
+### ⚠️ [2026-07-13] 簡訊詳情「套用的模板名稱」欄位取消 (Critical Scope Change)
+* **調整內容**：簡訊詳情（C 頁排程詳情彈窗）原規劃要顯示「本次套用的模板名稱」，PM 已定案**整個欄位都不做**——不只是前端不顯示，後端也不記錄。範圍包含：不存 `sms_send_log.template_id`、`POST /api/sms/send` request body 不傳 `template_id`。
+* **不受影響的部分**：「模板套用優先序」（開發送視窗自動帶入哪個模板）與模板管理 CRUD 本身**維持不變**，這次只砍「事後查閱時顯示/記錄用的是哪個模板」這件事。
+* **開發配合事項**：
+  * 已同步更新 `docs/擴增需求/` 下前端規格書.md、前端redmine.md、前端規格書（PM視角）.md、後端規格書.md、後端redmine.md、後端規格書（PM視角）.md，以及 `prototypes/預約查詢互動.html`（含拿掉 `currentTemplateName`／`smsDetail.template`）、`前端簡報.html`、`後端簡報.html`、`流程圖.html`。
+
 ### ⚠️ [2026-07-07] 簡訊多模板跨店複製/瀏覽功能移除 (Critical Scope Change)
 * **事件背景**：在早期規劃文件（如 `docs/擴增需求/後端規格書.md` 舊版）中，曾設計過「跨店複製模板」(`POST /api/sms-templates?source_id=...`) 與「跨店瀏覽」(`GET /api/sms-templates` 回傳所有門市自訂模板) 功能。
 * **調整內容**：依據最新前端原型（Prototypes）及專案定案，**此項跨店功能已完全移除**。各分店只可讀取/管理「本分店自訂的模板」與「系統全域內建模板 (store_id = NULL)」，各店資料完全獨立隔離。
