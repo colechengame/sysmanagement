@@ -860,15 +860,17 @@
             return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());
         }
 
-        const STORE_INFO = {名稱:'示範麗雅', 地址:'XX區XX路1號', 電話:'02-xxxx-xxxx'};
+        const STORE_INFO = {名稱:'示範麗雅', 地址:'XX區XX路1號', 電話:'02-xxxx-xxxx', 叫號機網址:'https://callcall.me/6unCS2'};
 
         const builtinTpls = [
-            {id:'b1', name:'標準預約提醒', desc:'通用預約確認簡訊', enabled:true,
-             body:'提醒您有預約【{{門市名稱}}】{{預約日期}}{{預約時間}}{{門市地址}}，有任何疑問請撥打{{門市電話}}，{{門市名稱}}關心您。'},
-            {id:'b2', name:'醫美－療程提醒', desc:'醫美療程前報到提醒', enabled:true,
-             body:'{{會員姓名}}您好，提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}。請提前30分鐘蒞臨現場報到。洽詢{{門市電話}}。'},
-            {id:'b4', name:'中醫－門診提醒', desc:'中醫門診當日提醒', enabled:true,
-             body:'{{會員姓名}}您好，提醒您今日於{{門市名稱}}有門診預約{{預約時間}}，請依現場叫號順序看診。洽詢{{門市電話}}。'}
+            {id:'b1', name:'西醫－標準預約提醒', desc:'西醫通用預約確認簡訊', enabled:true, bu:'BU1',
+             body:'溫馨提醒您在『{{門市名稱}}』{{預約日期}}{{預約時間}}有預約療程，地址：{{門市地址}}，尊寵服務專線{{門市電話}}'},
+            {id:'b2', name:'西醫－療程提醒', desc:'西醫預約療程提醒', enabled:true, bu:'BU1',
+             body:'溫馨提醒您在『{{門市名稱}}』{{預約日期}}{{預約時間}}有預約{{療程}}，請前往{{門市地址}}，洽詢{{門市電話}}。'},
+            {id:'b3', name:'中醫－預約門診提醒', desc:'中醫門診一般預約提醒', enabled:true, bu:'BU2',
+             body:'提醒您於『{{門市名稱}}』有門診預約{{預約日期}}{{診間}}{{時段}}{{門市地址}}，請依現場叫號順序看診。洽詢{{門市電話}}。'},
+            {id:'b4', name:'中醫－門診提醒自動報到(代短網址)', desc:'中醫門診預約提醒短網址版本', enabled:true, bu:'BU2',
+             body:'提醒您：『{{門市名稱}}』{{預約日期}}{{診間}}{{時段}},依序看診報到查詢通知👉{{叫號機網址}}'}
         ];
         let customTpls = loadJSON(TPL_KEY.custom, []);
         let tplPins    = loadJSON(TPL_KEY.pins, []);
@@ -975,6 +977,16 @@
             if(!opts.silent) setPickerOpen(false);
         }
 
+        var TPL_SHIFT_START = {'早診':9*60+30, '午診':13*60, '晚診':17*60};
+        function tplShiftFromTime(t){
+            var h=parseInt(t,10), m=parseInt((t.split(':')[1])||'0',10), total=h*60+m;
+            return total<13*60?'早診':total<17*60?'午診':'晚診';
+        }
+        function tplQueueNoFromTime(t){
+            var h=parseInt(t,10), m=parseInt((t.split(':')[1])||'0',10), total=h*60+m;
+            var start=TPL_SHIFT_START[tplShiftFromTime(t)];
+            return String(1+Math.max(0,Math.floor((total-start)/15))*2);
+        }
         function buildTplCtx(appointment){
             return {
                 '會員姓名': appointment.name,
@@ -983,7 +995,11 @@
                 '門市電話': STORE_INFO.電話,
                 '預約日期': appointment.date,
                 '預約時間': appointment.time,
-                '療程':     appointment.treatment
+                '療程':     appointment.treatment,
+                '診間':     appointment.room || '診一',
+                '時段':     appointment.shift || tplShiftFromTime(appointment.time),
+                '派號':     tplQueueNoFromTime(appointment.time),
+                '叫號機網址': STORE_INFO.叫號機網址
             };
         }
 
