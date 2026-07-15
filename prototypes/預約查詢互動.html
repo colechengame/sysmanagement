@@ -615,7 +615,7 @@
         <strong>💡 操作提示：</strong>
         未發送的預約直接點「發送簡訊」；其他狀態點擊狀態色塊可開啟簡訊詳情（排程中可取消、已取消/失敗可重發）
         | <strong>5 大情境：</strong> ①標準發送 ②客人拒收 ③排程衝突 ④複合風險 ⑤自動補位
-        | <strong>⚠️ 重要：</strong>同日多預約時，僅最早預約可發送，其他反灰不可操作。
+        | <strong>⚠️ 重要：</strong>一般會員同日多預約時僅最早預約可發送；來源為「99－虛擬會員」的新客不受此限制。
     </div>
     
     <div style="background: #e8f4fd; padding: 8px 20px; font-size: 11px; border-left: 4px solid #4a90e2; margin-bottom: 1px;">
@@ -829,8 +829,22 @@
             {id: 30, date: '2025/11/02', member: 'M003', name: '張大華', phone: '0933333333', time: '17:00', treatment: '2樓總店-【醫美】', staff: '超音波導入', contactStatus: '1', smsStatus: '', noSmsPreference: false},
 
             // 其他標準預約（用於對比）
-            {id: 31, date: '2025/11/02', member: 'GT0000024', name: '陳小芬', phone: '0944444444', time: '13:00', treatment: '雷射除毛', staff: '張護理師', contactStatus: '2', smsStatus: '', noSmsPreference: false}
+            {id: 31, date: '2025/11/02', member: 'GT0000024', name: '陳小芬', phone: '0944444444', time: '13:00', treatment: '雷射除毛', staff: '張護理師', contactStatus: '2', smsStatus: '', noSmsPreference: false},
+
+            // 99－虛擬會員：HQ0000146 為範例會員編號；每筆預約各自帶新客姓名／新客電話，且可當日當店重複預約
+            {id: 32, date: '2025/11/02', member: 'HQ0000146', memberSource: '99－虛擬會員', name: '99－虛擬會員', phone: '--', newCustomerName: '林新客', newCustomerPhone: '0955111222', time: '12:30', treatment: '初診諮詢', staff: '王護理師', contactStatus: '1', smsStatus: '', noSmsPreference: false},
+            {id: 33, date: '2025/11/02', member: 'HQ0000146', memberSource: '99－虛擬會員', name: '99－虛擬會員', phone: '--', newCustomerName: '陳新客', newCustomerPhone: '0966333444', time: '18:30', treatment: '醫美諮詢', staff: '李醫師', contactStatus: '1', smsStatus: '', noSmsPreference: false}
         ];
+
+        function isVirtualMember(appointment) {
+            return appointment && appointment.memberSource === '99－虛擬會員';
+        }
+        function recipientName(appointment) {
+            return isVirtualMember(appointment) ? appointment.newCustomerName : appointment.name;
+        }
+        function recipientPhone(appointment) {
+            return isVirtualMember(appointment) ? appointment.newCustomerPhone : appointment.phone;
+        }
 
         const contactStatusOptions = [
             {value: '', text: '請選擇', disabled: false, class: 'status-none'},
@@ -989,7 +1003,6 @@
         }
         function buildTplCtx(appointment){
             return {
-                '會員姓名': appointment.name,
                 '門市名稱': STORE_INFO.名稱,
                 '門市地址': STORE_INFO.地址,
                 '門市電話': STORE_INFO.電話,
@@ -1144,8 +1157,8 @@
 
                 row.innerHTML = '<td>' + appointment.date + '</td>' +
                               '<td>' + appointment.member + '</td>' +
-                              '<td>' + appointment.name + '</td>' +
-                              '<td>' + appointment.phone + '</td>' +
+                              '<td>' + recipientName(appointment) + (isVirtualMember(appointment) ? ' <small style="color:#6b7280">(新客)</small>' : '') + '</td>' +
+                              '<td>' + recipientPhone(appointment) + '</td>' +
                               '<td>' + actionHtml + '</td>' +
                               '<td>' + cancelApptHtml + '</td>' +
                               '<td><select class="contact-select ' + statusClass + '" data-id="' + appointment.id + '" onchange="updateContactStatus(' + appointment.id + ', this.value)">' + selectOptions + '</select></td>' +
@@ -1161,6 +1174,9 @@
 
         // 查找同日預約（基於預約狀態，不是簡訊狀態）
         function getSameDayAppointments(member, date, currentAppointmentId) {
+            const currentAppointment = appointments.find(function(apt) { return apt.id === currentAppointmentId; });
+            // 99－虛擬會員不可只依會員編號判斷為同一自然人；每筆均以新客資料獨立預約與發送。
+            if (isVirtualMember(currentAppointment)) return [];
             return appointments.filter(function(apt) {
                 // 基本條件：同會員、同日期、非當前預約、未過期
                 if (apt.member !== member ||
@@ -1437,8 +1453,8 @@
             } else {
                 // 無其他活躍預約 → 標準取消預約流程
                 const confirmMsg = '<strong>確定要取消這個預約嗎？</strong><br><br>' +
-                                 '會員：<strong>' + appointment.name + '</strong><br>' +
-                                 '電話：' + appointment.phone + '<br>' +
+                                 '客戶：<strong>' + recipientName(appointment) + '</strong><br>' +
+                                 '電話：' + recipientPhone(appointment) + '<br>' +
                                  '時間：' + appointment.date + ' ' + appointment.time + '<br>' +
                                  '療程：' + appointment.treatment + '<br><br>' +
                                  '<span style="color: #c82333; font-size: 13px;">⚠️ 取消預約後，客戶將不會收到簡訊通知，且預約狀態將變更為「已取消」</span>';
@@ -1460,8 +1476,8 @@
             // 標準取消簡訊流程（不觸發補位）
             // 注意：這裡只是取消「簡訊」，不是取消「預約」
             const confirmMsg = '<strong>確定要取消這筆簡訊嗎？</strong><br><br>' +
-                             '會員：<strong>' + appointment.name + '</strong><br>' +
-                             '電話：' + appointment.phone + '<br>' +
+                             '客戶：<strong>' + recipientName(appointment) + '</strong><br>' +
+                             '電話：' + recipientPhone(appointment) + '<br>' +
                              '時間：' + appointment.date + ' ' + appointment.time + '<br>' +
                              '療程：' + appointment.treatment + '<br><br>' +
                              '<span style="color: #666; font-size: 13px;">⚠️ 取消簡訊後，此預約將不會收到簡訊通知</span>';
@@ -1638,6 +1654,8 @@
             if (scheduledApt) {
                 scheduledApt.smsDetail = {
                     content: content,
+                    recipientName: recipientName(scheduledApt),
+                    recipientPhone: recipientPhone(scheduledApt),
                     sendTime: sendTime,
                     createdAt: new Date().toISOString(),
                     createdBy: '門市員工'
@@ -1714,7 +1732,8 @@
             info.innerHTML = cfg.info;
 
             // 收件人 / 內容
-            document.getElementById('detailRecipient').textContent = apt.name + '　' + apt.phone;
+            document.getElementById('detailRecipient').textContent =
+                (d.recipientName || recipientName(apt)) + '　' + (d.recipientPhone || recipientPhone(apt));
             document.getElementById('detailContent').textContent = d.content;
             document.getElementById('detailCharCount').textContent = d.content.length + ' 字';
             document.getElementById('detailCreatedAt').textContent = fmtDT(d.createdAt);

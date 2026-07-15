@@ -199,6 +199,17 @@
         <label>姓名</label>
         <div class="name-row"><div class="nm-val" id="apName">示範-001 王○○ 09/19</div><button class="mini-btn">重置</button></div>
       </div>
+      <div class="fld">
+        <label>客戶來源</label>
+        <select class="ctrl" id="apMemberSource">
+          <option value="member">一般會員</option>
+          <option value="virtual">99－虛擬會員（範例：HQ0000146）</option>
+        </select>
+      </div>
+      <div class="fld row2" id="apNewCustomerFields" style="display:none">
+        <div><label>新客姓名</label><input class="ctrl" id="apNewCustomerName" placeholder="請輸入新客姓名"></div>
+        <div><label>新客電話（簡訊收件號碼）</label><input class="ctrl" id="apNewCustomerPhone" placeholder="09xxxxxxxx"></div>
+      </div>
       <div class="fld"><label>床位</label><select class="ctrl" id="apBed"><option>肌動減脂</option><option>冷凍減脂</option><option>貴妃減脂</option><option>超導1</option></select></div>
       <div class="fld">
         <label>預約項目</label>
@@ -248,6 +259,7 @@
 
       <div class="fld">
         <label>簡訊內容</label>
+        <div class="sub" id="smsRecipient"></div>
         <div class="sub">套用模板後已帶入預約資料，可直接於下方編輯內容後發送。</div>
         <textarea class="ctrl" id="smsContent" rows="5"></textarea>
         <div class="char-line"><span></span><span>字數限制：<b id="smsChars">0</b>/70字 · 預估 <b id="smsSegs">0</b> 則</span></div>
@@ -346,10 +358,23 @@
     bk["貴妃減脂|"+slotFromNow(30)] ={cls:"b-red",name:"林○○",memberId:"示範-003",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:true,room:"診一"};
     bk["超導1|"+slotFromNow(30)]    ={cls:"b-pink",name:"游○○",memberId:"示範-004",phone:"09oo-xxx-oooo",item:"超音波導入",noSms:false,room:"診二"};
     bk["AB1|"+slotFromNow(60)]      ={cls:"b-blue",name:"張○○",memberId:"示範-005",phone:"09oo-xxx-oooo",item:"杏仁酸",noSms:false,room:"診一"};
+    // HQ0000146 為 99－虛擬會員範例編號；每筆預約須使用各自的新客姓名與新客電話。
+    bk["AB2|"+slotFromNow(90)]      ={cls:"b-teal",memberSource:"99－虛擬會員",name:"99－虛擬會員",memberId:"HQ0000146",phone:"--",newCustomerName:"林新客",newCustomerPhone:"0955-111-222",item:"初診諮詢",noSms:false,room:"診一"};
+    bk["IV|"+slotFromNow(120)]      ={cls:"b-pink",memberSource:"99－虛擬會員",name:"99－虛擬會員",memberId:"HQ0000146",phone:"--",newCustomerName:"陳新客",newCustomerPhone:"0966-333-444",item:"醫美諮詢",noSms:false,room:"診二"};
     return bk;
   })();
 
   var STORE={名稱:"示範麗雅",地址:"XX區XX路1號",電話:"02-xxxx-xxxx",叫號機網址:"https://callcall.me/6unCS2"};
+  function isVirtualMember(bk){return bk&&bk.memberSource==="99－虛擬會員";}
+  function recipientName(bk){return isVirtualMember(bk)?bk.newCustomerName:bk.name;}
+  function recipientPhone(bk){return isVirtualMember(bk)?bk.newCustomerPhone:bk.phone;}
+  var apMemberSource=document.getElementById("apMemberSource");
+  function renderNewCustomerFields(){
+    var virtual=apMemberSource.value==="virtual";
+    document.getElementById("apNewCustomerFields").style.display=virtual?"grid":"none";
+    document.getElementById("apName").textContent=virtual?"HQ0000146　99－虛擬會員":"示範-001 王○○";
+  }
+  apMemberSource.addEventListener("change",renderNewCustomerFields);
 
   function renderSched(){
     var head=document.getElementById("schedHead");
@@ -361,8 +386,8 @@
       BEDS.forEach(function(b){
         var key=b+"|"+t,bk=bookings[key];
         if(bk){
-          h+='<td><div class="cell '+bk.cls+'" data-book="'+esc(key)+'"><div class="nm">'+esc(bk.name)+'</div><div class="meta">'+esc(bk.item)+'</div>'+
-             (bk.noSms?'<span class="badge no-sms">不收簡訊</span>':'<span class="badge">'+esc(bk.phone)+'</span>')+'</div></td>';
+          h+='<td><div class="cell '+bk.cls+'" data-book="'+esc(key)+'"><div class="nm">'+esc(recipientName(bk))+(isVirtualMember(bk)?'（新客）':'')+'</div><div class="meta">'+esc(bk.item)+'</div>'+
+             (bk.noSms?'<span class="badge no-sms">不收簡訊</span>':'<span class="badge">'+esc(recipientPhone(bk))+'</span>')+'</div></td>';
         }else{
           h+='<td><div class="cell empty" data-new="'+esc(key)+'">＋</div></td>';
         }
@@ -415,11 +440,11 @@
   }
   function buildCtx(bk,timeStr,dateStr){
     return {
-      "會員姓名":bk.name,"門市名稱":STORE.名稱,"門市地址":STORE.地址,"門市電話":STORE.電話,
+      "門市名稱":STORE.名稱,"門市地址":STORE.地址,"門市電話":STORE.電話,
       "預約日期":dateStr,"預約時間":timeStr,"療程":bk.item,
       "診間":bk.room||"診一","時段":bk.shift||shiftFromTime(timeStr),"派號":queueNoFromTime(timeStr),
       "叫號機網址":STORE.叫號機網址,
-      "noSms":!!bk.noSms,"phone":bk.phone,"memberId":bk.memberId
+      "noSms":!!bk.noSms,"phone":recipientPhone(bk),"memberId":bk.memberId
     };
   }
   /* 套用模板時把參數注入為實際值（參數示意只保留在簡訊設定頁） */
@@ -525,6 +550,7 @@
   function openSms(bk,timeStr){
     custom=loadJSON(KEY.custom,[]);pins=loadJSON(KEY.pins,[]);recent=loadJSON(KEY.recent,[]);lastId=store.get(KEY.last)||null;
     ctx=buildCtx(bk,timeStr,todayShort());
+    document.getElementById("smsRecipient").textContent="收件人："+recipientName(bk)+"　"+recipientPhone(bk)+(isVirtualMember(bk)?"（99－虛擬會員／HQ0000146）":"");
     tplComboQ="";document.getElementById("tplSearch").value="";
     lastAppliedBody=null;
     setPickerOpen(false);
@@ -545,7 +571,11 @@
       var key=bookEl.getAttribute("data-book"),bk=bookings[key],parts=key.split("|");
       pendingEdit=key;pendingNew=null;
       /* 帶入現有預約資料 */
-      document.getElementById("apName").textContent=(bk.memberId||"")+" "+(bk.name||"");
+      apMemberSource.value=isVirtualMember(bk)?"virtual":"member";
+      document.getElementById("apNewCustomerName").value=bk.newCustomerName||"";
+      document.getElementById("apNewCustomerPhone").value=bk.newCustomerPhone||"";
+      renderNewCustomerFields();
+      document.getElementById("apName").textContent=(bk.memberId||"")+" "+recipientName(bk)+(isVirtualMember(bk)?"（新客）":"");
       var bedSel=document.getElementById("apBed");
       for(var i=0;i<bedSel.options.length;i++)if(bedSel.options[i].text===parts[0])bedSel.selectedIndex=i;
       var hm=parts[1].split(":");document.getElementById("apHour").value=hm[0];document.getElementById("apMin").value=hm[1];
@@ -558,6 +588,10 @@
     var newEl=e.target.closest("[data-new]");
     if(newEl){
       var k=newEl.getAttribute("data-new");pendingNew=k;pendingEdit=null;
+      apMemberSource.value="member";
+      document.getElementById("apNewCustomerName").value="";
+      document.getElementById("apNewCustomerPhone").value="";
+      renderNewCustomerFields();
       var parts=k.split("|");if(BEDS.indexOf(parts[0])>-1){var bedSel=document.getElementById("apBed");for(var i=0;i<bedSel.options.length;i++){if(bedSel.options[i].value===parts[0])bedSel.selectedIndex=i;}}
       var hm=parts[1].split(":");document.getElementById("apHour").value=hm[0];document.getElementById("apMin").value=hm[1];
       apptTitle.textContent="建立預約";
@@ -575,7 +609,14 @@
       pendingEdit=null;
       toast("預約已確認，請確認簡訊內容");
     }else{
-      bk={cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:document.getElementById("apItem").value,noSms:false,room:"診一"};
+      if(apMemberSource.value==="virtual"){
+        var newName=document.getElementById("apNewCustomerName").value.trim();
+        var newPhone=document.getElementById("apNewCustomerPhone").value.trim();
+        if(!newName||!newPhone){toast("請填寫新客姓名與新客電話");openScrim("apptScrim");return;}
+        bk={cls:"b-teal",memberSource:"99－虛擬會員",name:"99－虛擬會員",memberId:"HQ0000146",phone:"--",newCustomerName:newName,newCustomerPhone:newPhone,item:document.getElementById("apItem").value,noSms:false,room:"診一"};
+      }else{
+        bk={cls:"b-blue",name:"王○○",memberId:"示範-001",phone:"09oo-xxx-oooo",item:document.getElementById("apItem").value,noSms:false,room:"診一"};
+      }
       if(pendingNew){bookings[pendingNew]=bk;renderSched();}
       pendingNew=null;
       toast("預約已建立，請確認簡訊內容");

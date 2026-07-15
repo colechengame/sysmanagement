@@ -273,7 +273,7 @@
         <div class="hnode ghost"><div class="ic">🔒</div><div class="lb">14:00 預約</div><div class="sub">鎖定唯讀</div></div>
         <div class="hnode ghost"><div class="ic">🔒</div><div class="lb">17:00 預約</div><div class="sub">鎖定唯讀</div></div>
       </div>
-      <div class="caption">同一會員、同一天有多筆<b>未取消</b>的預約時，只有時間最早的一筆能發送/查看簡訊，其餘鎖定唯讀（灰階、不可點擊）。判斷「最早」只看預約本身是否被取消，跟簡訊自己的狀態無關。前端鎖住操作入口，<b>後端 API 也獨立驗證同一規則</b>（見第 8 節）。</div>
+      <div class="caption">一般會員同一天有多筆<b>未取消</b>的預約時，只有時間最早的一筆能發送/查看簡訊，其餘鎖定唯讀（灰階、不可點擊）。<b>99－虛擬會員例外</b>：<code>HQ0000146</code> 為範例會員編號，同一天、同一門市可建立多筆不同新客預約；每筆皆使用各自的新客姓名／電話並可獨立發送。</div>
     </div>
   </section>
 

@@ -329,13 +329,13 @@
   var STORE_NAME="示範麗雅",STORE_ADDR="XX區XX路1號",STORE_PHONE="02-xxxx-xxxx",STORE_QUEUE_URL="https://callcall.me/6unCS2";
   var _sampleTime=nowSlotStr();
   var sample={
-    "會員姓名":"王○○","門市名稱":STORE_NAME,"門市地址":STORE_ADDR,"門市電話":STORE_PHONE,
+    "門市名稱":STORE_NAME,"門市地址":STORE_ADDR,"門市電話":STORE_PHONE,
     "預約日期":todayShort(),"預約時間":_sampleTime,
     "療程":"臉-超導(60分)","診間":"診一",
     "時段":shiftFromTimeStr(_sampleTime),"派號":queueNoFromTimeStr(_sampleTime),
     "叫號機網址":STORE_QUEUE_URL
   };
-  var SYS=[["會員姓名","會員姓名"],["門市名稱","預約門市"],["預約日期","預約日期"],["預約時間","預約時間"],["療程","施做療程"],["診間","診間"],["時段","時段"],["派號","派號"],["門市地址","門市地址"],["門市電話","門市電話"],["叫號機網址","叫號機查詢網址"]];
+  var SYS=[["門市名稱","預約門市"],["預約日期","預約日期"],["預約時間","預約時間"],["療程","施做療程"],["診間","診間"],["時段","時段"],["派號","派號"],["門市地址","門市地址"],["門市電話","門市電話"],["叫號機網址","叫號機查詢網址"]];
 
   /* ---------- 模板資料（與預約操作頁共用 localStorage） ---------- */
   var builtin=[
@@ -349,10 +349,18 @@
      body:"提醒您：『{{門市名稱}}』{{預約日期}}{{診間}}{{時段}}第{{派號}}號,依序看診報到查詢通知👉{{叫號機網址}}"}
   ];
   var custom=loadJSON(KEY.custom,[]);
+  var removedMemberNameToken=false,legacyMemberNameToken="{{"+"會員姓名"+"}}";
+  custom.forEach(function(t){
+    if(t.body&&t.body.indexOf(legacyMemberNameToken)!==-1){
+      t.body=t.body.split(legacyMemberNameToken).join("");
+      removedMemberNameToken=true;
+    }
+  });
+  if(removedMemberNameToken)saveJSON(KEY.custom,custom);
   if(!custom.length){
     // 對應下方稽核 Log 種子資料 a3~a5 的示範模板：仍存在、有兩次編輯歷程
     custom.push({id:"c_seed_1",name:"醫美－療程提醒（本店版）",desc:"醫美療程提醒（本店客製版）",
-      body:"{{會員姓名}}您好，提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}，請提前15分鐘報到。洽詢{{門市電話}}。",
+      body:"提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}，請提前15分鐘報到。洽詢{{門市電話}}。",
       enabled:false,creator:"林淑芬",created:"2026/6/20",scenario:"預約簡訊"});
     saveJSON(KEY.custom,custom);
   }
@@ -367,16 +375,16 @@
   var templateAuditLog=[
     // 較舊：示範門市自訂模板曾被建立又刪除（示範「已刪除模板仍留稽核紀錄」）
     {id:"a1",who:"陳雅婷",when:"2026-05-12T03:20:00.000Z",action:"create",targetId:"c_seed_del1",targetName:"母親節活動提醒",
-     payload:{name:{before:null,after:"母親節活動提醒"},body:{before:null,after:"{{會員姓名}}您好，母親節活動預約提醒：{{預約日期}}{{預約時間}}，期待您的蒞臨。"},enabled:{before:null,after:true}}},
+     payload:{name:{before:null,after:"母親節活動提醒"},body:{before:null,after:"母親節活動預約提醒：{{預約日期}}{{預約時間}}，期待您的蒞臨。"},enabled:{before:null,after:true}}},
     {id:"a2",who:"陳雅婷",when:"2026-05-28T07:05:00.000Z",action:"delete",targetId:"c_seed_del1",targetName:"母親節活動提醒",
-     payload:{name:{before:"母親節活動提醒",after:null},body:{before:"{{會員姓名}}您好，母親節活動預約提醒：{{預約日期}}{{預約時間}}，期待您的蒞臨。",after:null},enabled:{before:true,after:null}}},
+     payload:{name:{before:"母親節活動提醒",after:null},body:{before:"母親節活動預約提醒：{{預約日期}}{{預約時間}}，期待您的蒞臨。",after:null},enabled:{before:true,after:null}}},
     // 較新：對內建模板另存複本、之後再編輯兩次（示範同一模板多筆歷程）
     {id:"a3",who:"鄭楷錚",when:"2026-06-20T01:40:00.000Z",action:"create",targetId:"c_seed_1",targetName:"醫美－療程提醒（本店版）",
-     payload:{name:{before:null,after:"醫美－療程提醒（本店版）"},body:{before:null,after:"{{會員姓名}}您好，提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}。"},enabled:{before:null,after:true}}},
+     payload:{name:{before:null,after:"醫美－療程提醒（本店版）"},body:{before:null,after:"提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}。"},enabled:{before:null,after:true}}},
     {id:"a4",who:"林淑芬",when:"2026-07-02T05:15:00.000Z",action:"update",targetId:"c_seed_1",targetName:"醫美－療程提醒（本店版）",
-     payload:{name:{before:"醫美－療程提醒（本店版）",after:"醫美－療程提醒（本店版）"},body:{before:"{{會員姓名}}您好，提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}。",after:"{{會員姓名}}您好，提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}，請提前15分鐘報到。"},enabled:{before:true,after:true}}},
+     payload:{name:{before:"醫美－療程提醒（本店版）",after:"醫美－療程提醒（本店版）"},body:{before:"提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}。",after:"提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}，請提前15分鐘報到。"},enabled:{before:true,after:true}}},
     {id:"a5",who:"林淑芬",when:"2026-07-06T09:50:00.000Z",action:"update",targetId:"c_seed_1",targetName:"醫美－療程提醒（本店版）",
-     payload:{name:{before:"醫美－療程提醒（本店版）",after:"醫美－療程提醒（本店版）"},body:{before:"{{會員姓名}}您好，提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}，請提前15分鐘報到。",after:"{{會員姓名}}您好，提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}，請提前15分鐘報到。洽詢{{門市電話}}。"},enabled:{before:true,after:false}}}
+     payload:{name:{before:"醫美－療程提醒（本店版）",after:"醫美－療程提醒（本店版）"},body:{before:"提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}，請提前15分鐘報到。",after:"提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}，請提前15分鐘報到。洽詢{{門市電話}}。"},enabled:{before:true,after:false}}}
   ];
   function pushAuditLog(action,before,after,targetId,targetName){
     templateAuditLog.unshift({
@@ -415,7 +423,7 @@
     out+=esc(body.slice(last));return out;
   }
   function renderSampleSummary(){
-    document.getElementById("pvSample").innerHTML='已套用範例資料：會員 <b>'+esc(sample["會員姓名"])+'</b>／<b>'+esc(sample["門市名稱"])+'</b>／'+esc(sample["預約日期"])+' '+esc(sample["預約時間"])+'（'+esc(sample["時段"])+'第'+esc(sample["派號"])+'號）／'+esc(sample["療程"]);
+    document.getElementById("pvSample").innerHTML='已套用範例資料：<b>'+esc(sample["門市名稱"])+'</b>／'+esc(sample["預約日期"])+' '+esc(sample["預約時間"])+'（'+esc(sample["時段"])+'第'+esc(sample["派號"])+'號）／'+esc(sample["療程"]);
   }
   function updatePreview(){
     document.getElementById("pvSender").textContent=sample["門市名稱"];
