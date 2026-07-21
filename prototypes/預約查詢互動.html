@@ -239,6 +239,7 @@
             max-width: 90vw;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
+        #smsModal .modal-content { width: 680px; }
         
         .modal-header {
             background: #f8f9fa;
@@ -562,31 +563,29 @@
         .detail-meta-row:last-child { border-bottom: none; }
         .detail-meta-row span:first-child { color: #888; }
         .detail-meta-row span:last-child { color: #333; font-weight: 500; }
-        /* 模板選擇：預設收合，點「更換」展開清單 */
-        .tpl-current-row { display: flex; align-items: center; gap: 8px; }
-        .tpl-current-name { flex: 1; font-size: 12.5px; color: #1557c0; font-weight: 600; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-        .tpl-current-name .rem { font-size: 11px; font-weight: 700; color: #22a06b; background: #e3fcef; border-radius: 999px; padding: 1px 8px; }
-        .tpl-current-name .tag { font-size: 10px; font-weight: 600; color: #8899aa; background: #f5f7f9; border: 1px solid #e3e7eb; border-radius: 999px; padding: 0 6px; }
-        .tpl-toggle-btn { font-size: 12px; font-weight: 600; color: #333; background: #fff; border: 1px solid #ccd3db; border-radius: 7px; padding: 5px 12px; white-space: nowrap; cursor: pointer; font-family: inherit; }
-        .tpl-toggle-btn:hover { border-color: #4a90e2; color: #4a90e2; }
+        /* 模板選擇：左右並排，清單全程可見，不收合，避免切模板時內容框跟著位移 */
         .pin-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
         .pin-chips:empty { display: none; }
         .pin-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; border: 1px solid #ccd3db; background: #fff; color: #333; cursor: pointer; font-family: inherit; }
         .pin-chip:hover { border-color: #4a90e2; color: #4a90e2; }
         .pin-chip.active { background: #eff5ff; border-color: #4a90e2; color: #1557c0; }
         .pin-chip .s { color: #f7b731; }
-        .tpl-picker { display: none; margin-top: 8px; }
-        .tpl-picker.open { display: block; }
+        .pin-chip .rem-mini { font-size: 9.5px; font-weight: 700; color: #22a06b; background: #e3fcef; border-radius: 999px; padding: 1px 6px; }
+        .tpl-split { display: grid; grid-template-columns: 216px 1fr; gap: 16px; margin-top: 10px; }
+        .tpl-list-col { display: flex; flex-direction: column; }
+        .tpl-content-col { margin: 0; }
+        @media (max-width: 640px) { .tpl-split { grid-template-columns: 1fr; } }
         .tpl-filter-input { width: 100%; padding: 8px 10px; border: 1px solid #ccd3db; border-radius: 8px; font-size: 13px; background: #fff; font-family: inherit; margin-bottom: 8px; }
         .tpl-filter-input:focus { outline: none; border-color: #4a90e2; box-shadow: 0 0 0 3px rgba(74,144,226,.15); }
         .tpl-options { display: flex; flex-direction: column; gap: 6px; height: 224px; overflow-y: auto; padding: 2px 2px 2px 0; }
         .tpl-opt { display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 7px 11px; border-radius: 10px; border: 1px solid #ccd3db; background: #fff; cursor: pointer; text-align: left; font-family: inherit; }
         .tpl-opt:hover { border-color: #4a90e2; color: #1557c0; }
         .tpl-opt.active { background: #eff5ff; border-color: #4a90e2; color: #1557c0; }
-        .tpl-opt .nm { font-size: 12.5px; font-weight: 650; display: flex; align-items: center; gap: 5px; }
+        .tpl-opt .nm { font-size: 12.5px; font-weight: 650; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
         .tpl-opt .nm .s { color: #f7b731; }
         .tpl-opt .nm .tag { font-size: 10px; font-weight: 600; color: #8899aa; background: #f5f7f9; border: 1px solid #e3e7eb; border-radius: 999px; padding: 0 6px; }
         .tpl-opt .nm .tag.now { color: #1557c0; background: #eff5ff; border-color: #4a90e2; }
+        .tpl-opt .nm .tag.rem { color: #22a06b; background: #e3fcef; border-color: transparent; }
         .tpl-opt .prev { font-size: 11px; line-height: 1.4; color: #8899aa; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; min-height: 2.8em; }
         .tpl-opt-empty { padding: 10px; font-size: 12px; color: #8899aa; text-align: center; width: 100%; }
     </style>
@@ -665,21 +664,18 @@
                             管理模板 ↗
                         </a>
                     </label>
-                    <div class="tpl-current-row">
-                        <span class="tpl-current-name" id="tplCurrentName"></span>
-                        <button type="button" class="tpl-toggle-btn" id="tplToggleBtn">更換 ▾</button>
-                    </div>
                     <div class="pin-chips" id="pinChips"></div>
-                    <div class="tpl-picker" id="tplPicker">
-                        <input type="text" class="tpl-filter-input" id="tplSearch" placeholder="輸入關鍵字篩選…" autocomplete="off">
-                        <div class="tpl-options" id="tplOptions"></div>
+                    <div class="tpl-split">
+                        <div class="tpl-list-col">
+                            <input type="text" class="tpl-filter-input" id="tplSearch" placeholder="輸入關鍵字篩選…" autocomplete="off">
+                            <div class="tpl-options" id="tplOptions"></div>
+                        </div>
+                        <div class="tpl-content-col">
+                            <label class="form-label">簡訊內容 <span style="color:#888;font-weight:400;font-size:12px">（套用模板後可手動修改）</span></label>
+                            <textarea id="smsContent" class="form-control" placeholder="請輸入簡訊內容..." style="min-height:150px"></textarea>
+                            <div class="char-count">字數限制：<span id="charCount">0</span>/70字</div>
+                        </div>
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">簡訊內容 <span style="color:#888;font-weight:400;font-size:12px">（套用模板後可手動修改）</span></label>
-                    <textarea id="smsContent" class="form-control" placeholder="請輸入簡訊內容..."></textarea>
-                    <div class="char-count">字數限制：<span id="charCount">0</span>/70字</div>
                 </div>
 
                 <div class="form-group">
@@ -920,23 +916,11 @@
         }
 
         let tplComboQ = '';
-        let tplPickerOpen = false;
         let lastAppliedBody = null;
+        let tplLastRemembered = false;
         function hasUnsavedEdit(){
             const el = document.getElementById('smsContent');
             return lastAppliedBody!==null && el && el.value!==lastAppliedBody;
-        }
-        /* 預設收合：平常只顯示目前套用＋釘選 chips，點「更換」才展開完整清單 */
-        function setPickerOpen(open){
-            tplPickerOpen = open;
-            document.getElementById('tplPicker').classList.toggle('open', open);
-            document.getElementById('tplToggleBtn').textContent = open ? '收合 ▴' : '更換 ▾';
-            if(open){
-                tplComboQ = '';
-                const si = document.getElementById('tplSearch');
-                if(si){ si.value=''; si.focus(); }
-                renderTplOptions();
-            }
         }
         function matchesTpl(t){ if(!tplComboQ)return true; return t.name.toLowerCase().indexOf(tplComboQ)>-1; }
         function tplPreview(t){ return resolved(t.body); }
@@ -946,7 +930,8 @@
             const box = document.getElementById('pinChips'); if(!box)return;
             const pinList = allTpls().filter(function(t){ return t.enabled!==false&&tplPins.indexOf(t.id)>-1; });
             box.innerHTML = pinList.map(function(t){
-                return '<button type="button" class="pin-chip'+(t.id===tplLastId?' active':'')+'" data-apply="'+t.id+'"><span class="s">★</span>'+esc(t.name)+'</button>';
+                const activeNow = t.id===tplLastId;
+                return '<button type="button" class="pin-chip'+(activeNow?' active':'')+'" data-apply="'+t.id+'"><span class="s">★</span>'+esc(t.name)+(activeNow&&tplLastRemembered?'<span class="rem-mini">沿用上次</span>':'')+'</button>';
             }).join('');
         }
 
@@ -958,8 +943,9 @@
             function opt(t){
                 const tag = tagForTpl(t);
                 const now = t.id===tplLastId ? '<span class="tag now">套用中</span>' : '';
+                const rem = (t.id===tplLastId&&tplLastRemembered) ? '<span class="tag rem">已沿用上次選擇</span>' : '';
                 return '<button type="button" class="tpl-opt'+(t.id===tplLastId?' active':'')+'" data-apply="'+t.id+'">'+
-                       '<span class="nm">'+esc(t.name)+(tag?'<span class="tag">'+tag+'</span>':'')+now+'</span>'+
+                       '<span class="nm">'+esc(t.name)+(tag?'<span class="tag">'+tag+'</span>':'')+now+rem+'</span>'+
                        '<span class="prev">'+esc(tplPreview(t))+'</span>'+
                        '</button>';
             }
@@ -974,6 +960,7 @@
                 if(!confirm('目前內容已手動修改，套用新模板將覆蓋這些修改，確定要更換嗎？'))return;
             }
             tplLastId = id;
+            tplLastRemembered = !!opts.remembered;
             // 開窗自動帶入（silent）不寫入「上次套用」，否則首次套用的 fallback 分支永遠不會觸發
             if(!opts.silent){
                 store.set(TPL_KEY.last, id);
@@ -985,10 +972,6 @@
             updateCharCount();
             renderTplOptions();
             renderPinChips();
-            const curTag = tagForTpl(t);
-            document.getElementById('tplCurrentName').innerHTML =
-                '目前套用：<b>'+esc(t.name)+'</b>'+(curTag?'<span class="tag">'+curTag+'</span>':'')+(opts.remembered?'<span class="rem">已沿用上次選擇</span>':'');
-            if(!opts.silent) setPickerOpen(false);
         }
 
         var TPL_SHIFT_START = {'早診':9*60+30, '午診':13*60, '晚診':17*60};
@@ -1024,7 +1007,6 @@
             tplComboQ = '';
             const si = document.getElementById('tplSearch'); if(si) si.value = '';
             lastAppliedBody = null;
-            setPickerOpen(false);
             renderTplOptions();
             renderPinChips();
             const picked = computeAutoApplyId();
@@ -1866,10 +1848,9 @@
 
             document.getElementById('smsContent').addEventListener('input', updateCharCount);
 
-            // 模板選擇：篩選 / 展開收合 / 選項與釘選 chips 套用
+            // 模板選擇：篩選 / 選項與釘選 chips 套用（左右並排，清單全程可見）
             const tplInput = document.getElementById('tplSearch');
             tplInput.addEventListener('input', function(){ tplComboQ=this.value.trim().toLowerCase(); renderTplOptions(); });
-            document.getElementById('tplToggleBtn').addEventListener('click', function(){ setPickerOpen(!tplPickerOpen); });
             document.getElementById('tplOptions').addEventListener('click', function(e){
                 const b = e.target.closest('[data-apply]');
                 if(b) applyTemplate(b.getAttribute('data-apply'));

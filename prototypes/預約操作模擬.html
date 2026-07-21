@@ -74,6 +74,7 @@
   .m-x:hover{background:var(--surface-2);color:var(--ink)}
   .m-body{padding:18px 20px;max-height:64vh;overflow:auto}
   .m-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px;justify-content:flex-end}
+  #smsScrim .modal{width:680px}
 
   .fld{margin-bottom:15px}
   .fld>label{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:5px}
@@ -100,30 +101,29 @@
   .tpl-bar{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:11px 12px;margin-bottom:14px}
   .tpl-bar .tt{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
   .tpl-bar .tt .lk{margin-left:auto;font-size:11px;font-weight:600;color:var(--blue);cursor:pointer}
-  .tpl-current-row{display:flex;align-items:center;gap:8px}
-  .tpl-current-name{flex:1;font-size:12.5px;color:var(--blue-deep);font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-  .tpl-current-name .rem{font-size:11px;font-weight:700;color:var(--ok);background:var(--ok-wash);border-radius:999px;padding:1px 8px}
-  .tpl-current-name .tag{font-size:10px;font-weight:600;color:var(--faint);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:0 6px}
-  .tpl-toggle-btn{font-size:12px;font-weight:600;color:var(--ink);background:#fff;border:1px solid var(--line-strong);border-radius:7px;padding:5px 12px;white-space:nowrap}
-  .tpl-toggle-btn:hover{border-color:var(--blue);color:var(--blue)}
   .pin-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
   .pin-chips:empty{display:none}
   .pin-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;border:1px solid var(--line-strong);background:#fff;color:var(--ink)}
   .pin-chip:hover{border-color:var(--blue);color:var(--blue)}
   .pin-chip.active{background:var(--blue-wash);border-color:var(--blue);color:var(--blue-deep)}
   .pin-chip .s{color:var(--gold)}
-  .tpl-picker{display:none;margin-top:9px}
-  .tpl-picker.open{display:block}
+  .pin-chip .rem-mini{font-size:9.5px;font-weight:700;color:var(--ok);background:var(--ok-wash);border-radius:999px;padding:1px 6px}
+  /* 左右並排：左清單／右內容，全程可見，不收合，避免切模板時內容框跟著位移 */
+  .tpl-split{display:grid;grid-template-columns:216px 1fr;gap:16px;margin-top:10px}
+  .tpl-list-col{display:flex;flex-direction:column}
+  .tpl-content-col{margin:0}
+  @media (max-width:640px){.tpl-split{grid-template-columns:1fr}}
   .tpl-filter-input{width:100%;padding:8px 10px;border:1px solid var(--line-strong);border-radius:8px;font-size:13px;background:#fff;color:var(--ink);font-family:inherit;margin-bottom:9px}
   .tpl-filter-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-wash)}
   .tpl-options{display:flex;flex-direction:column;gap:6px;height:224px;overflow-y:auto;padding:2px 2px 2px 0}
   .tpl-opt{display:flex;flex-direction:column;gap:2px;width:100%;padding:7px 11px;border-radius:10px;border:1px solid var(--line-strong);background:#fff;cursor:pointer;text-align:left}
   .tpl-opt:hover{border-color:var(--blue);color:var(--blue-deep)}
   .tpl-opt.active{background:var(--blue-wash);border-color:var(--blue);color:var(--blue-deep)}
-  .tpl-opt .nm{font-size:12.5px;font-weight:650;display:flex;align-items:center;gap:5px}
+  .tpl-opt .nm{font-size:12.5px;font-weight:650;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
   .tpl-opt .nm .s{color:var(--gold)}
   .tpl-opt .nm .tag{font-size:10px;font-weight:600;color:var(--faint);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:0 6px}
   .tpl-opt .nm .tag.now{color:var(--blue-deep);background:var(--blue-wash);border-color:var(--blue)}
+  .tpl-opt .nm .tag.rem{color:var(--ok);background:var(--ok-wash);border-color:transparent}
   .tpl-opt .prev{font-size:11px;line-height:1.4;color:var(--faint);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;min-height:2.8em}
   .tpl-opt-empty{padding:10px;font-size:12px;color:var(--faint);text-align:center;width:100%}
 
@@ -243,26 +243,23 @@
     <div class="m-body">
       <div id="smsAlert"></div>
 
-      <!-- 多模板選擇（彈窗內下拉 + 釘選列） -->
+      <!-- 多模板選擇（左右並排：左清單／右內容，全程可見不收合） -->
       <div class="tpl-bar">
         <div class="tt">💬 套用簡訊模板 <span class="lk" id="manageTpl">管理模板 ↗</span></div>
-        <div class="tpl-current-row">
-          <span class="tpl-current-name" id="tplCurrentName"></span>
-          <button type="button" class="tpl-toggle-btn" id="tplToggleBtn">更換 ▾</button>
-        </div>
         <div class="pin-chips" id="pinChips"></div>
-        <div class="tpl-picker" id="tplPicker">
-          <input type="text" class="tpl-filter-input" id="tplSearch" placeholder="輸入關鍵字篩選…" autocomplete="off">
-          <div class="tpl-options" id="tplOptions"></div>
+        <div class="tpl-split">
+          <div class="tpl-list-col">
+            <input type="text" class="tpl-filter-input" id="tplSearch" placeholder="輸入關鍵字篩選…" autocomplete="off">
+            <div class="tpl-options" id="tplOptions"></div>
+          </div>
+          <div class="fld tpl-content-col">
+            <label>簡訊內容</label>
+            <div class="sub" id="smsRecipient"></div>
+            <div class="sub">套用模板後已帶入預約資料，可直接於下方編輯內容後發送。</div>
+            <textarea class="ctrl" id="smsContent" rows="7"></textarea>
+            <div class="char-line"><span></span><span>字數限制：<b id="smsChars">0</b>/70字 · 預估 <b id="smsSegs">0</b> 則</span></div>
+          </div>
         </div>
-      </div>
-
-      <div class="fld">
-        <label>簡訊內容</label>
-        <div class="sub" id="smsRecipient"></div>
-        <div class="sub">套用模板後已帶入預約資料，可直接於下方編輯內容後發送。</div>
-        <textarea class="ctrl" id="smsContent" rows="5"></textarea>
-        <div class="char-line"><span></span><span>字數限制：<b id="smsChars">0</b>/70字 · 預估 <b id="smsSegs">0</b> 則</span></div>
       </div>
 
       <div class="fld"><label>發送時間</label><input type="datetime-local" class="ctrl" id="smsTime"></div>
@@ -469,12 +466,13 @@
 
   var lastAppliedBody=null;
   function hasUnsavedEdit(){return lastAppliedBody!==null&&smsContent.value!==lastAppliedBody;}
+  var lastRemembered=false;
   function applyTemplate(id,opts){
     opts=opts||{};var t=tplById(id);if(!t)return;
     if(!opts.silent&&hasUnsavedEdit()){
       if(!confirm("目前內容已手動修改，套用新模板將覆蓋這些修改，確定要更換嗎？"))return;
     }
-    lastId=id;
+    lastId=id;lastRemembered=!!opts.remembered;
     /* 開窗自動帶入（silent）不寫入「上次套用」，否則首次套用的 fallback 分支永遠不會觸發 */
     if(!opts.silent){
       store.set(KEY.last,id);
@@ -483,33 +481,23 @@
     smsContent.value=resolved(t.body);refreshRender();
     lastAppliedBody=smsContent.value;
     renderTplOptions();renderPinChips();
-    var curTag=tagFor(t);
-    document.getElementById("tplCurrentName").innerHTML='目前套用：<b>'+esc(t.name)+'</b>'+(curTag?'<span class="tag">'+curTag+'</span>':'')+(opts.remembered?'<span class="rem">已沿用上次選擇</span>':'');
     if(!opts.silent){
-      setPickerOpen(false);
       toast("已套用「"+t.name+"」並帶入預約資料");
     }
   }
 
-  /* 預設收合：平常只顯示目前套用＋釘選 chips，點「更換」才展開完整清單 */
-  var tplComboQ="",tplPickerOpen=false;
-  function setPickerOpen(open){
-    tplPickerOpen=open;
-    document.getElementById("tplPicker").classList.toggle("open",open);
-    document.getElementById("tplToggleBtn").textContent=open?"收合 ▴":"更換 ▾";
-    if(open){
-      tplComboQ="";var si=document.getElementById("tplSearch");
-      if(si){si.value="";si.focus();}
-      renderTplOptions();
-    }
-  }
+  /* 左右並排：清單全程可見，不做收合/展開 */
+  var tplComboQ="";
   function matchesTpl(t){if(!tplComboQ)return true;return t.name.toLowerCase().indexOf(tplComboQ)>-1;}
   function tplPreview(t){return resolved(t.body);}
   function tagFor(t){return isCustom(t.id)?"自訂":(t.id===BU_DESIGNATED_ID?"系統預設":"");}
   function renderPinChips(){
     var box=document.getElementById("pinChips");if(!box)return;
     var pinList=allTpl().filter(function(t){return t.enabled!==false&&pins.indexOf(t.id)>-1;});
-    box.innerHTML=pinList.map(function(t){return '<button type="button" class="pin-chip'+(t.id===lastId?' active':'')+'" data-apply="'+t.id+'"><span class="s">★</span>'+esc(t.name)+'</button>';}).join("");
+    box.innerHTML=pinList.map(function(t){
+      var activeNow=t.id===lastId;
+      return '<button type="button" class="pin-chip'+(activeNow?' active':'')+'" data-apply="'+t.id+'"><span class="s">★</span>'+esc(t.name)+(activeNow&&lastRemembered?'<span class="rem-mini">沿用上次</span>':'')+'</button>';
+    }).join("");
   }
   function renderTplOptions(){
     var box=document.getElementById("tplOptions");if(!box)return;
@@ -519,8 +507,9 @@
     function opt(t){
       var tag=tagFor(t);
       var now=t.id===lastId?'<span class="tag now">套用中</span>':'';
+      var rem=(t.id===lastId&&lastRemembered)?'<span class="tag rem">已沿用上次選擇</span>':'';
       return '<button type="button" class="tpl-opt'+(t.id===lastId?' active':'')+'" data-apply="'+t.id+'">'+
-        '<span class="nm">'+esc(t.name)+(tag?'<span class="tag">'+tag+'</span>':'')+now+'</span>'+
+        '<span class="nm">'+esc(t.name)+(tag?'<span class="tag">'+tag+'</span>':'')+now+rem+'</span>'+
         '<span class="prev">'+esc(tplPreview(t))+'</span>'+
         '</button>';
     }
@@ -529,7 +518,6 @@
   }
   var tplInput=document.getElementById("tplSearch");
   tplInput.addEventListener("input",function(){tplComboQ=this.value.trim().toLowerCase();renderTplOptions();});
-  document.getElementById("tplToggleBtn").addEventListener("click",function(){setPickerOpen(!tplPickerOpen);});
   document.getElementById("tplOptions").addEventListener("click",function(e){
     var b=e.target.closest("[data-apply]");
     if(b)applyTemplate(b.getAttribute("data-apply"));
@@ -553,7 +541,6 @@
     document.getElementById("smsRecipient").textContent="收件人："+recipientName(bk)+"　"+recipientPhone(bk)+(isVirtualMember(bk)?"（99－虛擬會員／HQ0000146）":"");
     tplComboQ="";document.getElementById("tplSearch").value="";
     lastAppliedBody=null;
-    setPickerOpen(false);
     renderAlert();renderTplOptions();renderPinChips();
     var now=new Date();
     document.getElementById("smsTime").value=todayISO()+"T"+pad2(now.getHours())+":"+pad2(now.getMinutes());
