@@ -886,10 +886,17 @@
         let tplRecent  = loadJSON(TPL_KEY.recent, []);
         let tplLastId  = store.get(TPL_KEY.last) || null;
 
-        function allTpls(){ return customTpls.concat(builtinTpls); }
+        /* 一間門市只會是單一科別（西醫或中醫擇一，不會混），示範門市固定為西醫。
+           KEEP IN SYNC with 模板簡訊設定教學.html / 預約操作模擬.html */
+        const STORE_BU = 'BU1';
+        const BU_DESIGNATED_MAP = {BU1:'b1', BU2:'b3'};
+        const BU_DESIGNATED_ID = BU_DESIGNATED_MAP[STORE_BU];
+        /* 本門市能看到的系統內建模板：只有跟本門市同科別的，不相干科別的系統模板不會出現 */
+        const builtinTplsInStore = builtinTpls.filter(function(t){ return t.bu===STORE_BU; });
+
+        function allTpls(){ return customTpls.concat(builtinTplsInStore); }
         function tplById(id){ return allTpls().find(function(t){ return t.id===id; })||null; }
         function isCustomTpl(id){ return id && id.indexOf('c')===0; }
-        const BU_DESIGNATED_ID = 'b1'; // KEEP IN SYNC with 模板簡訊設定教學.html / 預約操作模擬.html
         function customCreatedTs(t){ return parseInt(String(t.id).slice(1),10)||0; }
         function computeAutoApplyId(){
             const storeDefault = store.get(TPL_KEY.default)||null;
@@ -937,7 +944,7 @@
             const box = document.getElementById('tplOptions'); if(!box)return;
             /* 已釘選的模板外層 pinChips 已經有了，這裡只放「已啟用的本門市自訂（未釘選）」與「系統預設（未釘選）」 */
             const mine        = customTpls.filter(function(t){ return t.enabled!==false&&matchesTpl(t)&&tplPins.indexOf(t.id)<0; });
-            const sysDefault  = builtinTpls.filter(function(t){ return t.id===BU_DESIGNATED_ID&&t.enabled!==false&&matchesTpl(t)&&tplPins.indexOf(t.id)<0; });
+            const sysDefault  = builtinTplsInStore.filter(function(t){ return t.id===BU_DESIGNATED_ID&&t.enabled!==false&&matchesTpl(t)&&tplPins.indexOf(t.id)<0; });
             function opt(t){
                 const tag = tagForTpl(t);
                 const now = t.id===tplLastId ? '<span class="tag now">套用中</span>' : '';

@@ -366,8 +366,14 @@
   }
   var pins=loadJSON(KEY.pins,[]);
   var defaultTplId=store.get(KEY.default)||null;
-  var BU_DESIGNATED_ID="b1"; // KEEP IN SYNC with 預約操作模擬.html / 預約查詢互動.html
-  function allTpl(){return custom.concat(builtin);}
+  /* 一間門市只會是單一科別（西醫或中醫擇一，不會混），示範門市固定為西醫。
+     KEEP IN SYNC with 預約操作模擬.html / 預約查詢互動.html */
+  var STORE_BU="BU1";
+  var BU_DESIGNATED_MAP={BU1:"b1",BU2:"b3"};
+  var BU_DESIGNATED_ID=BU_DESIGNATED_MAP[STORE_BU];
+  /* 本門市能看到的系統內建模板：只有跟本門市同科別的，不相干科別的系統模板不會出現 */
+  var builtinInStore=builtin.filter(function(t){return t.bu===STORE_BU;});
+  function allTpl(){return custom.concat(builtinInStore);}
 
   /* ---------- 模板異動稽核 Log ---------- */
   var CURRENT_USER=(document.querySelector(".user .nm")||{}).textContent||"系統人員";
@@ -480,7 +486,7 @@
     var pinnedAll=allTpl().filter(function(t){return pins.indexOf(t.id)>-1&&matches(t);});
     var pinnedIds=pinnedAll.map(function(t){return t.id;});
     var mine=custom.filter(function(t){return pinnedIds.indexOf(t.id)<0&&matches(t);});
-    var builtinList=builtin.filter(function(t){return pinnedIds.indexOf(t.id)<0&&matches(t);});
+    var builtinList=builtinInStore.filter(function(t){return pinnedIds.indexOf(t.id)<0&&matches(t);});
     var h="";
     if(pinnedAll.length)h+='<div class="group-t">★ 釘選</div>'+pinnedAll.map(cardHTML).join("");
     if(mine.length)h+='<div class="group-t">本門市自訂</div>'+mine.map(cardHTML).join("");
@@ -740,7 +746,7 @@
 
   /* ---------- init ---------- */
   renderList();
-  loadIntoEditor(builtin[0].id);
+  loadIntoEditor(builtinInStore[0].id);
 })();
 </script>
 </body>
