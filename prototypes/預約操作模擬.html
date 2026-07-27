@@ -170,8 +170,8 @@
       <span class="tb-label">切換門市：</span>
       <select class="tb-select"><option>示範麗雅</option></select>
       <button class="tb-btn">表格設定</button>
-      <button class="tb-btn solid">美療</button>
-      <button class="tb-btn">門診</button>
+      <button class="tb-btn solid" id="tbBuAesthetic" title="示範用：切換本門市科別為西醫（BU1），觀察模板清單如何跟著換">美療</button>
+      <button class="tb-btn" id="tbBuClinic" title="示範用：切換本門市科別為中醫（BU2），觀察模板清單如何跟著換">門診</button>
       <button class="tb-btn">🔄 刷新資料</button>
       <button class="tb-btn">‹</button>
       <select class="tb-select" id="tbDateSel"><option id="tbDateOpt">今天</option></select>
@@ -279,7 +279,7 @@
   var mem={};
   var store={get:function(k){try{return localStorage.getItem(k);}catch(e){return mem[k]||null;}},
              set:function(k,v){try{localStorage.setItem(k,v);}catch(e){mem[k]=v;}}};
-  var KEY={custom:"npos_tpl_custom",pins:"npos_tpl_pins",recent:"npos_tpl_recent",last:"npos_tpl_last",default:"npos_tpl_default"};
+  var KEY={custom:"npos_tpl_custom",pins:"npos_tpl_pins",recent:"npos_tpl_recent",last:"npos_tpl_last",default:"npos_tpl_default",bu:"npos_store_bu"};
   function loadJSON(k,d){try{var v=store.get(k);return v?JSON.parse(v):d;}catch(e){return d;}}
   function saveJSON(k,v){store.set(k,JSON.stringify(v));}
   function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
@@ -299,13 +299,18 @@
   var pins=loadJSON(KEY.pins,[]);
   var recent=loadJSON(KEY.recent,[]);
   var lastId=store.get(KEY.last)||null;
-  /* 一間門市只會是單一科別（西醫或中醫擇一，不會混），示範門市固定為西醫。
+  /* 一間門市只會是單一科別（西醫或中醫擇一，不會混）。STORE_BU 存進 localStorage，
+     跟模板簡訊設定教學.html／預約查詢互動.html 共用同一份「目前示範門市科別」設定。
      KEEP IN SYNC with 模板簡訊設定教學.html / 預約查詢互動.html */
-  var STORE_BU="BU1";
   var BU_DESIGNATED_MAP={BU1:"b1",BU2:"b3"};
-  var BU_DESIGNATED_ID=BU_DESIGNATED_MAP[STORE_BU];
-  /* 本門市能看到的系統內建模板：只有跟本門市同科別的，不相干科別的系統模板不會出現 */
-  var builtinInStore=builtin.filter(function(t){return t.bu===STORE_BU;});
+  var STORE_BU,BU_DESIGNATED_ID,builtinInStore;
+  function applyStoreBu(bu){
+    STORE_BU=bu;
+    BU_DESIGNATED_ID=BU_DESIGNATED_MAP[STORE_BU];
+    /* 本門市能看到的系統內建模板：只有跟本門市同科別的，不相干科別的系統模板不會出現 */
+    builtinInStore=builtin.filter(function(t){return t.bu===STORE_BU;});
+  }
+  applyStoreBu(store.get(KEY.bu)||"BU1");
   function allTpl(){return custom.concat(builtinInStore);}
   function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
   function isCustom(id){return id&&id.indexOf("c")===0;}
@@ -639,8 +644,25 @@
   var toastTimer;
   function toast(msg){var el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove("show");},2600);}
 
+  /* ---------- 示範門市科別切換（demo 用：美療＝西醫 BU1／門診＝中醫 BU2，模擬系統內建模板清單如何跟著換） ---------- */
+  var tbBuAesthetic=document.getElementById("tbBuAesthetic"),tbBuClinic=document.getElementById("tbBuClinic");
+  function renderBuButtons(){
+    tbBuAesthetic.classList.toggle("solid",STORE_BU==="BU1");
+    tbBuClinic.classList.toggle("solid",STORE_BU==="BU2");
+  }
+  function switchStoreBu(bu){
+    if(bu===STORE_BU)return;
+    applyStoreBu(bu);
+    store.set(KEY.bu,STORE_BU);
+    renderBuButtons();
+    toast("已切換示範門市科別為「"+(STORE_BU==="BU1"?"西醫":"中醫")+"」，系統預設模板同步更新");
+  }
+  tbBuAesthetic.addEventListener("click",function(){switchStoreBu("BU1");});
+  tbBuClinic.addEventListener("click",function(){switchStoreBu("BU2");});
+  renderBuButtons();
+
   /* ---------- 重置示範資料（測試/展示用） ---------- */
-  var DEMO_KEYS=["npos_tpl_custom","npos_tpl_pins","npos_tpl_recent","npos_tpl_last","npos_tpl_default","npos_sms_enabled","npos_sms_tele"];
+  var DEMO_KEYS=["npos_tpl_custom","npos_tpl_pins","npos_tpl_recent","npos_tpl_last","npos_tpl_default","npos_sms_enabled","npos_sms_tele","npos_store_bu"];
   document.getElementById("resetBtn").addEventListener("click",function(){
     if(!confirm("重置示範資料？\n將清除所有自訂模板、釘選、門市預設與上次套用紀錄，恢復成初始示範狀態，此動作無法復原。"))return;
     DEMO_KEYS.forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});

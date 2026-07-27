@@ -201,6 +201,13 @@
           <span class="sl">含電訪/銷判斷</span>
           <div class="switch" id="swTele" role="switch" aria-checked="false"></div>
         </div>
+        <div class="sw-row" title="示範用：切換本門市科別，觀察系統內建模板清單如何跟著換">
+          <span class="sl">示範門市科別</span>
+          <select id="storeBuSel" style="font-size:12.5px;padding:6px 9px;border:1px solid var(--line-strong);border-radius:7px;background:#fff;color:var(--ink);font-family:inherit">
+            <option value="BU1">西醫（BU1）</option>
+            <option value="BU2">中醫（BU2）</option>
+          </select>
+        </div>
       </div>
       <button class="btn btn-ghost" id="auditLogBtn" style="align-self:flex-start;white-space:nowrap">📋 異動紀錄</button>
     </div>
@@ -307,7 +314,7 @@
   var store={get:function(k){try{return localStorage.getItem(k);}catch(e){return mem[k]||null;}},
              set:function(k,v){try{localStorage.setItem(k,v);}catch(e){mem[k]=v;}}};
   var KEY={custom:"npos_tpl_custom",pins:"npos_tpl_pins",recent:"npos_tpl_recent",last:"npos_tpl_last",
-           swMain:"npos_sms_enabled",swTele:"npos_sms_tele",default:"npos_tpl_default"};
+           swMain:"npos_sms_enabled",swTele:"npos_sms_tele",default:"npos_tpl_default",bu:"npos_store_bu"};
   function loadJSON(k,d){try{var v=store.get(k);return v?JSON.parse(v):d;}catch(e){return d;}}
   function saveJSON(k,v){store.set(k,JSON.stringify(v));}
   function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
@@ -366,13 +373,18 @@
   }
   var pins=loadJSON(KEY.pins,[]);
   var defaultTplId=store.get(KEY.default)||null;
-  /* 一間門市只會是單一科別（西醫或中醫擇一，不會混），示範門市固定為西醫。
-     KEEP IN SYNC with 預約操作模擬.html / 預約查詢互動.html */
-  var STORE_BU="BU1";
+  /* 一間門市只會是單一科別（西醫或中醫擇一，不會混）。STORE_BU 存進 localStorage，
+     跟預約操作模擬.html／預約查詢互動.html 共用同一份「目前示範門市科別」設定，
+     切換後三頁都會反映最新科別。KEEP IN SYNC with 預約操作模擬.html / 預約查詢互動.html */
   var BU_DESIGNATED_MAP={BU1:"b1",BU2:"b3"};
-  var BU_DESIGNATED_ID=BU_DESIGNATED_MAP[STORE_BU];
-  /* 本門市能看到的系統內建模板：只有跟本門市同科別的，不相干科別的系統模板不會出現 */
-  var builtinInStore=builtin.filter(function(t){return t.bu===STORE_BU;});
+  var STORE_BU,BU_DESIGNATED_ID,builtinInStore;
+  function applyStoreBu(bu){
+    STORE_BU=bu;
+    BU_DESIGNATED_ID=BU_DESIGNATED_MAP[STORE_BU];
+    /* 本門市能看到的系統內建模板：只有跟本門市同科別的，不相干科別的系統模板不會出現 */
+    builtinInStore=builtin.filter(function(t){return t.bu===STORE_BU;});
+  }
+  applyStoreBu(store.get(KEY.bu)||"BU1");
   function allTpl(){return custom.concat(builtinInStore);}
 
   /* ---------- 模板異動稽核 Log ---------- */
@@ -736,12 +748,33 @@
   window.addEventListener("beforeunload",function(e){if(isDirty()){e.preventDefault();e.returnValue="";}});
 
   /* ---------- 重置示範資料（測試/展示用） ---------- */
-  var DEMO_KEYS=["npos_tpl_custom","npos_tpl_pins","npos_tpl_recent","npos_tpl_last","npos_tpl_default","npos_sms_enabled","npos_sms_tele"];
+  var DEMO_KEYS=["npos_tpl_custom","npos_tpl_pins","npos_tpl_recent","npos_tpl_last","npos_tpl_default","npos_sms_enabled","npos_sms_tele","npos_store_bu"];
   document.getElementById("resetBtn").addEventListener("click",function(){
     confirmDialog({title:"重置示範資料？",message:"將清除所有自訂模板、釘選、門市預設與開關設定，恢復成初始示範狀態，此動作無法復原。",okText:"重置",cancelText:"取消",danger:true},function(){
       DEMO_KEYS.forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});
       location.reload();
     });
+  });
+
+  /* ---------- 示範門市科別切換（demo 用，模擬跨科別門市時系統內建模板清單的差異） ---------- */
+  var storeBuSel=document.getElementById("storeBuSel");
+  storeBuSel.value=STORE_BU;
+  function switchStoreBu(bu){
+    applyStoreBu(bu);
+    store.set(KEY.bu,STORE_BU);
+    storeBuSel.value=STORE_BU;
+    renderList();
+    loadIntoEditor(builtinInStore[0].id);
+    toast("已切換示範門市科別為「"+(STORE_BU==="BU1"?"西醫":"中醫")+"」，系統內建模板清單同步更新");
+  }
+  storeBuSel.addEventListener("change",function(){
+    var bu=storeBuSel.value;
+    if(isDirty()){
+      confirmDialog({title:"捨棄目前變更？",message:"目前編輯內容尚未儲存，切換門市科別將會遺失這些變更。",okText:"捨棄並切換",cancelText:"繼續編輯",danger:true},function(){switchStoreBu(bu);});
+      storeBuSel.value=STORE_BU;
+      return;
+    }
+    switchStoreBu(bu);
   });
 
   /* ---------- init ---------- */

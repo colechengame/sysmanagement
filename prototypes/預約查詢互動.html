@@ -50,6 +50,17 @@
         .reset-btn:hover {
             background: rgba(220,53,69,1);
         }
+        .store-bu-sel {
+            font-size: 12px;
+            font-weight: 650;
+            color: #fff;
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 7px;
+            padding: 5px 8px;
+            cursor: pointer;
+        }
+        .store-bu-sel option { color: #1f2933; }
 
         .table-container {
             background: white;
@@ -593,6 +604,10 @@
     <div class="header">
         <h2>📋 預約查詢 - 聯絡狀態管理（情境 1-5 完整版）</h2>
         <div class="header-right">
+            <select class="store-bu-sel" id="storeBuSel" title="示範用：切換本門市科別，觀察系統內建模板清單如何跟著換">
+                <option value="BU1">示範門市科別：西醫</option>
+                <option value="BU2">示範門市科別：中醫</option>
+            </select>
             <button class="reset-btn" id="resetBtn" title="清除本機示範資料，恢復成初始狀態">🔄 重置示範資料</button>
             <div>
                 <div>2025/10/30 ~ 2025/11/02</div>
@@ -859,7 +874,7 @@
             get: function(k){ try{ return localStorage.getItem(k); }catch(e){ return mem[k]||null; } },
             set: function(k,v){ try{ localStorage.setItem(k,v); }catch(e){ mem[k]=v; } }
         };
-        const TPL_KEY = {custom:'npos_tpl_custom', pins:'npos_tpl_pins', recent:'npos_tpl_recent', last:'npos_tpl_last', default:'npos_tpl_default'};
+        const TPL_KEY = {custom:'npos_tpl_custom', pins:'npos_tpl_pins', recent:'npos_tpl_recent', last:'npos_tpl_last', default:'npos_tpl_default', bu:'npos_store_bu'};
         function loadJSON(k,d){ try{ var v=store.get(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
         function saveJSON(k,v){ store.set(k,JSON.stringify(v)); }
         function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -886,13 +901,18 @@
         let tplRecent  = loadJSON(TPL_KEY.recent, []);
         let tplLastId  = store.get(TPL_KEY.last) || null;
 
-        /* 一間門市只會是單一科別（西醫或中醫擇一，不會混），示範門市固定為西醫。
+        /* 一間門市只會是單一科別（西醫或中醫擇一，不會混）。STORE_BU 存進 localStorage，
+           跟模板簡訊設定教學.html／預約操作模擬.html 共用同一份「目前示範門市科別」設定。
            KEEP IN SYNC with 模板簡訊設定教學.html / 預約操作模擬.html */
-        const STORE_BU = 'BU1';
         const BU_DESIGNATED_MAP = {BU1:'b1', BU2:'b3'};
-        const BU_DESIGNATED_ID = BU_DESIGNATED_MAP[STORE_BU];
-        /* 本門市能看到的系統內建模板：只有跟本門市同科別的，不相干科別的系統模板不會出現 */
-        const builtinTplsInStore = builtinTpls.filter(function(t){ return t.bu===STORE_BU; });
+        let STORE_BU, BU_DESIGNATED_ID, builtinTplsInStore;
+        function applyStoreBu(bu){
+            STORE_BU = bu;
+            BU_DESIGNATED_ID = BU_DESIGNATED_MAP[STORE_BU];
+            /* 本門市能看到的系統內建模板：只有跟本門市同科別的，不相干科別的系統模板不會出現 */
+            builtinTplsInStore = builtinTpls.filter(function(t){ return t.bu===STORE_BU; });
+        }
+        applyStoreBu(store.get(TPL_KEY.bu) || 'BU1');
 
         function allTpls(){ return customTpls.concat(builtinTplsInStore); }
         function tplById(id){ return allTpls().find(function(t){ return t.id===id; })||null; }
@@ -1890,8 +1910,17 @@
             });
         });
 
+        // ── 示範門市科別切換（demo 用，模擬跨科別門市時系統內建模板清單的差異） ──────────────
+        var storeBuSel = document.getElementById('storeBuSel');
+        storeBuSel.value = STORE_BU;
+        storeBuSel.addEventListener('change', function(){
+            applyStoreBu(storeBuSel.value);
+            store.set(TPL_KEY.bu, STORE_BU);
+            showToast('已切換示範門市科別為「'+(STORE_BU==='BU1'?'西醫':'中醫')+'」，系統預設模板同步更新');
+        });
+
         // ── 重置示範資料（測試/展示用） ──────────────
-        var DEMO_KEYS = ['npos_tpl_custom','npos_tpl_pins','npos_tpl_recent','npos_tpl_last','npos_tpl_default','npos_sms_enabled','npos_sms_tele'];
+        var DEMO_KEYS = ['npos_tpl_custom','npos_tpl_pins','npos_tpl_recent','npos_tpl_last','npos_tpl_default','npos_sms_enabled','npos_sms_tele','npos_store_bu'];
         document.getElementById('resetBtn').addEventListener('click', function(){
             if(!confirm('重置示範資料？\n將清除所有自訂模板、釘選、門市預設與上次套用紀錄，恢復成初始示範狀態，此動作無法復原。'))return;
             DEMO_KEYS.forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
