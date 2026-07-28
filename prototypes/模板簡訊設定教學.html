@@ -136,35 +136,6 @@
   .m-body{padding:18px 20px;font-size:13.5px;line-height:1.7;color:var(--muted)}
   .m-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px;justify-content:flex-end}
 
-  /* 模板異動稽核 Log */
-  .modal.lg{width:760px}
-  @media (max-width:820px){.modal.lg{width:100%}}
-  .m-close{font-size:20px;line-height:1;color:var(--faint);cursor:pointer;padding:2px}
-  .m-close:hover{color:var(--ink)}
-  .audit-toolbar{display:flex;gap:10px;margin-bottom:14px}
-  .audit-toolbar select{font-size:12.5px;padding:7px 9px;border:1px solid var(--line-strong);border-radius:7px;background:#fff}
-  .audit-table{width:100%;border-collapse:collapse;font-size:12.5px}
-  .audit-table th{text-align:left;font-size:11px;color:var(--faint);font-weight:700;padding:6px 8px;border-bottom:1px solid var(--line-strong)}
-  .audit-table td{padding:8px;border-bottom:1px solid var(--line)}
-  .audit-badge{font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;white-space:nowrap}
-  .audit-badge.create{background:#e3fcef;color:#0f8a4f}
-  .audit-badge.update{background:var(--blue-wash);color:var(--blue-deep)}
-  .audit-badge.delete{background:var(--danger-wash);color:var(--danger)}
-  .audit-expand{font-size:11.5px;font-weight:600;color:var(--blue-deep);background:none;border:none;padding:2px 4px}
-  .audit-detail-row td{background:var(--surface-2)}
-  .audit-field-row{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;font-size:12.5px}
-  .audit-field-lbl{min-width:56px;color:var(--faint);font-weight:600}
-  .audit-field-val{color:var(--muted)}
-  .audit-field-val.chg{color:var(--ink);font-weight:700}
-  .audit-arrow{color:var(--faint)}
-  .audit-diff-box{background:#fff;border:1px solid var(--line);border-radius:7px;padding:9px 10px;font-size:12.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin-bottom:4px}
-  .audit-diff-box.chg{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-wash)}
-  .audit-diff-lbl{font-size:11px;color:var(--faint);font-weight:600;margin:8px 0 3px}
-  .audit-enable-badge{font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px}
-  .audit-enable-badge.on{background:#e3fcef;color:#0f8a4f}
-  .audit-enable-badge.off{background:var(--surface-2);color:var(--faint);border:1px solid var(--line)}
-  .audit-ico{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;color:var(--faint);font-size:13px}
-  .audit-ico:hover{background:var(--surface-2)}
 
   /* 啟用開關說明文字 */
   .ed-hint{font-size:11.5px;color:var(--faint);margin-top:8px;line-height:1.5}
@@ -209,7 +180,6 @@
           </select>
         </div>
       </div>
-      <button class="btn btn-ghost" id="auditLogBtn" style="align-self:flex-start;white-space:nowrap">📋 異動紀錄</button>
     </div>
 
     <div class="grid">
@@ -287,26 +257,6 @@
   </div>
 </div>
 
-<div class="scrim" id="auditLogScrim">
-  <div class="modal lg">
-    <div class="m-head"><h3>📋 模板異動稽核 Log</h3><span class="m-close" id="auditLogCloseBtn">&times;</span></div>
-    <div class="m-body">
-      <div class="audit-toolbar">
-        <select id="auditFilterTpl"></select>
-        <select id="auditFilterAction">
-          <option value="all">全部動作</option><option value="create">新增</option>
-          <option value="update">編輯</option><option value="delete">刪除</option>
-        </select>
-      </div>
-      <table class="audit-table">
-        <thead><tr><th>操作時間</th><th>操作者</th><th>動作</th><th>模板名稱</th><th></th></tr></thead>
-        <tbody id="auditTableBody"></tbody>
-      </table>
-    </div>
-    <div class="m-foot"><button class="btn btn-ghost" id="auditLogCloseBtn2">關閉</button></div>
-  </div>
-</div>
-
 <script>
 (function(){
   "use strict";
@@ -347,12 +297,16 @@
   /* ---------- 模板資料（與預約操作頁共用 localStorage） ---------- */
   var builtin=[
     {id:"b1",name:"西醫－標準預約提醒",desc:"西醫通用預約確認簡訊",enabled:true,bu:"BU1",
+     creator:"系統管理員",created:"2026/6/1",
      body:"溫馨提醒您在『{{門市名稱}}』{{預約日期}}{{預約時間}}有預約療程，地址：{{門市地址}}，尊寵服務專線{{門市電話}}"},
     {id:"b2",name:"西醫－療程提醒",desc:"西醫預約療程提醒",enabled:true,bu:"BU1",
+     creator:"系統管理員",created:"2026/6/1",
      body:"溫馨提醒您在『{{門市名稱}}』{{預約日期}}{{預約時間}}有預約{{療程}}，請前往{{門市地址}}，洽詢{{門市電話}}。"},
     {id:"b3",name:"中醫－預約門診提醒",desc:"中醫門診一般預約提醒",enabled:true,bu:"BU2",
+     creator:"系統管理員",created:"2026/6/1",
      body:"提醒您於『{{門市名稱}}』有門診預約{{預約日期}}{{診間}}{{時段}}{{門市地址}}，請依現場叫號順序看診。洽詢{{門市電話}}。"},
     {id:"b4",name:"中醫－門診提醒自動報到(代短網址)",desc:"中醫門診預約提醒短網址版本",enabled:true,bu:"BU2",
+     creator:"系統管理員",created:"2026/6/1",updater:"系統管理員",updated:"2026/7/15",
      body:"提醒您：『{{門市名稱}}』{{預約日期}}{{診間}}{{時段}}第{{派號}}號,依序看診報到查詢通知👉{{叫號機網址}}"}
   ];
   var custom=loadJSON(KEY.custom,[]);
@@ -365,10 +319,9 @@
   });
   if(removedMemberNameToken)saveJSON(KEY.custom,custom);
   if(!custom.length){
-    // 對應下方稽核 Log 種子資料 a3~a5 的示範模板：仍存在、有兩次編輯歷程
     custom.push({id:"c_seed_1",name:"醫美－療程提醒（本店版）",desc:"醫美療程提醒（本店客製版）",
       body:"提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}，請提前15分鐘報到。洽詢{{門市電話}}。",
-      enabled:false,creator:"林淑芬",created:"2026/6/20",scenario:"預約簡訊"});
+      enabled:false,creator:"鄭楷錚",created:"2026/6/20",updater:"林淑芬",updated:"2026/7/6",scenario:"預約簡訊"});
     saveJSON(KEY.custom,custom);
   }
   var pins=loadJSON(KEY.pins,[]);
@@ -387,34 +340,10 @@
   applyStoreBu(store.get(KEY.bu)||"BU1");
   function allTpl(){return custom.concat(builtinInStore);}
 
-  /* ---------- 模板異動稽核 Log ---------- */
+  /* ---------- 建立/更新資訊 ---------- */
+  // 模板資料表本身就有 creater/created_at/updater/updated_at/status 欄位（單列覆蓋，非另存一份異動歷程），
+  // 稽核只需要看「目前是誰建立、誰最後更新、目前狀態」，不需要逐筆操作紀錄。見前端規格書 4.1。
   var CURRENT_USER=(document.querySelector(".user .nm")||{}).textContent||"系統人員";
-  var auditSeq=6;
-  var templateAuditLog=[
-    // 較舊：示範門市自訂模板曾被建立又刪除（示範「已刪除模板仍留稽核紀錄」）
-    {id:"a1",who:"陳雅婷",when:"2026-05-12T03:20:00.000Z",action:"create",targetId:"c_seed_del1",targetName:"母親節活動提醒",
-     payload:{name:{before:null,after:"母親節活動提醒"},body:{before:null,after:"母親節活動預約提醒：{{預約日期}}{{預約時間}}，期待您的蒞臨。"},enabled:{before:null,after:true}}},
-    {id:"a2",who:"陳雅婷",when:"2026-05-28T07:05:00.000Z",action:"delete",targetId:"c_seed_del1",targetName:"母親節活動提醒",
-     payload:{name:{before:"母親節活動提醒",after:null},body:{before:"母親節活動預約提醒：{{預約日期}}{{預約時間}}，期待您的蒞臨。",after:null},enabled:{before:true,after:null}}},
-    // 較新：對內建模板另存複本、之後再編輯兩次（示範同一模板多筆歷程）
-    {id:"a3",who:"鄭楷錚",when:"2026-06-20T01:40:00.000Z",action:"create",targetId:"c_seed_1",targetName:"醫美－療程提醒（本店版）",
-     payload:{name:{before:null,after:"醫美－療程提醒（本店版）"},body:{before:null,after:"提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}。"},enabled:{before:null,after:true}}},
-    {id:"a4",who:"林淑芬",when:"2026-07-02T05:15:00.000Z",action:"update",targetId:"c_seed_1",targetName:"醫美－療程提醒（本店版）",
-     payload:{name:{before:"醫美－療程提醒（本店版）",after:"醫美－療程提醒（本店版）"},body:{before:"提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}。",after:"提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}，請提前15分鐘報到。"},enabled:{before:true,after:true}}},
-    {id:"a5",who:"林淑芬",when:"2026-07-06T09:50:00.000Z",action:"update",targetId:"c_seed_1",targetName:"醫美－療程提醒（本店版）",
-     payload:{name:{before:"醫美－療程提醒（本店版）",after:"醫美－療程提醒（本店版）"},body:{before:"提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}，請提前15分鐘報到。",after:"提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}，請提前15分鐘報到。洽詢{{門市電話}}。"},enabled:{before:true,after:false}}}
-  ];
-  function pushAuditLog(action,before,after,targetId,targetName){
-    templateAuditLog.unshift({
-      id:"a"+(auditSeq++), who:CURRENT_USER, when:new Date().toISOString(),
-      action:action, targetId:targetId, targetName:targetName,
-      payload:{
-        name:{before:before?before.name:null, after:after?after.name:null},
-        body:{before:before?before.body:null, after:after?after.body:null},
-        enabled:{before:before?before.enabled:null, after:after?after.enabled:null}
-      }
-    });
-  }
   function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
   function isCustom(id){return id&&id.indexOf("c")===0;}
   function isBuiltin(id){return id&&id.indexOf("b")===0;}
@@ -480,13 +409,19 @@
   }
   function matches(t){if(!search)return true;var q=search.toLowerCase();return t.name.toLowerCase().indexOf(q)>-1||(t.desc||"").toLowerCase().indexOf(q)>-1;}
   function starSVG(f){return '<svg viewBox="0 0 24 24" fill="'+(f?"currentColor":"none")+'" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.9l-5.8 3.05 1.1-6.47L2.6 9.9l6.5-.95z"/></svg>';}
+  function metaLine(t){
+    var bits=['建立：'+esc(t.creator||"--")+(t.created?" "+esc(t.created):"")];
+    if(t.updater&&t.updated)bits.push('更新：'+esc(t.updater)+" "+esc(t.updated));
+    bits.push(t.enabled===false?"已停用":"已啟用");
+    return '<div class="t-meta">'+bits.join(" · ")+'</div>';
+  }
   function cardHTML(t){
     var pinned=pins.indexOf(t.id)>-1,cust=isCustom(t.id);
     return '<div class="t-card'+(t.id===editingId?' active':'')+(t.enabled===false?' off':'')+'" data-edit="'+t.id+'">'+
       '<div class="t-top"><div style="flex:1"><div class="t-name">'+esc(t.name)+'</div>'+
       (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
-      (cust?'<div class="t-meta">'+esc(t.creator||"自訂")+' · '+esc(t.created||"")+'</div>':'')+
-      '</div><button class="audit-ico" data-audit="'+t.id+'" title="查看異動紀錄" aria-label="查看「'+esc(t.name)+'」的異動紀錄">🕒</button>'+
+      metaLine(t)+
+      '</div>'+
       '<button class="star'+(pinned?' pinned':'')+(isBuiltin(t.id)?' locked':'')+'" data-pin="'+t.id+'" aria-label="'+(isBuiltin(t.id)?'系統內建模板需先另存為自訂複本才能釘選':'釘選')+'">'+starSVG(pinned)+'</button></div>'+
       '<div style="display:flex;justify-content:flex-end;gap:4px;margin-top:7px">'+
       (t.id===defaultTplId?'<span class="t-tag def">預設</span>':'')+
@@ -508,8 +443,6 @@
     document.getElementById("listScroll").innerHTML=h;
   }
   document.getElementById("listScroll").addEventListener("click",function(e){
-    var au=e.target.closest("[data-audit]");
-    if(au){openAuditLog(au.getAttribute("data-audit"));return;}
     var p=e.target.closest("[data-pin]");
     if(p){
       var id=p.getAttribute("data-pin");
@@ -543,10 +476,9 @@
     if(isCustom(editingId)){
       var t=tplById(editingId);
       if(t){
-        var wasOn=t.enabled!==false;
         t.enabled=on;
+        t.updater=CURRENT_USER;t.updated=todayStr();
         saveJSON(KEY.custom,custom);
-        pushAuditLog("update",{name:t.name,body:t.body,enabled:wasOn},{name:t.name,body:t.body,enabled:on},editingId,t.name);
         loadedSnapshot=snapshotEditor();
         renderList();
         toast(on?"已啟用並自動儲存":"已停用並自動儲存");
@@ -600,9 +532,8 @@
 
   function doSaveAsCopy(name,desc,body,enabled){
     var id="c"+Date.now();
-    custom.push({id:id,name:name,desc:desc||"自訂模板",body:body,enabled:enabled,creator:"系統人員",created:todayStr(),scenario:"預約簡訊"});
+    custom.push({id:id,name:name,desc:desc||"自訂模板",body:body,enabled:enabled,creator:CURRENT_USER,created:todayStr(),scenario:"預約簡訊"});
     saveJSON(KEY.custom,custom);
-    pushAuditLog("create",null,{name:name,body:body,enabled:enabled},id,name);
     loadIntoEditor(id);
     toast("已另存為自訂模板「"+name+"」，預約頁即可套用");
   }
@@ -612,10 +543,9 @@
     if(!body){toast("請輸入簡訊內容");edBody.focus();return;}
     if(isCustom(editingId)){
       var t=tplById(editingId);
-      var before={name:t.name,body:t.body,enabled:t.enabled};
       t.name=name;t.desc=desc||"自訂模板";t.body=body;t.enabled=enabled;
+      t.updater=CURRENT_USER;t.updated=todayStr();
       saveJSON(KEY.custom,custom);
-      pushAuditLog("update",before,{name:name,body:body,enabled:enabled},editingId,name);
       loadedSnapshot=snapshotEditor();
       toast("已更新「"+name+"」");
       renderList();
@@ -628,7 +558,6 @@
   });
   function performDelete(id){
     var t=tplById(id);
-    if(t)pushAuditLog("delete",{name:t.name,body:t.body,enabled:t.enabled},null,id,t.name);
     custom=custom.filter(function(x){return x.id!==id;});saveJSON(KEY.custom,custom);
     pins=pins.filter(function(x){return x!==id;});saveJSON(KEY.pins,pins);
     var wasDefault=(id===defaultTplId);
@@ -678,71 +607,6 @@
     scrim.onclick=function(e){if(e.target===scrim)close();};
     scrim.classList.add("open");
   }
-
-  /* ---------- 模板異動稽核 Log 查看畫面 ---------- */
-  function fmtWhen(iso){var d=new Date(iso);return d.getFullYear()+"/"+pad2(d.getMonth()+1)+"/"+pad2(d.getDate())+" "+pad2(d.getHours())+":"+pad2(d.getMinutes())+":"+pad2(d.getSeconds());}
-  function auditActionLabel(a){return a==="create"?"新增":a==="update"?"編輯":a==="delete"?"刪除":a;}
-  function auditTemplateOptions(){
-    var seen={},opts=[{id:"all",name:"全部模板"}];
-    allTpl().forEach(function(t){if(!seen[t.id]){seen[t.id]=1;opts.push({id:t.id,name:t.name});}});
-    templateAuditLog.forEach(function(l){if(!seen[l.targetId]){seen[l.targetId]=1;opts.push({id:l.targetId,name:l.targetName+"（已刪除）"});}});
-    return opts;
-  }
-  function auditFieldRows(l){
-    var p=l.payload,h="",nameChg=p.name.before!==p.name.after,enChg=p.enabled.before!==p.enabled.after,bodyChg=p.body.before!==p.body.after;
-    if(l.action==="create"){
-      h+='<div class="audit-field-row"><span class="audit-field-lbl">名稱</span><span class="audit-field-val">'+esc(p.name.after)+'</span></div>';
-      h+='<div class="audit-diff-lbl">新增內容</div><div class="audit-diff-box">'+esc(p.body.after)+'</div>';
-      h+='<div class="audit-field-row"><span class="audit-field-lbl">啟用狀態</span><span class="audit-enable-badge '+(p.enabled.after?"on":"off")+'">'+(p.enabled.after?"啟用":"停用")+'</span></div>';
-    }else if(l.action==="delete"){
-      h+='<div class="audit-field-row"><span class="audit-field-lbl">名稱</span><span class="audit-field-val">'+esc(p.name.before)+'</span></div>';
-      h+='<div class="audit-diff-lbl">刪除前內容</div><div class="audit-diff-box">'+esc(p.body.before)+'</div>';
-      h+='<div class="audit-field-row"><span class="audit-field-lbl">啟用狀態</span><span class="audit-enable-badge '+(p.enabled.before?"on":"off")+'">'+(p.enabled.before?"啟用":"停用")+'</span></div>';
-    }else{
-      h+='<div class="audit-field-row"><span class="audit-field-lbl">名稱</span><span class="audit-field-val'+(nameChg?" chg":"")+'">'+esc(p.name.before)+'</span><span class="audit-arrow">→</span><span class="audit-field-val'+(nameChg?" chg":"")+'">'+esc(p.name.after)+'</span></div>';
-      h+='<div class="audit-diff-lbl">修改前</div><div class="audit-diff-box'+(bodyChg?" chg":"")+'">'+esc(p.body.before)+'</div>';
-      h+='<div class="audit-diff-lbl">修改後</div><div class="audit-diff-box'+(bodyChg?" chg":"")+'">'+esc(p.body.after)+'</div>';
-      h+='<div class="audit-field-row"><span class="audit-field-lbl">啟用狀態</span><span class="audit-enable-badge '+(p.enabled.before?"on":"off")+'">'+(p.enabled.before?"啟用":"停用")+'</span><span class="audit-arrow">→</span><span class="audit-enable-badge '+(p.enabled.after?"on":"off")+'">'+(p.enabled.after?"啟用":"停用")+'</span></div>';
-    }
-    return h;
-  }
-  function renderAuditLogTable(){
-    var fTpl=document.getElementById("auditFilterTpl").value,fAct=document.getElementById("auditFilterAction").value;
-    var rows=templateAuditLog.filter(function(l){
-      if(fTpl!=="all"&&l.targetId!==fTpl)return false;
-      if(fAct!=="all"&&l.action!==fAct)return false;
-      return true;
-    }).slice().sort(function(a,b){return new Date(b.when)-new Date(a.when);});
-    var h=rows.length?"":'<tr><td colspan="5" style="text-align:center;color:var(--faint);padding:20px">尚無符合條件的異動紀錄</td></tr>';
-    rows.forEach(function(l){
-      h+='<tr class="audit-row"><td>'+fmtWhen(l.when)+'</td><td>'+esc(l.who)+'</td>'+
-         '<td><span class="audit-badge '+l.action+'">'+auditActionLabel(l.action)+'</span></td>'+
-         '<td>'+esc(l.targetName)+'</td><td><button class="audit-expand" data-toggle="'+l.id+'">展開 ▾</button></td></tr>'+
-         '<tr class="audit-detail-row" id="auditDetail-'+l.id+'" style="display:none"><td colspan="5">'+auditFieldRows(l)+'</td></tr>';
-    });
-    document.getElementById("auditTableBody").innerHTML=h;
-  }
-  document.getElementById("auditTableBody").addEventListener("click",function(e){
-    var b=e.target.closest("[data-toggle]");if(!b)return;
-    var row=document.getElementById("auditDetail-"+b.getAttribute("data-toggle"));
-    var open=row.style.display!=="none";
-    row.style.display=open?"none":"";
-    b.textContent=open?"展開 ▾":"收合 ▴";
-  });
-  function openAuditLog(presetId){
-    document.getElementById("auditFilterTpl").innerHTML=auditTemplateOptions().map(function(o){return '<option value="'+o.id+'">'+esc(o.name)+'</option>';}).join("");
-    document.getElementById("auditFilterTpl").value=presetId||"all";
-    document.getElementById("auditFilterAction").value="all";
-    renderAuditLogTable();
-    document.getElementById("auditLogScrim").classList.add("open");
-  }
-  function closeAuditLog(){document.getElementById("auditLogScrim").classList.remove("open");}
-  document.getElementById("auditLogBtn").addEventListener("click",function(){openAuditLog(null);});
-  document.getElementById("auditLogCloseBtn").addEventListener("click",closeAuditLog);
-  document.getElementById("auditLogCloseBtn2").addEventListener("click",closeAuditLog);
-  document.getElementById("auditFilterTpl").addEventListener("change",renderAuditLogTable);
-  document.getElementById("auditFilterAction").addEventListener("change",renderAuditLogTable);
-  document.getElementById("auditLogScrim").addEventListener("click",function(e){if(e.target===this)closeAuditLog();});
 
   /* ---------- 離開頁面前警示未儲存變更 ---------- */
   window.addEventListener("beforeunload",function(e){if(isDirty()){e.preventDefault();e.returnValue="";}});

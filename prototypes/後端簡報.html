@@ -207,17 +207,15 @@
       </table>
       <p style="font-size:12.5px;color:var(--muted);margin-top:8px">用途：客服查詢發送記錄、統計發送量與失敗率、稽核個資使用情形。</p>
 
-      <p style="font-size:13px;font-weight:700;margin:16px 0 8px">模板異動稽核 Log（新增／編輯／刪除）</p>
+      <p style="font-size:13px;font-weight:700;margin:16px 0 8px">模板建立/更新稽核（2026-07-28 簡化：不需要獨立異動歷史表）</p>
       <table>
         <tr><th>項目</th><th>說明</th></tr>
-        <tr><td>操作者</td><td>是誰改的</td></tr>
-        <tr><td>動作</td><td>新增／編輯／刪除</td></tr>
-        <tr><td>被改的模板</td><td>模板 ID／名稱</td></tr>
-        <tr><td>異動內容</td><td>改之前/改之後的差異（名稱、內容、啟用狀態）</td></tr>
-        <tr><td>操作時間</td><td>時間戳記</td></tr>
+        <tr><td>建立人／建立時間</td><td>`creater`／`created_at`，新增時寫入一次</td></tr>
+        <tr><td>更新人／更新時間</td><td>`updater`／`updated_at`，每次更新直接覆蓋，不保留上一筆</td></tr>
+        <tr><td>狀態</td><td>`status`，同樣直接覆蓋</td></tr>
       </table>
-      <p style="font-size:12.5px;color:var(--muted);margin-top:8px">用途：日後追查「誰改了這條簡訊模板、什麼時候改的、改了什麼」，避免模板被誤改後找不到人負責。</p>
-      <div class="callout">兩類 Log 建議保留至少 <b>12 個月</b>。</div>
+      <p style="font-size:12.5px;color:var(--muted);margin-top:8px">用途：知道「這筆模板現在是誰建立的、誰最後更新的、目前狀態」——因為每筆模板用 UUID 識別、更新即覆蓋同一列，不需要大量紀錄所有操作，所以不用另外做一份逐筆異動歷史表。</p>
+      <div class="callout">簡訊發送 Log 建議保留至少 <b>12 個月</b>；模板建立/更新資訊隨資料列存在，沒有另外的保留期限問題。</div>
     </div>
   </section>
 
