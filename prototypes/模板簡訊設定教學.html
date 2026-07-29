@@ -338,11 +338,15 @@
     builtinInStore=builtin.filter(function(t){return t.bu===STORE_BU;});
   }
   applyStoreBu(store.get(KEY.bu)||"BU1");
-  function allTpl(){return custom.concat(builtinInStore);}
+  /* 刪除＝軟刪除（status 覆蓋成已刪除，同一列還在，不是真的從表裡移除），
+     所以「本門市自訂」的作用中清單要濾掉 t.deleted；已刪除的模板管理頁另外顯示（見下方 deletedCustom） */
+  function allTpl(){return custom.filter(function(t){return !t.deleted;}).concat(builtinInStore);}
+  function deletedCustom(){return custom.filter(function(t){return t.deleted;});}
 
   /* ---------- 建立/更新資訊 ---------- */
   // 模板資料表本身就有 creater/created_at/updater/updated_at/status 欄位（單列覆蓋，非另存一份異動歷程），
-  // 稽核只需要看「目前是誰建立、誰最後更新、目前狀態」，不需要逐筆操作紀錄。見前端規格書 4.1。
+  // 稽核只需要看「目前是誰建立、誰最後更新、目前狀態」，不需要逐筆操作紀錄；刪除也只是把 status 覆蓋成
+  // 已刪除，同一列還在，所以被刪掉的模板跟被編輯過的模板都還看得到。見前端規格書 4.1。
   var CURRENT_USER=(document.querySelector(".user .nm")||{}).textContent||"系統人員";
   function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
   function isCustom(id){return id&&id.indexOf("c")===0;}
@@ -412,7 +416,7 @@
   function metaLine(t){
     var bits=['建立：'+esc(t.creator||"--")+(t.created?" "+esc(t.created):"")];
     if(t.updater&&t.updated)bits.push('更新：'+esc(t.updater)+" "+esc(t.updated));
-    bits.push(t.enabled===false?"已停用":"已啟用");
+    bits.push(t.deleted?"已刪除":(t.enabled===false?"已停用":"已啟用"));
     return '<div class="t-meta">'+bits.join(" · ")+'</div>';
   }
   function cardHTML(t){
@@ -429,16 +433,26 @@
       '<span class="t-tag">'+
       (cust?"本門市自訂":"系統內建")+'</span></div></div>';
   }
+  function deletedCardHTML(t){
+    return '<div class="t-card off" style="cursor:default">'+
+      '<div class="t-top"><div style="flex:1"><div class="t-name">'+esc(t.name)+'</div>'+
+      (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
+      metaLine(t)+
+      '</div></div>'+
+      '<div style="display:flex;justify-content:flex-end;gap:4px;margin-top:7px"><span class="t-tag">本門市自訂</span></div></div>';
+  }
   function renderList(){
     var pinnedAll=allTpl().filter(function(t){return pins.indexOf(t.id)>-1&&matches(t);});
     var pinnedIds=pinnedAll.map(function(t){return t.id;});
-    var mine=custom.filter(function(t){return pinnedIds.indexOf(t.id)<0&&matches(t);});
+    var mine=custom.filter(function(t){return !t.deleted&&pinnedIds.indexOf(t.id)<0&&matches(t);});
     var builtinList=builtinInStore.filter(function(t){return pinnedIds.indexOf(t.id)<0&&matches(t);});
+    var deletedList=deletedCustom().filter(matches);
     var h="";
     if(pinnedAll.length)h+='<div class="group-t">★ 釘選</div>'+pinnedAll.map(cardHTML).join("");
     if(mine.length)h+='<div class="group-t">本門市自訂</div>'+mine.map(cardHTML).join("");
     if(builtinList.length)h+='<div class="group-t">系統內建</div>'+builtinList.map(cardHTML).join("");
-    var noResults=!!search&&!pinnedAll.length&&!mine.length&&!builtinList.length;
+    if(deletedList.length)h+='<div class="group-t">已刪除</div>'+deletedList.map(deletedCardHTML).join("");
+    var noResults=!!search&&!pinnedAll.length&&!mine.length&&!builtinList.length&&!deletedList.length;
     if(noResults)h='<div style="font-size:12px;color:var(--faint);padding:4px">無符合的模板</div>';
     document.getElementById("listScroll").innerHTML=h;
   }
@@ -558,7 +572,7 @@
   });
   function performDelete(id){
     var t=tplById(id);
-    custom=custom.filter(function(x){return x.id!==id;});saveJSON(KEY.custom,custom);
+    if(t){t.deleted=true;t.updater=CURRENT_USER;t.updated=todayStr();saveJSON(KEY.custom,custom);}
     pins=pins.filter(function(x){return x!==id;});saveJSON(KEY.pins,pins);
     var wasDefault=(id===defaultTplId);
     if(wasDefault){defaultTplId=null;store.set(KEY.default,"");}

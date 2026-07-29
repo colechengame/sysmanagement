@@ -894,7 +894,8 @@
             {id:'b4', name:'中醫－門診提醒自動報到(代短網址)', desc:'中醫門診預約提醒短網址版本', enabled:true, bu:'BU2',
              body:'提醒您：『{{門市名稱}}』{{預約日期}}{{診間}}{{時段}}第{{派號}}號,依序看診報到查詢通知👉{{叫號機網址}}'}
         ];
-        let customTpls = loadJSON(TPL_KEY.custom, []);
+        /* 已軟刪除（deleted:true）的自訂模板只在模板管理頁顯示歷史，發送流程一律當作不存在 */
+        let customTpls = loadJSON(TPL_KEY.custom, []).filter(function(t){ return !t.deleted; });
         let tplPins    = loadJSON(TPL_KEY.pins, []);
         let tplRecent  = loadJSON(TPL_KEY.recent, []);
         let tplLastId  = store.get(TPL_KEY.last) || null;
@@ -1023,7 +1024,7 @@
 
         function initTplModal(appointment){
             tplCtx = buildTplCtx(appointment);
-            customTpls = loadJSON(TPL_KEY.custom, []);  // 重新讀取最新資料
+            customTpls = loadJSON(TPL_KEY.custom, []).filter(function(t){ return !t.deleted; });  // 重新讀取最新資料
             tplPins    = loadJSON(TPL_KEY.pins, []);
             tplRecent  = loadJSON(TPL_KEY.recent, []);
             tplComboQ = '';
