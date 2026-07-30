@@ -565,8 +565,10 @@
             padding: 14px 12px 10px;
         }
         /* 操作紀錄時間軸：節點由左至右依時間先後排列 */
-        .tl-track { display: flex; }
+        .tl-track { display: flex; align-items: flex-start; }
         .tl-node { flex: 1; min-width: 0; text-align: center; position: relative; padding: 0 4px; }
+        /* 值是長說明文字（如失敗原因、DR 狀態說明）而非短時間戳的節點，多分配一些寬度，避免擠壓被截斷 */
+        .tl-node.wide { flex: 1.8; }
         .tl-node:not(:last-child)::after {
             content: '';
             position: absolute;
@@ -592,7 +594,7 @@
             box-sizing: border-box;
         }
         .tl-lbl { font-size: 13px; font-weight: 700; color: #333; }
-        .tl-val { font-size: 12px; color: #666; margin-top: 2px; white-space: nowrap; }
+        .tl-val { font-size: 12px; color: #666; margin-top: 2px; white-space: normal; word-break: break-word; line-height: 1.45; }
         .tl-node.ghost .tl-lbl,
         .tl-node.ghost .tl-val { color: #a5afb8; }
         .tl-ghost-tag {
@@ -1788,7 +1790,7 @@
                     return [
                         { lbl: '操作', val: fmtDT(d.operatedAt), color: '#1976d2' },
                         { lbl: '嘗試發送', val: fmtDT(d.sendTime), color: '#8a97a3' },
-                        { lbl: '失敗', val: d.failReason || '--', color: '#d32f2f' }
+                        { lbl: '失敗', val: d.failReason || '--', color: '#d32f2f', wide: true }
                     ];
                 default: /* scheduled */
                     var schedNodes = [
@@ -1799,7 +1801,7 @@
                     // 補一個狀態節點交待目前卡在哪裡。超過 24 小時應該已經被轉成 failed（見 DR -4），
                     // 不會停留在 scheduled，所以這裡不用另外處理逾期 24 小時以上的分支。
                     if (new Date(d.sendTime) <= DEMO_NOW) {
-                        schedNodes.push({ lbl: '收訊中', val: '已送達電信端，等待手機收訊中。', color: '#0097a7' });
+                        schedNodes.push({ lbl: '收訊中', val: '已送達電信端，等待手機收訊中。', color: '#0097a7', wide: true });
                     }
                     return schedNodes;
             }
@@ -1841,7 +1843,7 @@
             var nodes = detailTimelineNodes(status, d);
             document.getElementById('detailMeta').innerHTML =
                 '<div class="tl-track">' + nodes.map(function(n, i){
-                    var cls = 'tl-node' + (n.ghost ? ' ghost' : '') + (nodes[i+1] && nodes[i+1].ghost ? ' next-ghost' : '');
+                    var cls = 'tl-node' + (n.ghost ? ' ghost' : '') + (n.wide ? ' wide' : '') + (nodes[i+1] && nodes[i+1].ghost ? ' next-ghost' : '');
                     return '<div class="' + cls + '">' +
                         '<div class="tl-dot" style="background:' + n.color + '"></div>' +
                         '<div class="tl-lbl">' + n.lbl + '</div>' +
