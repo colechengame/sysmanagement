@@ -69,11 +69,18 @@
   .t-card{border:1px solid var(--line);border-radius:9px;padding:10px 11px;margin-bottom:8px;background:#fff;cursor:pointer;transition:border-color .15s,box-shadow .15s}
   .t-card:hover{border-color:var(--line-strong)}
   .t-card.active{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-wash)}
-  .t-card.off{opacity:.55}
+  .t-card.off{background:#f8fafb}
+  .t-card.deleted{border-style:dashed}
   .t-top{display:flex;align-items:flex-start;gap:7px}
   .t-name{font-size:13px;font-weight:650;flex:1}
   .t-desc{font-size:11.5px;color:var(--muted);margin-top:2px}
-  .t-meta{font-size:10.5px;color:var(--faint);margin-top:5px;font-family:var(--mono)}
+  .t-meta{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+  .t-status{display:inline-flex;align-items:center;justify-content:center;min-width:48px;font-size:10px;font-weight:750;border-radius:999px;padding:2px 7px;border:1px solid transparent;white-space:nowrap}
+  .t-status.on{color:#137044;background:#e9f7ef;border-color:#b9e2ca}
+  .t-status.off{color:#66717a;background:#f0f2f4;border-color:#d7dce0}
+  .t-status.deleted{color:#a52b37;background:var(--danger-wash);border-color:#efbec3}
+  .t-last{min-width:0;font-size:10.5px;color:var(--faint);line-height:1.55}
+  .t-last span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .star{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;color:var(--faint)}
   .star:hover{background:var(--surface-2)}
   .star.pinned{color:var(--gold)}
@@ -86,6 +93,12 @@
   .ed-input,.ed-area{width:100%;padding:9px 11px;border:1px solid var(--line-strong);border-radius:8px;font-size:13.5px;background:#fff}
   .ed-input:focus,.ed-area:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-wash)}
   .ed-area{min-height:130px;resize:vertical;line-height:1.65}
+  .ed-current{display:grid;grid-template-columns:auto 1fr 1fr;gap:12px;align-items:center;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:14px}
+  .ed-current[hidden]{display:none}
+  .ed-current-item{min-width:0}
+  .ed-current-label{font-size:10.5px;color:var(--faint);font-weight:650;margin-bottom:1px}
+  .ed-current-value{font-size:12px;color:var(--ink);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  @media (max-width:560px){.ed-current{grid-template-columns:1fr 1fr}.ed-current>.t-status{grid-column:1/-1;width:max-content}}
   .param-hint{font-size:11.5px;color:var(--faint);margin:9px 0 6px;font-weight:600}
   .param-row{display:flex;flex-wrap:wrap;gap:6px}
   .pchip{font-size:11.5px;font-weight:600;font-family:var(--mono);color:var(--blue-deep);background:var(--blue-wash);border:1px solid transparent;padding:5px 9px;border-radius:7px;display:inline-flex;align-items:center;gap:5px}
@@ -202,6 +215,7 @@
       <div class="card">
         <div class="card-h" id="edTitle">編輯模板</div>
         <div class="card-b">
+          <div class="ed-current" id="edCurrentInfo" hidden></div>
           <div class="ed-field"><label>模板名稱 <span style="color:var(--danger)">*</span></label><input class="ed-input" id="edName" placeholder="例如：醫美－療程提醒"></div>
           <div class="ed-field"><label>用途說明</label><input class="ed-input" id="edDesc" placeholder="一句話描述何時使用"></div>
           <div class="ed-field">
@@ -297,16 +311,16 @@
   /* ---------- 模板資料（與預約操作頁共用 localStorage） ---------- */
   var builtin=[
     {id:"b1",name:"西醫－標準預約提醒",desc:"西醫通用預約確認簡訊",enabled:true,bu:"BU1",
-     creator:"系統管理員",created:"2026/6/1",
+     updater:"系統管理員",updated:"2026/06/01 09:00",
      body:"溫馨提醒您在『{{門市名稱}}』{{預約日期}}{{預約時間}}有預約療程，地址：{{門市地址}}，尊寵服務專線{{門市電話}}"},
     {id:"b2",name:"西醫－療程提醒",desc:"西醫預約療程提醒",enabled:true,bu:"BU1",
-     creator:"系統管理員",created:"2026/6/1",
+     updater:"系統管理員",updated:"2026/06/01 09:00",
      body:"溫馨提醒您在『{{門市名稱}}』{{預約日期}}{{預約時間}}有預約{{療程}}，請前往{{門市地址}}，洽詢{{門市電話}}。"},
     {id:"b3",name:"中醫－預約門診提醒",desc:"中醫門診一般預約提醒",enabled:true,bu:"BU2",
-     creator:"系統管理員",created:"2026/6/1",
+     updater:"系統管理員",updated:"2026/06/01 09:00",
      body:"提醒您於『{{門市名稱}}』有門診預約{{預約日期}}{{診間}}{{時段}}{{門市地址}}，請依現場叫號順序看診。洽詢{{門市電話}}。"},
     {id:"b4",name:"中醫－門診提醒自動報到(代短網址)",desc:"中醫門診預約提醒短網址版本",enabled:true,bu:"BU2",
-     creator:"系統管理員",created:"2026/6/1",updater:"系統管理員",updated:"2026/7/15",
+     updater:"系統管理員",updated:"2026/07/15 10:20",
      body:"提醒您：『{{門市名稱}}』{{預約日期}}{{診間}}{{時段}}第{{派號}}號,依序看診報到查詢通知👉{{叫號機網址}}"}
   ];
   var custom=loadJSON(KEY.custom,[]);
@@ -321,7 +335,7 @@
   if(!custom.length){
     custom.push({id:"c_seed_1",name:"醫美－療程提醒（本店版）",desc:"醫美療程提醒（本店客製版）",
       body:"提醒您於{{門市名稱}}的{{療程}}預約：{{預約日期}}{{預約時間}}，請提前15分鐘報到。洽詢{{門市電話}}。",
-      enabled:false,creator:"鄭楷錚",created:"2026/6/20",updater:"林淑芬",updated:"2026/7/6",scenario:"預約簡訊"});
+      enabled:false,updater:"林淑芬",updated:"2026/07/06 15:42",scenario:"預約簡訊"});
     saveJSON(KEY.custom,custom);
   }
   var pins=loadJSON(KEY.pins,[]);
@@ -343,15 +357,17 @@
   function allTpl(){return custom.filter(function(t){return !t.deleted;}).concat(builtinInStore);}
   function deletedCustom(){return custom.filter(function(t){return t.deleted;});}
 
-  /* ---------- 建立/更新資訊 ---------- */
-  // 模板資料表本身就有 creater/created_at/updater/updated_at/status 欄位（單列覆蓋，非另存一份異動歷程），
-  // 稽核只需要看「目前是誰建立、誰最後更新、目前狀態」，不需要逐筆操作紀錄；刪除也只是把 status 覆蓋成
-  // 已刪除，同一列還在，所以被刪掉的模板跟被編輯過的模板都還看得到。見前端規格書 4.1。
+  /* ---------- 模板目前狀態 ---------- */
+  // 只呈現資料列目前的 status、updated_at、updater；不是多筆 Log，也不提供 before/after 歷史。
+  // 舊示範資料若尚未有 updater/updated，暫以 creator/created 相容顯示。
   var CURRENT_USER=(document.querySelector(".user .nm")||{}).textContent||"系統人員";
   function tplById(id){var a=allTpl();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
   function isCustom(id){return id&&id.indexOf("c")===0;}
   function isBuiltin(id){return id&&id.indexOf("b")===0;}
-  function todayStr(){var d=new Date();return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate();}
+  function nowDateTimeStr(){
+    var d=new Date();
+    return d.getFullYear()+"/"+pad2(d.getMonth()+1)+"/"+pad2(d.getDate())+" "+pad2(d.getHours())+":"+pad2(d.getMinutes());
+  }
 
   /* ---------- 全域開關 ---------- */
   var swMain=document.getElementById("swMain"),swTele=document.getElementById("swTele");
@@ -413,11 +429,29 @@
   }
   function matches(t){if(!search)return true;var q=search.toLowerCase();return t.name.toLowerCase().indexOf(q)>-1||(t.desc||"").toLowerCase().indexOf(q)>-1;}
   function starSVG(f){return '<svg viewBox="0 0 24 24" fill="'+(f?"currentColor":"none")+'" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.9l-5.8 3.05 1.1-6.47L2.6 9.9l6.5-.95z"/></svg>';}
+  function stateInfo(t){
+    if(t.deleted)return {label:"已刪除",css:"deleted"};
+    if(t.enabled===false)return {label:"已停用",css:"off"};
+    return {label:"已啟用",css:"on"};
+  }
+  function lastUpdateInfo(t){
+    return {operator:t.updater||t.creator||"--",updated:t.updated||t.created||"--"};
+  }
   function metaLine(t){
-    var bits=['建立：'+esc(t.creator||"--")+(t.created?" "+esc(t.created):"")];
-    if(t.updater&&t.updated)bits.push('更新：'+esc(t.updater)+" "+esc(t.updated));
-    bits.push(t.deleted?"已刪除":(t.enabled===false?"已停用":"已啟用"));
-    return '<div class="t-meta">'+bits.join(" · ")+'</div>';
+    var state=stateInfo(t),last=lastUpdateInfo(t);
+    return '<div class="t-meta">'+
+      '<span class="t-status '+state.css+'">'+state.label+'</span>'+
+      '<div class="t-last"><span>最後更新：'+esc(last.updated)+'</span><span>最後操作人：'+esc(last.operator)+'</span></div>'+
+      '</div>';
+  }
+  function renderCurrentInfo(t){
+    var el=document.getElementById("edCurrentInfo");
+    if(!t){el.hidden=true;el.innerHTML="";return;}
+    var state=stateInfo(t),last=lastUpdateInfo(t);
+    el.innerHTML='<span class="t-status '+state.css+'">'+state.label+'</span>'+
+      '<div class="ed-current-item"><div class="ed-current-label">最後更新</div><div class="ed-current-value">'+esc(last.updated)+'</div></div>'+
+      '<div class="ed-current-item"><div class="ed-current-label">最後操作人</div><div class="ed-current-value">'+esc(last.operator)+'</div></div>';
+    el.hidden=false;
   }
   function cardHTML(t){
     var pinned=pins.indexOf(t.id)>-1,cust=isCustom(t.id);
@@ -434,7 +468,7 @@
       (cust?"本門市自訂":"系統內建")+'</span></div></div>';
   }
   function deletedCardHTML(t){
-    return '<div class="t-card off" style="cursor:default">'+
+    return '<div class="t-card off deleted" style="cursor:default">'+
       '<div class="t-top"><div style="flex:1"><div class="t-name">'+esc(t.name)+'</div>'+
       (t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':'')+
       metaLine(t)+
@@ -491,9 +525,10 @@
       var t=tplById(editingId);
       if(t){
         t.enabled=on;
-        t.updater=CURRENT_USER;t.updated=todayStr();
+        t.updater=CURRENT_USER;t.updated=nowDateTimeStr();
         saveJSON(KEY.custom,custom);
         loadedSnapshot=snapshotEditor();
+        renderCurrentInfo(t);
         renderList();
         toast(on?"已啟用並自動儲存":"已停用並自動儲存");
       }
@@ -521,11 +556,13 @@
     defaultBtn.style.display="";
     defaultBtn.textContent=id===defaultTplId?"✓ 已是門市預設":"設為門市預設";
     defaultBtn.className="btn btn-default"+(id===defaultTplId?" is-default":"");
+    renderCurrentInfo(t);
     updatePreview();renderList();
     loadedSnapshot=snapshotEditor();
   }
   function newTemplate(){
     editingId=null;edName.value="";edDesc.value="";edBody.value="";setEnable(true);
+    renderCurrentInfo(null);
     document.getElementById("edEnableWrap").classList.remove("locked");
     edTitle.textContent="新增模板";
     document.getElementById("saveBtn").style.display="";
@@ -546,7 +583,7 @@
 
   function doSaveAsCopy(name,desc,body,enabled){
     var id="c"+Date.now();
-    custom.push({id:id,name:name,desc:desc||"自訂模板",body:body,enabled:enabled,creator:CURRENT_USER,created:todayStr(),scenario:"預約簡訊"});
+    custom.push({id:id,name:name,desc:desc||"自訂模板",body:body,enabled:enabled,updater:CURRENT_USER,updated:nowDateTimeStr(),scenario:"預約簡訊"});
     saveJSON(KEY.custom,custom);
     loadIntoEditor(id);
     toast("已另存為自訂模板「"+name+"」，預約頁即可套用");
@@ -558,10 +595,11 @@
     if(isCustom(editingId)){
       var t=tplById(editingId);
       t.name=name;t.desc=desc||"自訂模板";t.body=body;t.enabled=enabled;
-      t.updater=CURRENT_USER;t.updated=todayStr();
+      t.updater=CURRENT_USER;t.updated=nowDateTimeStr();
       saveJSON(KEY.custom,custom);
       loadedSnapshot=snapshotEditor();
       toast("已更新「"+name+"」");
+      renderCurrentInfo(t);
       renderList();
     }else if(isBuiltin(editingId)){
       var origName=tplById(editingId).name;
@@ -572,7 +610,7 @@
   });
   function performDelete(id){
     var t=tplById(id);
-    if(t){t.deleted=true;t.updater=CURRENT_USER;t.updated=todayStr();saveJSON(KEY.custom,custom);}
+    if(t){t.deleted=true;t.updater=CURRENT_USER;t.updated=nowDateTimeStr();saveJSON(KEY.custom,custom);}
     pins=pins.filter(function(x){return x!==id;});saveJSON(KEY.pins,pins);
     var wasDefault=(id===defaultTplId);
     if(wasDefault){defaultTplId=null;store.set(KEY.default,"");}

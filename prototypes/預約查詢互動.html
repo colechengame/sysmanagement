@@ -1715,21 +1715,21 @@
                    ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
         }
 
-        // 簡訊詳情「操作紀錄」欄位：預約時間／設定排程時間／操作時間是三個獨立時間，不可互相取代
-        // （預約時間＝客人來店時間；設定排程時間＝這筆簡訊排定發送的時間；操作時間＝店員在系統按下動作的時間）
+        // 簡訊詳情「操作紀錄」欄位：預計發送時間／操作時間是兩個獨立時間，不可互相取代
+        // （預計發送時間＝這筆簡訊排定發送的時間；操作時間＝店員在系統按下動作的時間）
+        // 不重複顯示「預約時間」：客人來店時間已經解析進上方「簡訊內容」文字裡，不需要在操作紀錄再列一次
         var DETAIL_FIELD_DEFS = {
             operator:   { label: '操作人',     get: function(apt, d){ return d.operatorName || '--'; } },
             operatedAt: { label: '操作時間',   get: function(apt, d){ return fmtDT(d.operatedAt); } },
-            apptTime:   { label: '預約時間',   get: function(apt, d){ return apt.date + ' ' + apt.time; } },
-            sendTime:   { label: '設定排程時間', get: function(apt, d){ return fmtDT(d.sendTime); } },
-            sentAt:     { label: '實際送達時間', get: function(apt, d){ return fmtDT(d.sentAt); } },
+            sendTime:   { label: '預計發送時間', get: function(apt, d){ return fmtDT(d.sendTime); } },
+            sentAt:     { label: '送達時間',   get: function(apt, d){ return fmtDT(d.sentAt); } },
             failReason: { label: '失敗原因',   get: function(apt, d){ return d.failReason || '--'; } }
         };
         var DETAIL_FIELDS_BY_STATUS = {
-            scheduled: ['operator', 'operatedAt', 'apptTime', 'sendTime'],
-            delivered: ['operator', 'operatedAt', 'apptTime', 'sendTime', 'sentAt'],
-            cancelled: ['operator', 'operatedAt', 'apptTime', 'sendTime'],
-            failed:    ['operator', 'operatedAt', 'apptTime', 'sendTime', 'failReason']
+            scheduled: ['operator', 'operatedAt', 'sendTime'],
+            delivered: ['operator', 'operatedAt', 'sendTime', 'sentAt'],
+            cancelled: ['operator', 'operatedAt', 'sendTime'],
+            failed:    ['operator', 'operatedAt', 'sendTime', 'failReason']
         };
 
         function viewSmsDetail(appointmentId) {
