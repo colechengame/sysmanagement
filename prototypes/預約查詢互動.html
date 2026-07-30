@@ -1768,6 +1768,7 @@
                 case 'delivered':
                     return [
                         { lbl: '操作', val: fmtDT(d.operatedAt), color: '#1976d2' },
+                        { lbl: '發送', val: fmtDT(d.sendTime), color: '#0097a7' },
                         { lbl: '送達', val: fmtDT(d.sentAt), color: '#388e3c' }
                     ];
                 case 'cancelled':
