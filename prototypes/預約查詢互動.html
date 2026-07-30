@@ -1715,12 +1715,15 @@
                    ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
         }
 
-        // 簡訊詳情「操作紀錄」欄位：預計發送時間／操作時間是兩個獨立時間，不可互相取代
-        // （預計發送時間＝這筆簡訊排定發送的時間；操作時間＝店員在系統按下動作的時間）
+        // 簡訊詳情「操作紀錄」欄位：預計發送時間／operatedAt 是兩個獨立時間，不可互相取代
+        // （預計發送時間＝這筆簡訊排定發送的時間；operatedAt＝店員在系統按下動作的時間）
         // 不重複顯示「預約時間」：客人來店時間已經解析進上方「簡訊內容」文字裡，不需要在操作紀錄再列一次
+        // operatedAt 的標籤依狀態動態顯示：排程中／已送達／發送失敗都是自動觸發，operatedAt 實際代表
+        // 「建立這筆排程當下」，標「建立時間」；只有已取消是店員真的按下的動作（confirmCancelSms() 會把
+        // operatedAt 覆蓋成取消當下），標「取消時間」才準確——見下方 statusLabel。
         var DETAIL_FIELD_DEFS = {
             operator:   { label: '操作人',     get: function(apt, d){ return d.operatorName || '--'; } },
-            operatedAt: { label: '操作時間',   get: function(apt, d){ return fmtDT(d.operatedAt); } },
+            operatedAt: { label: '建立時間',   statusLabel: { cancelled: '取消時間' }, get: function(apt, d){ return fmtDT(d.operatedAt); } },
             sendTime:   { label: '預計發送時間', get: function(apt, d){ return fmtDT(d.sendTime); } },
             sentAt:     { label: '送達時間',   get: function(apt, d){ return fmtDT(d.sentAt); } },
             failReason: { label: '失敗原因',   get: function(apt, d){ return d.failReason || '--'; } }
@@ -1767,7 +1770,8 @@
             var fieldKeys = DETAIL_FIELDS_BY_STATUS[status] || DETAIL_FIELDS_BY_STATUS['scheduled'];
             document.getElementById('detailMeta').innerHTML = fieldKeys.map(function(key){
                 var f = DETAIL_FIELD_DEFS[key];
-                return '<div class="detail-meta-row"><span>' + f.label + '</span><span>' + esc(f.get(apt, d)) + '</span></div>';
+                var label = (f.statusLabel && f.statusLabel[status]) || f.label;
+                return '<div class="detail-meta-row"><span>' + label + '</span><span>' + esc(f.get(apt, d)) + '</span></div>';
             }).join('');
 
             // 頁腳按鈕：預約已過期一律唯讀，僅能關閉，不提供取消排程/重新發送等互動操作
