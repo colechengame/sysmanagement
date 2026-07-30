@@ -1815,8 +1815,14 @@
             var status = apt.smsStatus;
 
             // Banner 顏色 & 文字
+            // 排程中的 info 是條件式的：發送時間還沒到才講「預計於 X 發送」；已經過了（DR 0 情境，
+            // 時間軸會多出「收訊中」節點）就直接把當下最準確的狀態說明放在標題旁，不要再講一句
+            // 已經過去的「預計」時間——跟「發送失敗」banner 直接講失敗原因、不講原始嘗試時間是同一個道理。
+            var schedInfo = (new Date(d.sendTime) <= DEMO_NOW)
+                ? '已送達電信端，等待手機收訊中。'
+                : '預計於 <strong>' + fmtDT(d.sendTime) + '</strong> 發送';
             var bannerCfg = {
-                'scheduled': { bg:'#e3f2fd', border:'#bbdefb', badgeBg:'#1976d2', textColor:'#0d47a1', badgeText:'排程中',  info:'預計於 <strong>' + fmtDT(d.sendTime) + '</strong> 發送' },
+                'scheduled': { bg:'#e3f2fd', border:'#bbdefb', badgeBg:'#1976d2', textColor:'#0d47a1', badgeText:'排程中',  info: schedInfo },
                 'delivered': { bg:'#e8f5e9', border:'#c8e6c9', badgeBg:'#388e3c', textColor:'#1b5e20', badgeText:'已送達',  info:'已於 <strong>' + fmtDT(d.sentAt) + '</strong> 送達' },
                 'cancelled': { bg:'#fce4ec', border:'#f8bbd0', badgeBg:'#c2185b', textColor:'#880e4f', badgeText:'已取消',  info:'已於 <strong>' + fmtDT(d.cancelledAt) + '</strong> 取消' },
                 'failed':    { bg:'#ffebee', border:'#ffcdd2', badgeBg:'#d32f2f', textColor:'#b71c1c', badgeText:'發送失敗', info: d.failReason ? '原因：' + d.failReason : '發送失敗' }
