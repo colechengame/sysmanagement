@@ -804,6 +804,9 @@
     </div>
 
     <script>
+        // 原型固定的模擬「現在」時間，isAppointmentExpired() 與時間軸的逾期判斷都共用同一個基準
+        const DEMO_NOW = new Date('2025-10-31T14:00:00');
+
         const appointments = [
             // ========== 昨天 2025/10/30 的預約（都已過期）==========
             // 已過期 + 已送達
@@ -1094,8 +1097,8 @@
         function isAppointmentExpired(appointmentId) {
             const appointment = appointments.find(apt => apt.id === appointmentId);
             if (!appointment) return false;
-            
-            const now = new Date('2025-10-31T14:00:00');
+
+            const now = DEMO_NOW;
             const appointmentDateTime = new Date(appointment.date.replace(/\//g, '-') + 'T' + appointment.time + ':00');
             
             return now > appointmentDateTime;
@@ -1788,10 +1791,17 @@
                         { lbl: '失敗', val: d.failReason || '--', color: '#d32f2f' }
                     ];
                 default: /* scheduled */
-                    return [
+                    var schedNodes = [
                         { lbl: '操作', val: fmtDT(d.operatedAt), color: '#1976d2' },
                         { lbl: '預計發送', val: fmtDT(d.sendTime), color: '#8a97a3' }
                     ];
+                    // 發送時間已過但還在 24 小時容許範圍內：對應 DR 0（已送達電信端、等待手機收訊中），
+                    // 補一個狀態節點交待目前卡在哪裡。超過 24 小時應該已經被轉成 failed（見 DR -4），
+                    // 不會停留在 scheduled，所以這裡不用另外處理逾期 24 小時以上的分支。
+                    if (new Date(d.sendTime) <= DEMO_NOW) {
+                        schedNodes.push({ lbl: '收訊中', val: '已送達電信端，等待手機收訊中。', color: '#0097a7' });
+                    }
+                    return schedNodes;
             }
         }
 
