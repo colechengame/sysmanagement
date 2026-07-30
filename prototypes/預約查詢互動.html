@@ -778,7 +778,7 @@
             // 已過期 + 未發送
             {id: 5, date: '2025/10/30', member: 'GT0000005', name: '張志明', phone: '0956789012', time: '16:00', treatment: '2樓總店-【醫美】', staff: '電痛衝導入', contactStatus: '', smsStatus: '', noSmsPreference: false},
             // 已過期 + 排程中（特殊狀況：來不及取消，過期後僅能唯讀查詢，不可再取消排程）
-            {id: 6, date: '2025/10/30', member: 'GT0000006', name: '黃美惠', phone: '0967890123', time: '17:30', treatment: '★5樓-純美療程', staff: '超音波導入', contactStatus: '1', smsStatus: 'scheduled', noSmsPreference: false, smsDetail: {content: '提醒您：有在【示範麗雅醫學美容】2025/10/30 17:30 預約★5樓-純美療程，02-xxxx-xxxx，請提前30分鐘蒞臨現場報到，記得帶保養品試用包給您參考。', modified: true, sendTime: '2025-10-30T16:30', operatedAt: '2025-10-29T10:20', operatorName: '[C80009] 林技師'}},
+            {id: 6, date: '2025/10/30', member: 'GT0000006', name: '黃美惠', phone: '0967890123', time: '17:30', treatment: '★5樓-純美療程', staff: '超音波導入', contactStatus: '1', smsStatus: 'scheduled', noSmsPreference: false, smsDetail: {content: '提醒您：有在【示範麗雅醫學美容】2025/10/30 17:30 預約★5樓-純美療程，02-xxxx-xxxx，請提前30分鐘蒞臨現場報到，記得帶保養品試用包給您參考。', modified: true, sendTime: '2025-10-29T18:00', operatedAt: '2025-10-23T10:20', operatorName: '[C80009] 林技師'}},
             // 已過期 + 已送達
             {id: 7, date: '2025/10/30', member: 'GT0000007', name: '吳建宏', phone: '0978901234', time: '19:00', treatment: '雷射除毛', staff: '陳技師', contactStatus: '3', smsStatus: 'delivered', noSmsPreference: false, smsDetail: {content: '提醒您有預約【示範麗雅】2025/10/30 19:00 XX區XX路1號，有任何疑問請撥打02-xxxx-xxxx，示範麗雅關心您。', sendTime: '2025-10-30T18:00', operatedAt: '2025-10-29T20:05', operatorName: '[C80015] 陳技師', sentAt: '2025-10-30T18:00'}},
             
@@ -1718,15 +1718,15 @@
                    ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
         }
 
-        // 簡訊詳情「操作紀錄」欄位：建立時間／取消時間／發送時間是三個各自獨立的時間，不可互相取代
-        // （建立時間＝店員設定這筆排程當下；取消時間＝店員按下取消當下；發送時間＝這筆簡訊排定發送
+        // 簡訊詳情「操作紀錄」欄位：操作時間／取消時間／發送時間是三個各自獨立的時間，不可互相取代
+        // （操作時間＝店員設定這筆排程當下；取消時間＝店員按下取消當下；發送時間＝這筆簡訊排定發送
         // 的時間點，是設定值，不是「預計/預測」——不叫「預計發送時間」，避免讀起來像不確定的猜測）。
-        // 已取消狀態要同時看到「建立時間」與「取消時間」兩者，所以 confirmCancelSms()
+        // 已取消狀態要同時看到「操作時間」與「取消時間」兩者，所以 confirmCancelSms()
         // 不會覆蓋 operatedAt，取消時間另外存在 cancelledAt。
         // 不重複顯示「預約時間」：客人來店時間已經解析進上方「簡訊內容」文字裡，不需要在操作紀錄再列一次
         var DETAIL_FIELD_DEFS = {
             operator:    { label: '操作人',     get: function(apt, d){ return d.operatorName || '--'; } },
-            operatedAt:  { label: '建立時間',   get: function(apt, d){ return fmtDT(d.operatedAt); } },
+            operatedAt:  { label: '操作時間',   get: function(apt, d){ return fmtDT(d.operatedAt); } },
             cancelledAt: { label: '取消時間',   get: function(apt, d){ return fmtDT(d.cancelledAt); } },
             sendTime:    { label: '發送時間',   get: function(apt, d){ return fmtDT(d.sendTime); } },
             sentAt:      { label: '送達時間',   get: function(apt, d){ return fmtDT(d.sentAt); } },
