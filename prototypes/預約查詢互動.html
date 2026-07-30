@@ -878,7 +878,11 @@
 
             // 99－虛擬會員：HQ0000146 為範例會員編號；每筆預約各自帶新客姓名／新客電話，且可當日當店重複預約
             {id: 32, date: '2025/11/02', member: 'HQ0000146', memberSource: '99－虛擬會員', name: '99－虛擬會員', phone: '--', newCustomerName: '林新客', newCustomerPhone: '0955111222', time: '12:30', treatment: '初診諮詢', staff: '王護理師', contactStatus: '1', smsStatus: '', noSmsPreference: false},
-            {id: 33, date: '2025/11/02', member: 'HQ0000146', memberSource: '99－虛擬會員', name: '99－虛擬會員', phone: '--', newCustomerName: '陳新客', newCustomerPhone: '0966333444', time: '18:30', treatment: '醫美諮詢', staff: '李醫師', contactStatus: '1', smsStatus: '', noSmsPreference: false}
+            {id: 33, date: '2025/11/02', member: 'HQ0000146', memberSource: '99－虛擬會員', name: '99－虛擬會員', phone: '--', newCustomerName: '陳新客', newCustomerPhone: '0966333444', time: '18:30', treatment: '醫美諮詢', staff: '李醫師', contactStatus: '1', smsStatus: '', noSmsPreference: false},
+
+            // 排程中、發送時間已過但還沒滿 24 小時：跟 id:6（逾期 24hr 以上、DR -4 自動轉失敗）對照——
+            // 這筆還在 24 小時的容許範圍內，尚未觸發自動轉失敗規則，維持「排程中」是正確狀態，不是漏改
+            {id: 34, date: '2025/11/01', member: 'GT0000025', name: '蔡欣妤', phone: '0977888999', time: '10:00', treatment: '電波拉提', staff: '吳雅玲', contactStatus: '3', smsStatus: 'scheduled', noSmsPreference: false, smsDetail: {content: '提醒您：有在【示範麗雅醫學美容】2025/11/01 10:00 預約電波拉提，02-xxxx-xxxx，請提前30分鐘蒞臨現場報到。', sendTime: '2025-10-31T09:00', operatedAt: '2025-10-24T09:00', operatorName: '[C80011] 吳雅玲'}}
         ];
 
         function isVirtualMember(appointment) {
