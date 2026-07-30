@@ -1718,16 +1718,17 @@
                    ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
         }
 
-        // 簡訊詳情「操作紀錄」欄位：建立時間／取消時間／預計發送時間是三個各自獨立的時間，不可互相取代
-        // （建立時間＝店員設定這筆排程當下；取消時間＝店員按下取消當下；預計發送時間＝這筆簡訊排定
-        // 發送的時間）。已取消狀態要同時看到「建立時間」與「取消時間」兩者，所以 confirmCancelSms()
+        // 簡訊詳情「操作紀錄」欄位：建立時間／取消時間／發送時間是三個各自獨立的時間，不可互相取代
+        // （建立時間＝店員設定這筆排程當下；取消時間＝店員按下取消當下；發送時間＝這筆簡訊排定發送
+        // 的時間點，是設定值，不是「預計/預測」——不叫「預計發送時間」，避免讀起來像不確定的猜測）。
+        // 已取消狀態要同時看到「建立時間」與「取消時間」兩者，所以 confirmCancelSms()
         // 不會覆蓋 operatedAt，取消時間另外存在 cancelledAt。
         // 不重複顯示「預約時間」：客人來店時間已經解析進上方「簡訊內容」文字裡，不需要在操作紀錄再列一次
         var DETAIL_FIELD_DEFS = {
             operator:    { label: '操作人',     get: function(apt, d){ return d.operatorName || '--'; } },
             operatedAt:  { label: '建立時間',   get: function(apt, d){ return fmtDT(d.operatedAt); } },
             cancelledAt: { label: '取消時間',   get: function(apt, d){ return fmtDT(d.cancelledAt); } },
-            sendTime:    { label: '預計發送時間', get: function(apt, d){ return fmtDT(d.sendTime); } },
+            sendTime:    { label: '發送時間',   get: function(apt, d){ return fmtDT(d.sendTime); } },
             sentAt:      { label: '送達時間',   get: function(apt, d){ return fmtDT(d.sentAt); } },
             failReason:  { label: '失敗原因',   get: function(apt, d){ return d.failReason || '--'; } }
         };
