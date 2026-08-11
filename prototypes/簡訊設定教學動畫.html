@@ -269,7 +269,7 @@
   function hideLogic(){logicScrim.classList.remove("show");withDefault.classList.remove("active");withoutDefault.classList.remove("active")}
   function reset(){
     clearTimers();clearFocus();hideLogic();toast.classList.remove("show");setSwitch(sendSwitch,false);setSwitch(teleSwitch,false);setSwitch(enableSwitch,true);
-    applyStoreBu("BU1");emptyCustom.classList.remove("is-hidden");customTemplate.classList.add("is-hidden");setPinned(false);setDefault(false);selectCard(builtinTemplate);
+    applyStoreBu(currentBu);emptyCustom.classList.remove("is-hidden");customTemplate.classList.add("is-hidden");setPinned(false);setDefault(false);selectCard(builtinTemplate);
     saveButton.classList.remove("flash");body.classList.remove("typing");updatePreview();setStep(0);
   }
   function later(ms,fn){timers.push(setTimeout(()=>{if(playing)fn()},ms))}
@@ -314,7 +314,7 @@
   sendSwitch.addEventListener("click",()=>setSwitch(sendSwitch,!sendSwitch.classList.contains("on")));
   teleSwitch.addEventListener("click",()=>setSwitch(teleSwitch,!teleSwitch.classList.contains("on")));
   enableSwitch.addEventListener("click",()=>setSwitch(enableSwitch,!enableSwitch.classList.contains("on")));
-  $("#storeBuSwitch").addEventListener("click",e=>{const btn=e.target.closest("[data-bu]");if(!btn||btn.dataset.bu===currentBu)return;clearTimers();playing=false;playPause.textContent="繼續";playPause.classList.remove("primary");applyStoreBu(btn.dataset.bu,true);clearFocus()});
+  $("#storeBuSwitch").addEventListener("click",e=>{const btn=e.target.closest("[data-bu]");if(!btn||btn.dataset.bu===currentBu)return;applyStoreBu(btn.dataset.bu,true);if(!playing){playing=true;playPause.textContent="暫停";playPause.classList.add("primary");start()}else clearFocus()});
   templateCards.forEach(card=>card.addEventListener("click",()=>selectCard(card)));
   customPin.addEventListener("click",e=>{e.stopPropagation();setPinned(!customTemplate.classList.contains("pinned"))});
   defaultButton.addEventListener("click",()=>setDefault(defaultBadge.classList.contains("is-hidden")));
