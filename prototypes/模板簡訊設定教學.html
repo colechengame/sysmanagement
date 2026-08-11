@@ -48,6 +48,10 @@
   .sw-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 13px;border-bottom:1px solid var(--line);font-size:12.5px}
   .sw-row:last-child{border-bottom:none}
   .sw-row .sl{font-weight:600;color:var(--ink);white-space:nowrap}
+  .bu-segment{display:inline-flex;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface-2);padding:2px;gap:2px}
+  .bu-choice{font-size:12px;font-weight:700;color:var(--muted);padding:5px 11px;border-radius:6px;transition:.15s}
+  .bu-choice:hover{color:var(--blue-deep);background:#fff}
+  .bu-choice.active{color:#fff;background:var(--blue);box-shadow:0 1px 3px rgba(37,99,235,.25)}
   .switch{width:44px;height:24px;border-radius:999px;background:#cfd6dc;position:relative;flex:none;transition:.2s;cursor:pointer}
   .switch.on{background:var(--blue)}
   .switch::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
@@ -105,6 +109,9 @@
   .pchip:hover{background:#dbe7fb}
   .pchip .d{width:6px;height:6px;border-radius:50%}
   .pchip .d.sys{background:var(--blue)}
+  .pc-warning{margin-top:8px;border-left:4px solid #d58a00;border-radius:7px;background:#fff8df;color:#6e4b00;padding:8px 10px;font-size:11.5px;line-height:1.55}
+  .pc-warning b{display:block;color:#805200;margin-bottom:2px}
+  .pc-warning[hidden]{display:none}
   .ed-foot{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
   .btn{font-size:13.5px;font-weight:650;padding:9px 16px;border-radius:8px}
   .btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue-deep)}
@@ -187,10 +194,10 @@
         </div>
         <div class="sw-row" title="示範用：切換本門市科別，觀察系統內建模板清單如何跟著換">
           <span class="sl">示範門市科別</span>
-          <select id="storeBuSel" style="font-size:12.5px;padding:6px 9px;border:1px solid var(--line-strong);border-radius:7px;background:#fff;color:var(--ink);font-family:inherit">
-            <option value="BU1">西醫（BU1）</option>
-            <option value="BU2">中醫（BU2）</option>
-          </select>
+          <div class="bu-segment" id="storeBuSwitch" role="group" aria-label="示範門市科別">
+            <button class="bu-choice" type="button" data-bu="BU1" aria-pressed="false">西醫</button>
+            <button class="bu-choice" type="button" data-bu="BU2" aria-pressed="false">中醫</button>
+          </div>
         </div>
       </div>
     </div>
@@ -223,6 +230,7 @@
             <textarea class="ed-area" id="edBody" placeholder="輸入內容，點下方參數插入游標位置…"></textarea>
             <div class="param-hint">點擊插入參數：</div>
             <div class="param-row" id="sysRow"></div>
+            <div class="pc-warning" id="pcSeriesNote"><b>西醫 PC 系列特別註記</b>PC 系列無法由系統自動帶入門市名稱、門市電話與門市地址；請在模板內容中直接輸入實際門市資料，不要使用這三個門市參數代替。</div>
           </div>
           <div class="ed-foot">
             <button class="btn btn-primary" id="saveBtn">儲存為共用模板</button>
@@ -250,7 +258,7 @@
             <div class="stat"><div class="n" id="pvSegs">0</div><div class="l">預估簡訊則數</div></div>
           </div>
           <div class="legend">
-            <span class="k"><span class="sw sys"></span>參數自動帶入預約資料</span>
+            <span class="k"><span class="sw sys"></span><span id="sysLegend">參數自動帶入預約資料</span></span>
           </div>
         </div>
       </div>
@@ -415,6 +423,8 @@
   function renderParameterChips(){
     var visible=SYS.filter(function(s){return STORE_BU==="BU2"||!TCM_ONLY_TOKEN[s[0]];});
     document.getElementById("sysRow").innerHTML=visible.map(function(s){return pchip(s[0],false);}).join("");
+    document.getElementById("pcSeriesNote").hidden=STORE_BU!=="BU1";
+    document.getElementById("sysLegend").textContent=STORE_BU==="BU1"?"參數自動帶入預約資料（PC 系列門市資訊除外）":"參數自動帶入預約資料";
   }
   renderParameterChips();
   function insertToken(tok){
@@ -679,26 +689,29 @@
   });
 
   /* ---------- 示範門市科別切換（demo 用，模擬跨科別門市時系統內建模板清單的差異） ---------- */
-  var storeBuSel=document.getElementById("storeBuSel");
-  storeBuSel.value=STORE_BU;
+  var storeBuBtns=Array.prototype.slice.call(document.querySelectorAll("#storeBuSwitch [data-bu]"));
+  function syncStoreBuButtons(){
+    storeBuBtns.forEach(function(btn){var active=btn.getAttribute("data-bu")===STORE_BU;btn.classList.toggle("active",active);btn.setAttribute("aria-pressed",String(active));});
+  }
+  syncStoreBuButtons();
   function switchStoreBu(bu){
     applyStoreBu(bu);
     store.set(KEY.bu,STORE_BU);
-    storeBuSel.value=STORE_BU;
+    syncStoreBuButtons();
     renderParameterChips();
     renderList();
     loadIntoEditor(builtinInStore[0].id);
     toast("已切換示範門市科別為「"+(STORE_BU==="BU1"?"西醫":"中醫")+"」，系統內建模板清單同步更新");
   }
-  storeBuSel.addEventListener("change",function(){
-    var bu=storeBuSel.value;
+  storeBuBtns.forEach(function(btn){btn.addEventListener("click",function(){
+    var bu=btn.getAttribute("data-bu");
+    if(bu===STORE_BU)return;
     if(isDirty()){
       confirmDialog({title:"捨棄目前變更？",message:"目前編輯內容尚未儲存，切換門市科別將會遺失這些變更。",okText:"捨棄並切換",cancelText:"繼續編輯",danger:true},function(){switchStoreBu(bu);});
-      storeBuSel.value=STORE_BU;
       return;
     }
     switchStoreBu(bu);
-  });
+  });});
 
   /* ---------- init ---------- */
   renderList();

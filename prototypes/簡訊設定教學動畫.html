@@ -44,7 +44,9 @@
   .page-head{min-height:92px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
   h1{font-size:22px;color:#050505;margin-bottom:3px}.subtitle{font-size:13px;color:#5c6f8a}
   .store-context{display:inline-flex;align-items:center;gap:8px;margin-top:10px;border:1px solid #9aa7b8;border-radius:6px;background:#f8fafc;padding:6px 9px;color:#52657f;font-size:11.5px;font-weight:700;position:relative}
-  .store-context select{border:0;background:transparent;color:#174f9f;font-weight:800;outline:0;cursor:pointer}
+  .bu-segment{display:inline-flex;border:1px solid #a7b0bd;border-radius:6px;background:#edf1f6;padding:2px;gap:2px}
+  .bu-choice{border:0;border-radius:4px;background:transparent;color:#52657f;padding:4px 10px;font-size:11px;font-weight:800}
+  .bu-choice:hover{background:#fff;color:#0f5fd7}.bu-choice.active{background:var(--blue);color:#fff;box-shadow:0 1px 3px rgba(23,105,235,.3)}
   .global-switches{border:1px solid var(--line);border-radius:7px;overflow:visible;background:#fff;position:relative}
   .global-row{min-width:178px;padding:7px 12px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);font-weight:700;position:relative}
   .global-row:last-child{border-bottom:0}
@@ -71,6 +73,7 @@
   .field{margin-bottom:17px}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}.req{color:#e11d48}.control{width:100%;border:1px solid var(--line);border-radius:5px;padding:7px 12px;background:#fff;color:#111}.control[type=text]{height:36px}.body-input{height:129px;resize:none;line-height:1.6;padding:11px 12px}
   .param-label{font-size:11.5px;font-weight:700;color:#60708b;margin:7px 0 6px}.params{display:flex;flex-wrap:wrap;gap:6px}.token{border:0;border-radius:4px;background:#edf3fb;color:#1261e8;padding:5px 9px;font-size:11px;font-weight:700}.token::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#1769eb;margin-right:5px;vertical-align:2px}
   .contact-hint{margin-top:8px;border-left:3px solid #4c8ce8;border-radius:4px;background:#f3f7fd;padding:7px 9px;color:#52657f;font-size:11px;line-height:1.5}.contact-hint b{color:#174f9f}
+  .contact-hint.pc{border-left-color:#d58a00;background:#fff8df;color:#6e4b00}.contact-hint.pc b{color:#805200}
   .actions{display:flex;align-items:center;gap:9px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line);position:relative}.action{border:1px solid var(--line);border-radius:5px;background:#fff;padding:9px 16px;font-weight:700}.action.primary{border-color:var(--blue);background:var(--blue);color:#fff}.action.danger{border-color:var(--danger);background:var(--danger);color:#fff}.enable{margin-left:auto;display:flex;align-items:center;gap:8px;color:#60708b}.help{font-size:11.5px;color:#60708b;margin-top:8px}
 
   /* 預覽 */
@@ -122,7 +125,7 @@
 
   <main class="main">
     <section class="page-head">
-      <div><h1>簡訊模板設定</h1><p class="subtitle">維護全系統共用的預約簡訊模板；儲存後可於「預約操作」的發送簡訊彈窗直接套用。</p><label class="store-context" id="storeContext"><span>示範門市體系</span><select id="storeBu"><option value="BU1">西醫（BU1）</option><option value="BU2">中醫（BU2）</option></select></label></div>
+      <div><h1>簡訊模板設定</h1><p class="subtitle">維護全系統共用的預約簡訊模板；儲存後可於「預約操作」的發送簡訊彈窗直接套用。</p><div class="store-context" id="storeContext"><span>示範門市體系</span><div class="bu-segment" id="storeBuSwitch" role="group" aria-label="示範門市體系"><button class="bu-choice" type="button" data-bu="BU1" aria-pressed="false">西醫</button><button class="bu-choice" type="button" data-bu="BU2" aria-pressed="false">中醫</button></div></div></div>
       <div class="global-switches">
         <div class="global-row" id="sendRow"><span>發送預約簡訊</span><button class="switch" id="sendSwitch" role="switch" aria-checked="false"></button></div>
         <div class="global-row" id="teleRow"><span>含電訪/銷判斷</span><button class="switch" id="teleSwitch" role="switch" aria-checked="false"></button></div>
@@ -153,7 +156,7 @@
           <div class="field"><label>簡訊內容 <span class="req">*</span></label><textarea class="control body-input" id="templateBody">提醒您有預約：「{{門市名稱}}」 {{預約日期}}{{預約時間}}{{門市地址}},更改預約時間請來電{{門市電話}}!謝謝,祝順心</textarea></div>
           <div class="param-label">點擊插入參數：</div>
           <div class="params" id="params"></div>
-          <div class="contact-hint" id="contactHint"><b>門市資訊可自訂：</b>{{門市名稱}}、{{門市地址}}、{{門市電話}}預設帶入門市資料；若此模板需要不同的顯示內容，可刪除對應參數後直接輸入自訂文字。</div>
+          <div class="contact-hint pc" id="contactHint"><b>西醫 PC 系列特別註記：</b>PC 系列無法由系統自動帶入門市名稱、門市電話與門市地址；請直接輸入實際門市資料，不要使用這三個門市參數代替。</div>
           <div class="actions">
             <button class="action primary" id="saveButton">儲存為自訂複本</button><button class="action" id="cancelButton">取消編輯</button><button class="action is-hidden" id="defaultButton">設為門市預設</button><button class="action danger is-hidden" id="deleteButton">刪除</button>
             <label class="enable">啟用 <button class="switch on" id="enableSwitch" role="switch" aria-checked="true"></button></label>
@@ -229,8 +232,10 @@
   }
   function setCardContent(card,name,desc){card.dataset.name=name;card.dataset.desc=desc;card.querySelector(".tpl-name").textContent=name;card.querySelector(".tpl-desc").textContent=desc}
   function applyStoreBu(bu,showMessage=false){
-    currentBu=buConfig[bu]?bu:"BU1";const cfg=buConfig[currentBu];initialBody=cfg.body;$("#storeBu").value=currentBu;
+    currentBu=buConfig[bu]?bu:"BU1";const cfg=buConfig[currentBu];initialBody=cfg.body;
+    $$("#storeBuSwitch [data-bu]").forEach(btn=>{const active=btn.dataset.bu===currentBu;btn.classList.toggle("active",active);btn.setAttribute("aria-pressed",String(active))});
     setCardContent(builtinTemplate,cfg.mainName,cfg.mainDesc);setCardContent(builtinSecondary,cfg.secondName,cfg.secondDesc);setCardContent(customTemplate,cfg.mainName+"(本店版)",cfg.mainDesc);
+    const contactHint=$("#contactHint");contactHint.classList.toggle("pc",currentBu==="BU1");contactHint.innerHTML=currentBu==="BU1"?"<b>西醫 PC 系列特別註記：</b>PC 系列無法由系統自動帶入門市名稱、門市電話與門市地址；請直接輸入實際門市資料，不要使用這三個門市參數代替。":"<b>門市資訊可自訂：</b>{{門市名稱}}、{{門市地址}}、{{門市電話}}預設帶入門市資料；若此模板需要不同顯示內容，可刪除對應參數後直接輸入自訂文字。";
     $("#buBadge").textContent=cfg.label+" BU 指定";body.value=initialBody;renderTokens();selectCard(builtinTemplate);updatePreview();
     if(showMessage){toast.textContent="✓ 已切換為「"+cfg.label+"體系」示範；系統模板同步分流";toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1500)}
   }
@@ -272,7 +277,7 @@
     reset();playing=true;playPause.textContent="暫停";playPause.classList.add("primary");
     later(700,()=>focus($("#sendRow"),"先開啟「發送預約簡訊」；「含電訪/銷判斷」則依門市需求選擇。","left"));
     later(2500,()=>{setSwitch(sendSwitch,true);clearFocus()});
-    later(3200,()=>{setStep(1);focus($("#storeContext"),"門市開通時即決定所屬體系：西醫與中醫的系統模板分開顯示，不會互相混用。","below")});
+    later(3200,()=>{setStep(1);focus($("#storeContext"),"門市開通時即決定所屬體系；西醫與中醫模板分流。西醫 PC 系列的門市名稱、電話、地址必須自行輸入，無法自動帶入。","below")});
     later(4300,()=>{applyStoreBu("BU2",true);focus(builtinTemplate,"這裡切到中醫體系示範；新門市會看到中醫的 BU 指定模板。","below")});
     later(5100,()=>focus(emptyCustom,"中醫新門市尚無自訂模板時，發送視窗直接套用「中醫 BU 指定」系統模板。","below"));
     later(5900,()=>{setStep(2);focus(saveButton,"可先選一筆合適的系統內建模板，再「儲存為自訂複本」；原始系統模板不會被覆蓋。","above")});
@@ -309,7 +314,7 @@
   sendSwitch.addEventListener("click",()=>setSwitch(sendSwitch,!sendSwitch.classList.contains("on")));
   teleSwitch.addEventListener("click",()=>setSwitch(teleSwitch,!teleSwitch.classList.contains("on")));
   enableSwitch.addEventListener("click",()=>setSwitch(enableSwitch,!enableSwitch.classList.contains("on")));
-  $("#storeBu").addEventListener("change",e=>{clearTimers();playing=false;playPause.textContent="繼續";playPause.classList.remove("primary");applyStoreBu(e.target.value,true);clearFocus()});
+  $("#storeBuSwitch").addEventListener("click",e=>{const btn=e.target.closest("[data-bu]");if(!btn||btn.dataset.bu===currentBu)return;clearTimers();playing=false;playPause.textContent="繼續";playPause.classList.remove("primary");applyStoreBu(btn.dataset.bu,true);clearFocus()});
   templateCards.forEach(card=>card.addEventListener("click",()=>selectCard(card)));
   customPin.addEventListener("click",e=>{e.stopPropagation();setPinned(!customTemplate.classList.contains("pinned"))});
   defaultButton.addEventListener("click",()=>setDefault(defaultBadge.classList.contains("is-hidden")));
