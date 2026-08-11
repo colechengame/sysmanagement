@@ -164,6 +164,26 @@
   .live-clock{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;font-weight:700;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:3px 10px;letter-spacing:.5px}
   .reset-btn{font-size:12px;font-weight:650;color:var(--danger);background:var(--danger-wash);border:1px solid #f0bcbc;border-radius:7px;padding:5px 11px;white-space:nowrap}
   .reset-btn:hover{background:#fbdcdc}
+
+  /* 閱讀性放大：保留三欄操作脈絡，同時提高主要內容與控制項尺寸 */
+  body{font-size:15px}
+  .app{grid-template-rows:58px 1fr}
+  .top{gap:16px;padding:0 22px}.top .np{font-size:19px}.top .title{font-size:17px}.top .ver,.top .vnum{font-size:12px}
+  .top .user .nm{font-size:14px}.top .user .dp{font-size:12px}.top .user .av{width:34px;height:34px}.live-clock{font-size:14px}.reset-btn{font-size:13px;padding:6px 12px}
+  .main{padding:22px 26px 56px}.page-h h1{font-size:24px}.page-h p{font-size:14.5px;margin-top:4px}.ph-row{margin-bottom:18px}
+  .sw-row{gap:18px;padding:10px 15px;font-size:14px}.bu-choice{font-size:13.5px;padding:6px 13px}
+  .grid{grid-template-columns:330px minmax(0,1fr) 390px;gap:18px}
+  .card-h{padding:16px 18px;font-size:15px}.card-b{padding:18px}
+  .search input{font-size:14px;padding:10px 11px 10px 32px}.search svg{width:16px;height:16px}.add-btn{font-size:14px;padding:10px 14px}
+  .group-t{font-size:12.5px;margin:15px 4px 8px}.t-card{padding:13px;margin-bottom:10px}.t-name{font-size:14.5px}.t-desc{font-size:13px;margin-top:3px}
+  .t-meta{gap:10px;margin-top:10px;padding-top:10px}.t-status,.t-tag{font-size:11px}.t-last{font-size:12px}.star{width:28px;height:28px}.star svg{width:18px;height:18px}
+  .ed-field{margin-bottom:16px}.ed-field label{font-size:14px;margin-bottom:6px}.ed-input,.ed-area{padding:11px 13px;font-size:15px}.ed-area{min-height:155px}
+  .ed-current{gap:14px;padding:12px 14px;margin-bottom:17px}.ed-current-label{font-size:12px}.ed-current-value{font-size:13.5px}
+  .param-hint{font-size:13px;margin:11px 0 8px}.param-row{gap:8px}.pchip{font-size:13px;padding:6px 10px}.pc-warning{font-size:13px;padding:10px 12px;margin-top:10px}
+  .ed-foot{gap:11px;margin-top:17px;padding-top:17px}.btn{font-size:14.5px;padding:10px 18px}.ed-enable{font-size:14px}.ed-hint{font-size:13px;margin-top:10px}
+  .pv-sample{font-size:13px;padding:12px 13px;margin-bottom:16px}.phone{padding:16px 15px 18px}.phone-bar{font-size:12px}.sms-sender{font-size:12.5px}.bubble{font-size:15px;line-height:1.75;min-height:110px}
+  .stat{padding:11px 13px}.stat .n{font-size:21px}.stat .l{font-size:12px}.legend{font-size:13px;margin-top:14px}
+  @media (max-width:1250px){.grid{grid-template-columns:310px minmax(0,1fr) 360px}.main{padding-left:18px;padding-right:18px}}
 </style>
 </head>
 <body>
