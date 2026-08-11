@@ -12,7 +12,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{font-family:"Microsoft JhengHei","PingFang TC",sans-serif;color:var(--ink);background:#fff;font-size:14px;overflow:hidden}
-  button,input,textarea{font:inherit}
+  button,input,textarea,select{font:inherit}
   button{cursor:pointer}
 
   .app{display:grid;grid-template-columns:48px minmax(0,1fr);grid-template-rows:48px minmax(0,1fr);grid-template-areas:"rail top" "rail main";height:100vh}
@@ -43,6 +43,8 @@
   .main{grid-area:main;overflow:auto;padding:30px 49px 116px;background-color:#fff;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='175' height='95' viewBox='0 0 175 95'%3E%3Ctext x='15' y='70' fill='%2394a3b8' fill-opacity='.10' font-size='16' font-family='Arial' transform='rotate(-45 15 70)'%3EBC00183%3C/text%3E%3C/svg%3E")}
   .page-head{min-height:92px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
   h1{font-size:22px;color:#050505;margin-bottom:3px}.subtitle{font-size:13px;color:#5c6f8a}
+  .store-context{display:inline-flex;align-items:center;gap:8px;margin-top:10px;border:1px solid #9aa7b8;border-radius:6px;background:#f8fafc;padding:6px 9px;color:#52657f;font-size:11.5px;font-weight:700;position:relative}
+  .store-context select{border:0;background:transparent;color:#174f9f;font-weight:800;outline:0;cursor:pointer}
   .global-switches{border:1px solid var(--line);border-radius:7px;overflow:visible;background:#fff;position:relative}
   .global-row{min-width:178px;padding:7px 12px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);font-weight:700;position:relative}
   .global-row:last-child{border-bottom:0}
@@ -120,7 +122,7 @@
 
   <main class="main">
     <section class="page-head">
-      <div><h1>簡訊模板設定</h1><p class="subtitle">維護全系統共用的預約簡訊模板；儲存後可於「預約操作」的發送簡訊彈窗直接套用。</p></div>
+      <div><h1>簡訊模板設定</h1><p class="subtitle">維護全系統共用的預約簡訊模板；儲存後可於「預約操作」的發送簡訊彈窗直接套用。</p><label class="store-context" id="storeContext"><span>示範門市體系</span><select id="storeBu"><option value="BU1">西醫（BU1）</option><option value="BU2">中醫（BU2）</option></select></label></div>
       <div class="global-switches">
         <div class="global-row" id="sendRow"><span>發送預約簡訊</span><button class="switch" id="sendSwitch" role="switch" aria-checked="false"></button></div>
         <div class="global-row" id="teleRow"><span>含電訪/銷判斷</span><button class="switch" id="teleSwitch" role="switch" aria-checked="false"></button></div>
@@ -138,8 +140,8 @@
             <span class="tpl-name">西醫－標準預約提醒(本店版)</span><span class="star" id="customPin">☆</span><span class="tpl-desc">西醫通用預約確認簡訊</span><span class="default-badge is-hidden" id="defaultBadge">門市預設</span><span class="source">本門市自訂</span>
           </button>
           <div class="group">系統內建</div>
-          <button class="template-card selected" id="builtinTemplate" data-name="西醫－標準預約提醒" data-desc="西醫通用預約確認簡訊"><span class="tpl-name">西醫－標準預約提醒</span><span class="tpl-desc">西醫通用預約確認簡訊</span><span class="bu-badge">BU 指定</span><span class="source">系統內建</span></button>
-          <button class="template-card" data-name="西醫－療程提醒" data-desc="西醫預約療程提醒"><span class="tpl-name">西醫－療程提醒</span><span class="tpl-desc">西醫預約療程提醒</span><span class="source">系統內建</span></button>
+          <button class="template-card selected" id="builtinTemplate" data-name="西醫－標準預約提醒" data-desc="西醫通用預約確認簡訊"><span class="tpl-name">西醫－標準預約提醒</span><span class="tpl-desc">西醫通用預約確認簡訊</span><span class="bu-badge" id="buBadge">西醫 BU 指定</span><span class="source">系統內建</span></button>
+          <button class="template-card" id="builtinSecondary" data-name="西醫－療程提醒" data-desc="西醫預約療程提醒"><span class="tpl-name">西醫－療程提醒</span><span class="tpl-desc">西醫預約療程提醒</span><span class="source">系統內建</span></button>
         </div>
       </article>
 
@@ -182,14 +184,14 @@
       <div class="logic-case" id="withDefault"><h3>有設定「門市預設」</h3><div class="logic-flow"><span class="logic-node">門市預設存在且已啟用</span><span class="arrow">→</span><span class="logic-node result">直接套用門市預設</span></div></div>
       <div class="logic-case" id="withoutDefault"><h3>未設定「門市預設」</h3><div class="logic-flow"><span class="logic-node">有效的上次套用</span><span class="arrow">→</span><span class="logic-node">最近釘選的自訂</span><span class="arrow">→</span><span class="logic-node result">最新建立的自訂</span></div></div>
     </div>
-    <div class="logic-note"><b>新門市特例：</b>若完全沒有任何門市自訂模板，不會走「上次／釘選／最新建立」，而是直接套用本門市科別的 <b>BU 指定系統模板</b>。若預設或上次套用的模板已刪除／停用，系統會自動往下回退。</div>
+    <div class="logic-note"><b>西醫／中醫分流：</b>一間門市只屬於單一體系。西醫門市只顯示西醫系統模板，中醫門市只顯示中醫系統模板。若新門市完全沒有自訂模板，直接套用該體系的 <b>BU 指定系統模板</b>；預設或上次套用已刪除／停用時，系統會自動往下回退。</div>
   </section>
 </div>
 
 <nav class="tour-dock" aria-label="教學步驟">
   <span class="tour-label">教學步驟</span>
   <div class="steps">
-    <button class="step" data-step="0">1 全域設定</button><button class="step" data-step="1">2 新門市起點</button><button class="step" data-step="2">3 建立自訂</button><button class="step" data-step="3">4 自訂門市資訊</button><button class="step" data-step="4">5 釘選</button><button class="step" data-step="5">6 設為預設</button><button class="step" data-step="6">7 有預設套用</button><button class="step" data-step="7">8 未預設套用</button>
+    <button class="step" data-step="0">1 全域設定</button><button class="step" data-step="1">2 體系與新門市</button><button class="step" data-step="2">3 建立自訂</button><button class="step" data-step="3">4 自訂門市資訊</button><button class="step" data-step="4">5 釘選</button><button class="step" data-step="5">6 設為預設</button><button class="step" data-step="6">7 有預設套用</button><button class="step" data-step="7">8 未預設套用</button>
   </div>
   <div class="tour-controls"><button class="tour-btn" id="restart">重新播放</button><button class="tour-btn primary" id="playPause">暫停</button></div>
 </nav>
@@ -200,15 +202,17 @@
   const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
   const sendSwitch=$("#sendSwitch"),teleSwitch=$("#teleSwitch"),enableSwitch=$("#enableSwitch");
   const body=$("#templateBody"),nameInput=$("#templateName"),descInput=$("#templateDesc"),saveButton=$("#saveButton");
-  const customTemplate=$("#customTemplate"),builtinTemplate=$("#builtinTemplate"),emptyCustom=$("#emptyCustom"),customPin=$("#customPin");
+  const customTemplate=$("#customTemplate"),builtinTemplate=$("#builtinTemplate"),builtinSecondary=$("#builtinSecondary"),emptyCustom=$("#emptyCustom"),customPin=$("#customPin");
   const defaultButton=$("#defaultButton"),deleteButton=$("#deleteButton"),defaultBadge=$("#defaultBadge"),editorTitle=$("#editorTitle");
   const logicScrim=$("#logicScrim"),withDefault=$("#withDefault"),withoutDefault=$("#withoutDefault");
   const preview=$("#preview"),charCount=$("#charCount"),segments=$("#segments"),callout=$("#callout"),toast=$("#toast");
   const playPause=$("#playPause"),stepButtons=$$(".step"),templateCards=$$(".template-card");
-  const initialBody=body.value;
-  const customizedBody=initialBody.replace("{{門市名稱}}","示範分院").replace("{{門市地址}}","XX市XX區示範路100號").replace("{{門市電話}}","02-0000-0000");
+  const buConfig={
+    BU1:{label:"西醫",mainName:"西醫－標準預約提醒",mainDesc:"西醫通用預約確認簡訊",secondName:"西醫－療程提醒",secondDesc:"西醫預約療程提醒",body:"提醒您有預約：「{{門市名稱}}」 {{預約日期}}{{預約時間}}{{門市地址}},更改預約時間請來電{{門市電話}}!謝謝,祝順心"},
+    BU2:{label:"中醫",mainName:"中醫－預約門診提醒",mainDesc:"中醫門診一般預約提醒",secondName:"中醫－門診提醒自動報到",secondDesc:"中醫門診預約提醒短網址版本",body:"提醒您有中醫門診預約：「{{門市名稱}}」 {{預約日期}}{{預約時間}}，地址{{門市地址}}，看診進度{{叫號機網址}}，如需調整請來電{{門市電話}}。"}
+  };
+  let currentBu="BU1",initialBody=buConfig.BU1.body;
   const samples={"門市名稱":"示範診所","預約日期":"08/11(二) ","預約時間":"15:00 ","療程":"臉-超越(60分)","診間":"診一","時段":"午診","派號":"17","門市地址":"XX市XX區XX路XX號","門市電話":"02-XXXX-XXXX","叫號機網址":"https://example.com/queue"};
-  const tokens=Object.keys(samples);
   let timers=[],playing=true,currentStep=0,typingTimer=null,calloutSide="below";
 
   function escapeHtml(v){return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
@@ -218,6 +222,19 @@
     const n=plainText().length;charCount.textContent=n;segments.textContent=n?Math.ceil(n<=70?1:n/67):0;
   }
   function setSwitch(el,on){el.classList.toggle("on",on);el.setAttribute("aria-checked",String(on))}
+  function renderTokens(){
+    const hiddenForWestern=new Set(["診間","派號","叫號機網址"]);
+    const tokens=Object.keys(samples).filter(t=>currentBu==="BU2"||!hiddenForWestern.has(t));
+    $("#params").innerHTML=tokens.map(t=>'<button class="token" data-token="{{'+t+'}}">{{'+t+'}}</button>').join("");
+  }
+  function setCardContent(card,name,desc){card.dataset.name=name;card.dataset.desc=desc;card.querySelector(".tpl-name").textContent=name;card.querySelector(".tpl-desc").textContent=desc}
+  function applyStoreBu(bu,showMessage=false){
+    currentBu=buConfig[bu]?bu:"BU1";const cfg=buConfig[currentBu];initialBody=cfg.body;$("#storeBu").value=currentBu;
+    setCardContent(builtinTemplate,cfg.mainName,cfg.mainDesc);setCardContent(builtinSecondary,cfg.secondName,cfg.secondDesc);setCardContent(customTemplate,cfg.mainName+"(本店版)",cfg.mainDesc);
+    $("#buBadge").textContent=cfg.label+" BU 指定";body.value=initialBody;renderTokens();selectCard(builtinTemplate);updatePreview();
+    if(showMessage){toast.textContent="✓ 已切換為「"+cfg.label+"體系」示範；系統模板同步分流";toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1500)}
+  }
+  function customizedBody(){return initialBody.replace("{{門市名稱}}","示範分院").replace("{{門市地址}}","XX市XX區示範路100號").replace("{{門市電話}}","02-0000-0000")}
   function clearTimers(){timers.forEach(clearTimeout);timers=[];if(typingTimer){clearInterval(typingTimer);typingTimer=null}}
   function clearFocus(){$$(".tour-focus,.typing").forEach(el=>el.classList.remove("tour-focus","typing"));callout.className="callout"}
   function positionCallout(target,side){
@@ -247,7 +264,7 @@
   function hideLogic(){logicScrim.classList.remove("show");withDefault.classList.remove("active");withoutDefault.classList.remove("active")}
   function reset(){
     clearTimers();clearFocus();hideLogic();toast.classList.remove("show");setSwitch(sendSwitch,false);setSwitch(teleSwitch,false);setSwitch(enableSwitch,true);
-    body.value=initialBody;emptyCustom.classList.remove("is-hidden");customTemplate.classList.add("is-hidden");setPinned(false);setDefault(false);selectCard(builtinTemplate);
+    applyStoreBu("BU1");emptyCustom.classList.remove("is-hidden");customTemplate.classList.add("is-hidden");setPinned(false);setDefault(false);selectCard(builtinTemplate);
     saveButton.classList.remove("flash");body.classList.remove("typing");updatePreview();setStep(0);
   }
   function later(ms,fn){timers.push(setTimeout(()=>{if(playing)fn()},ms))}
@@ -255,7 +272,9 @@
     reset();playing=true;playPause.textContent="暫停";playPause.classList.add("primary");
     later(700,()=>focus($("#sendRow"),"先開啟「發送預約簡訊」；「含電訪/銷判斷」則依門市需求選擇。","left"));
     later(2500,()=>{setSwitch(sendSwitch,true);clearFocus()});
-    later(3200,()=>{setStep(1);focus(emptyCustom,"新門市尚無自訂模板：開啟發送視窗時，系統會直接套用同科別的「BU 指定」系統模板。","below")});
+    later(3200,()=>{setStep(1);focus($("#storeContext"),"門市開通時即決定所屬體系：西醫與中醫的系統模板分開顯示，不會互相混用。","below")});
+    later(4300,()=>{applyStoreBu("BU2",true);focus(builtinTemplate,"這裡切到中醫體系示範；新門市會看到中醫的 BU 指定模板。","below")});
+    later(5100,()=>focus(emptyCustom,"中醫新門市尚無自訂模板時，發送視窗直接套用「中醫 BU 指定」系統模板。","below"));
     later(5900,()=>{setStep(2);focus(saveButton,"可先選一筆合適的系統內建模板，再「儲存為自訂複本」；原始系統模板不會被覆蓋。","above")});
     later(8000,()=>{clearFocus();createCustom(true)});
     later(9200,()=>{setStep(3);focus(body,"門市名稱、地址或電話若不符合此模板需求，可刪除對應的 {{參數}} 並直接輸入自訂文字；只會改變這份模板的內容。","above");body.classList.add("typing")});
@@ -273,23 +292,24 @@
   }
   function jump(i){
     reset();playing=false;playPause.textContent="繼續";playPause.classList.remove("primary");setStep(i);if(i>0)setSwitch(sendSwitch,true);
-    if(i>=3)createCustom();if(i>=5)setPinned(true);if(i>=6)setDefault(true);if(i===7)setDefault(false);
+    if(i>=1)applyStoreBu("BU2");if(i>=3)createCustom();if(i>=5)setPinned(true);if(i>=6)setDefault(true);if(i===7)setDefault(false);
     if(i===0)focus($("#sendRow"),"開啟預約簡訊；電訪/銷判斷可依門市需求開啟。","left");
-    if(i===1)focus(emptyCustom,"沒有門市自訂時，自動套用同科別的 BU 指定模板。");
+    if(i===1)focus($("#storeContext"),"西醫與中醫依門市體系分流；中醫新門市沒有自訂時，套用中醫 BU 指定模板。");
     if(i===2)focus(saveButton,"從系統內建模板另存本門市自訂複本。","above");
-    if(i===3){body.value=customizedBody;updatePreview();focus(body,"若門市名稱、地址或電話不符合需求，可將對應參數改成這份模板專用的自訂文字。","above");body.classList.add("typing")}
+    if(i===3){body.value=customizedBody();updatePreview();focus(body,"若門市名稱、地址或電話不符合需求，可將對應參數改成這份模板專用的自訂文字。","above");body.classList.add("typing")}
     if(i===4)focus(customPin,"釘選後會排在前方，並出現在發送視窗的快速套用區。");
     if(i===5)focus(defaultButton,"將這筆設為門市預設，成為最高優先套用項。","above");
     if(i===6)showLogic("with");
     if(i===7)showLogic("without");
   }
 
-  document.getElementById("params").innerHTML=tokens.map(t=>'<button class="token" data-token="{{'+t+'}}">{{'+t+'}}</button>').join("");
+  renderTokens();
   document.getElementById("params").addEventListener("click",e=>{const b=e.target.closest("[data-token]");if(!b)return;const s=body.selectionStart,v=body.value,t=b.dataset.token;body.value=v.slice(0,s)+t+v.slice(body.selectionEnd);body.focus();body.selectionStart=body.selectionEnd=s+t.length;updatePreview()});
   body.addEventListener("input",updatePreview);
   sendSwitch.addEventListener("click",()=>setSwitch(sendSwitch,!sendSwitch.classList.contains("on")));
   teleSwitch.addEventListener("click",()=>setSwitch(teleSwitch,!teleSwitch.classList.contains("on")));
   enableSwitch.addEventListener("click",()=>setSwitch(enableSwitch,!enableSwitch.classList.contains("on")));
+  $("#storeBu").addEventListener("change",e=>{clearTimers();playing=false;playPause.textContent="繼續";playPause.classList.remove("primary");applyStoreBu(e.target.value,true);clearFocus()});
   templateCards.forEach(card=>card.addEventListener("click",()=>selectCard(card)));
   customPin.addEventListener("click",e=>{e.stopPropagation();setPinned(!customTemplate.classList.contains("pinned"))});
   defaultButton.addEventListener("click",()=>setDefault(defaultBadge.classList.contains("is-hidden")));

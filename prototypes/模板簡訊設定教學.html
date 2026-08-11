@@ -307,6 +307,7 @@
     "叫號機網址":STORE_QUEUE_URL
   };
   var SYS=[["門市名稱","預約門市"],["預約日期","預約日期"],["預約時間","預約時間"],["療程","施做療程"],["診間","診間"],["時段","時段"],["派號","派號"],["門市地址","門市地址"],["門市電話","門市電話"],["叫號機網址","叫號機查詢網址"]];
+  var TCM_ONLY_TOKEN={"診間":true,"派號":true,"叫號機網址":true};
 
   /* ---------- 模板資料（與預約操作頁共用 localStorage） ---------- */
   var builtin=[
@@ -390,7 +391,8 @@
     out+=esc(body.slice(last));return out;
   }
   function renderSampleSummary(){
-    document.getElementById("pvSample").innerHTML='已套用範例資料：<b>'+esc(sample["門市名稱"])+'</b>／'+esc(sample["預約日期"])+' '+esc(sample["預約時間"])+'（'+esc(sample["時段"])+'第'+esc(sample["派號"])+'號）／'+esc(sample["療程"]);
+    var detail=STORE_BU==="BU2"?'（'+esc(sample["時段"])+'第'+esc(sample["派號"])+'號）':'／'+esc(sample["療程"]);
+    document.getElementById("pvSample").innerHTML='已套用範例資料：<b>'+esc(sample["門市名稱"])+'</b>／'+esc(sample["預約日期"])+' '+esc(sample["預約時間"])+detail;
   }
   function updatePreview(){
     document.getElementById("pvSender").textContent=sample["門市名稱"];
@@ -410,7 +412,11 @@
 
   /* ---------- 參數插入 ---------- */
   function pchip(k,man){return '<button class="pchip'+(man?' man':'')+'" data-token="{{'+k+'}}"><span class="d '+(man?'man':'sys')+'"></span>{{'+k+'}}</button>';}
-  document.getElementById("sysRow").innerHTML=SYS.map(function(s){return pchip(s[0],false);}).join("");
+  function renderParameterChips(){
+    var visible=SYS.filter(function(s){return STORE_BU==="BU2"||!TCM_ONLY_TOKEN[s[0]];});
+    document.getElementById("sysRow").innerHTML=visible.map(function(s){return pchip(s[0],false);}).join("");
+  }
+  renderParameterChips();
   function insertToken(tok){
     var ta=document.getElementById("edBody"),s=ta.selectionStart,e=ta.selectionEnd,v=ta.value;
     ta.value=v.slice(0,s)+tok+v.slice(e);ta.focus();ta.selectionStart=ta.selectionEnd=s+tok.length;updatePreview();
@@ -679,6 +685,7 @@
     applyStoreBu(bu);
     store.set(KEY.bu,STORE_BU);
     storeBuSel.value=STORE_BU;
+    renderParameterChips();
     renderList();
     loadIntoEditor(builtinInStore[0].id);
     toast("已切換示範門市科別為「"+(STORE_BU==="BU1"?"西醫":"中醫")+"」，系統內建模板清單同步更新");

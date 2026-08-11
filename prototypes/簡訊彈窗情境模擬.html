@@ -23,8 +23,8 @@
 </head>
 <body>
 <div class="app">
-  <header class="top"><span class="logo">NPOS</span><span class="title">簡訊多模板彈窗情境模擬</span><span class="version">v6</span><span class="top-note">所有門市與客戶資料均為虛構示範</span></header>
-  <aside class="side"><h1>發送情境</h1><p class="side-sub">切換情境查看目前多模板選擇器的自動套用、防呆與顯示規則。</p><div class="scenario-list" id="scenarioList"></div></aside>
+  <header class="top"><span class="logo">NPOS</span><span class="title">簡訊多模板彈窗情境模擬</span><span class="version">v7</span><span class="top-note">所有門市與客戶資料均為虛構示範</span></header>
+  <aside class="side"><h1>發送情境</h1><p class="side-sub">切換情境查看西醫／中醫門市的模板分流、自動套用、防呆與顯示規則。</p><div class="scenario-list" id="scenarioList"></div></aside>
   <main class="main">
     <div class="page-head"><div><h2>預約簡訊發送</h2><p>左欄選模板、右欄立即看內容；清單維持展開，不需要來回收合。</p></div><span class="logic-badge">目前多模板版本</span></div>
     <div class="context"><div class="context-icon">🧩</div><div class="context-copy"><strong id="contextTitle"></strong><p id="contextDesc"></p></div><span class="auto-source" id="autoSource"></span></div>
@@ -44,7 +44,7 @@
       </div>
       <footer class="modal-foot"><button class="btn" id="cancelBtn">不發送</button><button class="btn primary" id="sendBtn">確認發送</button></footer>
     </section>
-    <div class="current-rule"><div class="rule" data-rule="default"><b>1 門市預設</b>存在、未刪除且已啟用</div><div class="rule" data-rule="bu"><b>2 尚無自訂</b>套用本科別 BU 指定</div><div class="rule" data-rule="last"><b>3 上次套用</b>仅這一層顯示沿用提示</div><div class="rule" data-rule="pin"><b>4 釘選／最新</b>最近釘選，否則最新建立</div></div>
+    <div class="current-rule"><div class="rule" data-rule="default"><b>1 門市預設</b>存在、未刪除且已啟用</div><div class="rule" data-rule="bu"><b>2 尚無自訂</b>套用門市體系 BU 指定</div><div class="rule" data-rule="last"><b>3 上次套用</b>僅這一層顯示沿用提示</div><div class="rule" data-rule="pin"><b>4 釘選／最新</b>最近釘選，否則最新建立</div></div>
   </main>
 </div>
 <div class="toast" id="toast"></div>
@@ -54,32 +54,40 @@
   const $=s=>document.querySelector(s);
   const samples={"門市名稱":"示範診所","預約日期":"08/12(三) ","預約時間":"10:30","門市地址":"XX市XX區XX路XX號","門市電話":"02-XXXX-XXXX","療程":"示範療程"};
   const templates={
-    c1:{id:"c1",name:"西醫－標準預約提醒(本店版)",source:"自訂",body:"提醒您於「{{門市名稱}}」的預約：{{預約日期}}{{預約時間}}，地址{{門市地址}}，洽詢{{門市電話}}。"},
-    c2:{id:"c2",name:"西醫－療程提醒(本店版)",source:"自訂",body:"溫馨提醒：您已預約{{預約日期}}{{預約時間}}的{{療程}}，請提前10分鐘至「{{門市名稱}}」報到。"},
-    c3:{id:"c3",name:"西醫－改期聯絡版",source:"自訂",body:"您好，已為您保留{{預約日期}}{{預約時間}}預約，如需調整請來電{{門市電話}}。"},
-    b1:{id:"b1",name:"西醫－系統標準預約提醒",source:"系統預設",body:"溫馨提醒您於「{{門市名稱}}」{{預約日期}}{{預約時間}}有預約，地址：{{門市地址}}，電話{{門市電話}}。"}
+    c1:{id:"c1",bu:"BU1",name:"西醫－標準預約提醒(本店版)",source:"自訂",body:"提醒您於「{{門市名稱}}」的預約：{{預約日期}}{{預約時間}}，地址{{門市地址}}，洽詢{{門市電話}}。"},
+    c2:{id:"c2",bu:"BU1",name:"西醫－療程提醒(本店版)",source:"自訂",body:"溫馨提醒：您已預約{{預約日期}}{{預約時間}}的{{療程}}，請提前10分鐘至「{{門市名稱}}」報到。"},
+    c3:{id:"c3",bu:"BU1",name:"西醫－改期聯絡版",source:"自訂",body:"您好，已為您保留{{預約日期}}{{預約時間}}預約，如需調整請來電{{門市電話}}。"},
+    c4:{id:"c4",bu:"BU2",name:"中醫－預約門診提醒(本店版)",source:"自訂",body:"提醒您於「{{門市名稱}}」有中醫門診預約：{{預約日期}}{{預約時間}}，地址{{門市地址}}，洽詢{{門市電話}}。"},
+    c5:{id:"c5",bu:"BU2",name:"中醫－回診提醒(本店版)",source:"自訂",body:"溫馨提醒：您已預約{{預約日期}}{{預約時間}}回診，請提前10分鐘至「{{門市名稱}}」報到。"},
+    c6:{id:"c6",bu:"BU2",name:"中醫－改期聯絡版",source:"自訂",body:"您好，已為您保留{{預約日期}}{{預約時間}}中醫門診，如需調整請來電{{門市電話}}。"},
+    b1:{id:"b1",bu:"BU1",name:"西醫－系統標準預約提醒",source:"系統內建",designated:true,body:"溫馨提醒您於「{{門市名稱}}」{{預約日期}}{{預約時間}}有預約，地址：{{門市地址}}，電話{{門市電話}}。"},
+    b2:{id:"b2",bu:"BU1",name:"西醫－系統療程提醒",source:"系統內建",body:"提醒您於{{預約日期}}{{預約時間}}至「{{門市名稱}}」進行{{療程}}，如需調整請來電{{門市電話}}。"},
+    b3:{id:"b3",bu:"BU2",name:"中醫－系統預約門診提醒",source:"系統內建",designated:true,body:"溫馨提醒您於「{{門市名稱}}」{{預約日期}}{{預約時間}}有中醫門診預約，地址：{{門市地址}}，電話{{門市電話}}。"},
+    b4:{id:"b4",bu:"BU2",name:"中醫－系統回診提醒",source:"系統內建",body:"提醒您於{{預約日期}}{{預約時間}}至「{{門市名稱}}」回診，如需調整請來電{{門市電話}}。"}
   };
   const scenarios=[
-    {id:"standard",title:"標準發送",desc:"門市已設預設模板",tag:"門市預設",mode:"default",pins:["c2"],custom:["c1","c2","c3"],selected:"c1"},
-    {id:"last",title:"未設門市預設",desc:"沿用個人上次使用",tag:"沿用上次",mode:"last",pins:["c1"],custom:["c1","c2","c3"],selected:"c2",remembered:true},
-    {id:"new",title:"新門市尚無自訂",desc:"回退本科別 BU 指定",tag:"BU 指定",mode:"bu",pins:[],custom:[],selected:"b1"},
-    {id:"refuse",title:"客戶設定拒收",desc:"顯示阻擋警示，仍可強制發送",tag:"發送風險",tagClass:"red",mode:"default",pins:["c2"],custom:["c1","c2"],selected:"c1",alert:"danger"},
-    {id:"multi",title:"同日多筆預約",desc:"以當日最早有效預約發送",tag:"排程提醒",tagClass:"amber",mode:"default",pins:["c2"],custom:["c1","c2","c3"],selected:"c1",alert:"warning"},
-    {id:"guest",title:"99－虛擬會員新客",desc:"改用該筆預約的新客資料",tag:"新客收件人",mode:"default",pins:["c2"],custom:["c1","c2"],selected:"c1",guest:true}
+    {id:"standard",title:"西醫標準發送",desc:"西醫門市已設預設模板",tag:"西醫／門市預設",mode:"default",bu:"BU1",pins:["c2"],custom:["c1","c2","c3"],selected:"c1"},
+    {id:"last",title:"西醫未設門市預設",desc:"沿用個人上次使用",tag:"西醫／沿用上次",mode:"last",bu:"BU1",pins:["c1"],custom:["c1","c2","c3"],selected:"c2",remembered:true},
+    {id:"new",title:"西醫新門市",desc:"尚無自訂，回退西醫 BU 指定",tag:"西醫 BU 指定",mode:"bu",bu:"BU1",pins:[],custom:[],selected:"b1"},
+    {id:"tcm",title:"中醫標準發送",desc:"只顯示中醫模板；門市預設優先",tag:"中醫／門市預設",mode:"default",bu:"BU2",pins:["c5"],custom:["c4","c5","c6"],selected:"c4"},
+    {id:"tcm-new",title:"中醫新門市",desc:"尚無自訂，回退中醫 BU 指定",tag:"中醫 BU 指定",mode:"bu",bu:"BU2",pins:[],custom:[],selected:"b3"},
+    {id:"refuse",title:"客戶設定拒收",desc:"顯示阻擋警示，仍可強制發送",tag:"發送風險",tagClass:"red",mode:"default",bu:"BU1",pins:["c2"],custom:["c1","c2"],selected:"c1",alert:"danger"},
+    {id:"multi",title:"同日多筆預約",desc:"以當日最早有效預約發送",tag:"排程提醒",tagClass:"amber",mode:"default",bu:"BU1",pins:["c2"],custom:["c1","c2","c3"],selected:"c1",alert:"warning"},
+    {id:"guest",title:"99－虛擬會員新客",desc:"改用該筆預約的新客資料",tag:"新客收件人",mode:"default",bu:"BU1",pins:["c2"],custom:["c1","c2"],selected:"c1",guest:true}
   ];
   let current=scenarios[0],selectedId=current.selected,lastAppliedBody="",filter="";
   function resolve(body){return body.replace(/\{\{(.+?)\}\}/g,(m,k)=>samples[k]===undefined?m:samples[k])}
   function toast(msg){const el=$("#toast");el.textContent=msg;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),2200)}
   function scenarioButtons(){$("#scenarioList").innerHTML=scenarios.map(s=>`<button class="scenario${s.id===current.id?' active':''}" data-scenario="${s.id}"><strong>${s.title}</strong><span>${s.desc}</span><i class="tag ${s.tagClass||''}">${s.tag}</i></button>`).join("")}
-  function activeTemplates(){return current.custom.map(id=>templates[id]).concat(templates.b1)}
+  function activeTemplates(){return current.custom.map(id=>templates[id]).concat(Object.values(templates).filter(t=>t.source==="系統內建"&&t.bu===current.bu))}
   function applyTemplate(id,userAction=false){const t=templates[id];if(!t)return;if(userAction&&$("#smsBody").value!==lastAppliedBody&&!confirm("目前內容已手動修改，套用新模板將覆蓋這些修改，確定要更換嗎？"))return;selectedId=id;lastAppliedBody=resolve(t.body);$("#smsBody").value=lastAppliedBody;renderSelector();updateStats()}
   function renderSelector(){
     const pins=current.pins.filter(id=>current.custom.includes(id));$("#pinWrap").classList.toggle("show",pins.length>0);$("#chips").innerHTML=pins.map(id=>`<button class="chip${id===selectedId?' active':''}" data-apply="${id}">★ ${templates[id].name}${current.remembered&&id===selectedId?'<span class="remembered">沿用上次</span>':''}</button>`).join("");
-    const list=activeTemplates().filter(t=>!pins.includes(t.id)&&t.name.toLowerCase().includes(filter.toLowerCase()));$("#templateList").innerHTML=list.length?list.map(t=>`<button class="tpl${t.id===selectedId?' active':''}" data-apply="${t.id}"><span class="tpl-name">${t.name}</span><span class="tpl-tags"><i class="tpl-tag ${t.source==='自訂'?'custom':''}">${t.source}</i>${t.id===selectedId?'<i class="tpl-tag applying">套用中</i>':''}${current.remembered&&t.id===selectedId?'<i class="tpl-tag last">已沿用上次選擇</i>':''}</span></button>`).join(""):'<div class="empty">無符合的模板</div>';
+    const list=activeTemplates().filter(t=>!pins.includes(t.id)&&t.name.toLowerCase().includes(filter.toLowerCase()));$("#templateList").innerHTML=list.length?list.map(t=>`<button class="tpl${t.id===selectedId?' active':''}" data-apply="${t.id}"><span class="tpl-name">${t.name}</span><span class="tpl-tags"><i class="tpl-tag ${t.source==='自訂'?'custom':''}">${t.source}</i>${t.designated?'<i class="tpl-tag applying">BU 指定</i>':''}${t.id===selectedId?'<i class="tpl-tag applying">套用中</i>':''}${current.remembered&&t.id===selectedId?'<i class="tpl-tag last">已沿用上次選擇</i>':''}</span></button>`).join(""):'<div class="empty">無符合的模板</div>';
   }
   function updateStats(){const n=$("#smsBody").value.length;$("#charCount").textContent=n;$("#segments").textContent=n?Math.ceil(n<=70?1:n/67):0}
   function renderScenario(){
-    scenarioButtons();filter="";$("#filter").value="";selectedId=current.selected;const modeText={default:"自動套用：門市預設",last:"自動套用：上次選擇",bu:"自動套用：BU 指定"};$("#contextTitle").textContent=current.title;$("#contextDesc").textContent=current.desc;$("#autoSource").textContent=modeText[current.mode];
+    scenarioButtons();filter="";$("#filter").value="";selectedId=current.selected;const modeText={default:"自動套用：門市預設",last:"自動套用：上次選擇",bu:"自動套用：BU 指定"};$("#contextTitle").textContent=current.title;$("#contextDesc").textContent=current.desc;$("#autoSource").textContent=(current.bu==="BU2"?"中醫體系":"西醫體系")+"｜"+modeText[current.mode];
     $(".current-rule .active")?.classList.remove("active");$( `.rule[data-rule="${current.mode}"]`)?.classList.add("active");
     const alert=$("#alertBox");alert.className="alert";if(current.alert==="danger"){alert.classList.add("show","danger");alert.innerHTML="<strong>發送受阻</strong>客戶已設定「不要發送簡訊」，強制發送可能引起客訴。"}else if(current.alert==="warning"){alert.classList.add("show","warning");alert.innerHTML="<strong>同日有多筆預約</strong>系統以 08/12 10:30 的最早有效預約為主，下方可編輯發送內容。"}
     $("#recipient").innerHTML=current.guest?'<b>示範新客</b>　0900-000-000<br><span>99－虛擬會員：必須使用這筆預約的新客姓名與電話</span>':'<b>示範客戶</b>　0900-000-001';
