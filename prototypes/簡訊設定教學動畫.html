@@ -1,989 +1,305 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>簡訊設定教學 - 開關與儲存流程</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Microsoft JhengHei', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 1200px;
-            width: 100%;
-            padding: 40px;
-            position: relative;
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .header-icon {
-            width: 40px;
-            height: 40px;
-            background: #4169E1;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-        }
-
-        .header-icon svg {
-            width: 24px;
-            height: 24px;
-            fill: white;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            color: #333;
-            font-weight: 600;
-        }
-
-        .content-wrapper {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            margin-top: 30px;
-        }
-
-        .settings-panel {
-            padding: 20px;
-            background: #fafafa;
-            border-radius: 12px;
-            position: relative;
-        }
-
-        .preview-panel {
-            padding: 20px;
-            background: #f5f5f5;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .setting-item {
-            margin-bottom: 25px;
-        }
-
-        .setting-label {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-weight: 500;
-            color: #555;
-        }
-
-        .toggle-wrapper {
-            display: inline-block;
-            position: relative;
-        }
-
-        .toggle-switch {
-            width: 60px;
-            height: 30px;
-            background: #ccc;
-            border-radius: 15px;
-            position: relative;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .toggle-switch.active {
-            background: #4169E1;
-        }
-
-        .toggle-slider {
-            width: 26px;
-            height: 26px;
-            background: white;
-            border-radius: 50%;
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            transition: transform 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .toggle-switch.active .toggle-slider {
-            transform: translateX(30px);
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-            transition: border-color 0.3s ease;
-            resize: vertical;
-        }
-
-        .input-field:focus {
-            outline: none;
-            border-color: #4169E1;
-        }
-
-        .input-field.editing-highlight {
-            border-color: #2196F3;
-            background: #e3f2fd;
-            animation: input-pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes input-pulse {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4);
-            }
-            50% {
-                box-shadow: 0 0 0 8px rgba(33, 150, 243, 0);
-            }
-        }
-
-        textarea.input-field {
-            min-height: 80px;
-        }
-
-        .preview-box {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 20px;
-            min-height: 200px;
-            transition: all 0.3s ease;
-        }
-
-        .preview-box.updating {
-            border-color: #4CAF50;
-            background: #f1f8f4;
-            animation: preview-update 0.6s ease;
-        }
-
-        @keyframes preview-update {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.02);
-                box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
-            }
-        }
-
-        .preview-title {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-
-        .preview-content {
-            color: #666;
-            line-height: 1.8;
-            white-space: pre-wrap;
-        }
-
-        .char-count {
-            text-align: right;
-            margin-top: 10px;
-            font-size: 13px;
-            color: #999;
-        }
-
-        .char-count.warning {
-            color: #e74c3c;
-            font-weight: 600;
-        }
-
-        .save-button {
-            background: #4169E1;
-            color: white;
-            border: none;
-            padding: 14px 40px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(65, 105, 225, 0.3);
-            margin-top: 20px;
-            display: block;
-            width: 100%;
-        }
-
-        .save-button:hover {
-            background: #3555c7;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(65, 105, 225, 0.4);
-        }
-
-        .save-button:active {
-            transform: translateY(0);
-        }
-
-        .save-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        /* 動畫提示元素 */
-        .hint-message {
-            position: absolute;
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 8px;
-            padding: 12px 20px;
-            color: #856404;
-            font-weight: 500;
-            font-size: 14px;
-            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
-            z-index: 100;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-            pointer-events: none;
-            white-space: nowrap;
-            line-height: 1.6;
-        }
-
-        /* 編輯模板背景遮罩 */
-        .edit-template-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: 140;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-        }
-
-        .edit-template-overlay.show {
-            opacity: 1;
-        }
-
-        /* 編輯模板特別說明框 */
-        .edit-template-hint {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            border: 3px solid #2196F3;
-            border-radius: 12px;
-            padding: 20px 24px;
-            color: #0d47a1;
-            font-weight: 600;
-            font-size: 15px;
-            box-shadow: 0 8px 24px rgba(33, 150, 243, 0.3);
-            z-index: 150;
-            opacity: 0;
-            transition: all 0.4s ease;
-            pointer-events: none;
-            max-width: 500px;
-            line-height: 1.8;
-            white-space: normal;
-        }
-
-        .edit-template-hint.show {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        .edit-template-hint .hint-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: #1976D2;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .edit-template-hint .hint-content {
-            font-size: 14px;
-            font-weight: 500;
-            line-height: 1.8;
-        }
-
-        .edit-template-hint .hint-list {
-            margin-top: 10px;
-            padding-left: 20px;
-        }
-
-        .edit-template-hint .hint-list li {
-            margin-bottom: 8px;
-        }
-
-        .hint-message.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .hint-arrow {
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-top: 10px solid #ffc107;
-            bottom: -10px;
-            left: 20px;
-        }
-
-        .success-message {
-            background: #d4edda;
-            border: 2px solid #28a745;
-            color: #155724;
-            text-align: center;
-            padding: 16px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-weight: 600;
-            opacity: 0;
-            transform: scale(0.9);
-            transition: all 0.3s ease;
-        }
-
-        .success-message.show {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        /* 高亮動畫 */
-        .highlight {
-            animation: pulse 1s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(65, 105, 225, 0.7);
-            }
-            50% {
-                box-shadow: 0 0 0 20px rgba(65, 105, 225, 0);
-            }
-        }
-
-        .glow {
-            animation: glow 1.5s ease-in-out infinite;
-        }
-
-        @keyframes glow {
-            0%, 100% {
-                box-shadow: 0 0 5px rgba(65, 105, 225, 0.5), 0 0 10px rgba(65, 105, 225, 0.3);
-            }
-            50% {
-                box-shadow: 0 0 20px rgba(65, 105, 225, 0.8), 0 0 30px rgba(65, 105, 225, 0.5);
-            }
-        }
-
-        /* 步驟指示器 */
-        .step-indicator {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .step-title {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-
-        .step-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-            padding: 8px;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .step-item:hover {
-            background: #f0f0f0;
-            transform: translateX(3px);
-        }
-
-        .step-item.active {
-            background: #e3f2fd;
-            border-left: 4px solid #4169E1;
-            padding-left: 12px;
-        }
-
-        .step-item.active:hover {
-            background: #d1e7fd;
-        }
-
-        .step-item.completed {
-            opacity: 0.6;
-        }
-
-        .step-item.completed:hover {
-            opacity: 0.8;
-        }
-
-        .step-number {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #e0e0e0;
-            color: #666;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 14px;
-            margin-right: 12px;
-            flex-shrink: 0;
-        }
-
-        .step-item.active .step-number {
-            background: #4169E1;
-            color: white;
-        }
-
-        .step-item.completed .step-number {
-            background: #28a745;
-            color: white;
-        }
-
-        .step-text {
-            font-size: 14px;
-            color: #555;
-            line-height: 1.4;
-        }
-
-        /* 控制按鈕 */
-        .controls {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .control-btn {
-            background: white;
-            border: 2px solid #4169E1;
-            color: #4169E1;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .control-btn:hover {
-            background: #4169E1;
-            color: white;
-        }
-
-        .control-btn.playing {
-            background: #4169E1;
-            color: white;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NPOS 簡訊設定教學動畫</title>
+<style>
+  :root{
+    --blue:#1769eb;--blue-soft:#eaf2ff;--ink:#111827;--muted:#60708b;
+    --line:#7f8792;--soft:#f7f9fc;--danger:#ef4444;--green:#18864b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:"Microsoft JhengHei","PingFang TC",sans-serif;color:var(--ink);background:#fff;font-size:14px;overflow:hidden}
+  button,input,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .app{display:grid;grid-template-columns:48px minmax(0,1fr);grid-template-rows:48px minmax(0,1fr);grid-template-areas:"rail top" "rail main";height:100vh}
+
+  /* NPOS 外框 */
+  .rail{grid-area:rail;border-right:1px solid #9ca3af;background:#fff;display:flex;flex-direction:column;align-items:center;z-index:5}
+  .clinic{width:31px;height:38px;margin:4px 0 7px;border-radius:4px;background:#f6d91c;font-size:9px;line-height:1.05;font-weight:800;display:grid;place-items:center;text-align:center}
+  .rail-btn{width:47px;height:36px;border:0;background:#fff;color:#303640;display:grid;place-items:center;font-size:16px}
+  .rail-btn:hover{background:#f3f4f6;color:var(--blue)}
+  .rail-btn.active{color:var(--blue);background:#eff5ff;border-right:3px solid var(--blue)}
+  .rail-space{flex:1}
+
+  .top{grid-area:top;border-bottom:1px solid #8b929c;background:#fff;display:flex;align-items:center;gap:10px;padding:0 16px 0 14px;z-index:4}
+  .menu{width:32px;height:32px;border:0;background:none;color:#4b5563;font-size:20px}
+  .logo{font-family:Arial Black,Arial,sans-serif;font-size:25px;font-style:italic;letter-spacing:-1.5px;color:#397de0}
+  .product{font-size:19px;font-weight:700;color:#111}
+  .env{font-size:12px;color:#6b7280;background:#f4f6f8;border-radius:4px;padding:3px 7px}
+  .version{font:12px ui-monospace,Menlo,Consolas,monospace;color:#64748b}
+  .warning{font-size:16px;font-weight:700;color:#ff3b55;letter-spacing:.4px;margin-left:5px;white-space:nowrap}
+  .warning::before,.warning::after{content:"!";display:inline-grid;place-items:center;width:20px;height:20px;border:2px solid currentColor;border-radius:7px;margin:0 8px;font-size:12px;vertical-align:middle}
+  .top-space{flex:1}
+  .user{display:flex;align-items:center;gap:8px;white-space:nowrap}
+  .avatar{width:32px;height:32px;border:2px solid #111;border-radius:50%;background:linear-gradient(135deg,#111 42%,#fff 43%)}
+  .user-name{font-size:13px;font-weight:700}.user-dept{font-size:11px;color:#64748b}
+  .top-tools{display:flex;align-items:center;gap:10px;margin-left:10px;font-size:17px}.sep{height:25px;width:1px;background:#9ca3af}
+
+  /* 主畫面 */
+  .main{grid-area:main;overflow:auto;padding:30px 49px 116px;background-color:#fff;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='175' height='95' viewBox='0 0 175 95'%3E%3Ctext x='15' y='70' fill='%2394a3b8' fill-opacity='.10' font-size='16' font-family='Arial' transform='rotate(-45 15 70)'%3EBC00183%3C/text%3E%3C/svg%3E")}
+  .page-head{min-height:92px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+  h1{font-size:22px;color:#050505;margin-bottom:3px}.subtitle{font-size:13px;color:#5c6f8a}
+  .global-switches{border:1px solid var(--line);border-radius:7px;overflow:visible;background:#fff;position:relative}
+  .global-row{min-width:178px;padding:7px 12px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);font-weight:700;position:relative}
+  .global-row:last-child{border-bottom:0}
+  .switch{width:38px;height:20px;border:0;border-radius:999px;background:#c9d0d8;position:relative;flex:none;transition:.25s}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #667085;transition:.25s}
+  .switch.on{background:var(--blue)}.switch.on::after{transform:translateX(18px)}
+
+  .workspace{display:grid;grid-template-columns:300px minmax(600px,1fr) 360px;gap:16px;align-items:stretch}
+  .panel{border:1px solid var(--line);border-radius:7px;background:#fff;min-height:566px;position:relative}
+  .panel-title{padding:24px 24px 8px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+  .panel-body{padding:8px 24px 22px}
+
+  /* 模板清單 */
+  .list-tools{display:flex;gap:8px;margin-bottom:14px}.search{position:relative;flex:1}.search span{position:absolute;left:10px;top:9px;color:#718096}.search input{width:100%;height:37px;border:1px solid var(--line);border-radius:6px;padding:8px 8px 8px 31px;color:#43516a}.add{height:37px;border:0;border-radius:5px;background:var(--blue);color:#fff;padding:0 15px;font-weight:700}
+  .group{font-size:11px;font-weight:700;color:#60708b;margin:12px 4px 7px}
+  .template-card{width:100%;min-height:98px;border:1px solid var(--line);border-radius:7px;background:#fff;padding:12px;margin-bottom:8px;text-align:left;position:relative;transition:.2s}
+  .template-card:hover{border-color:var(--blue)}.template-card.selected{border-color:#1769ff;box-shadow:0 0 0 2px #dbe8ff}
+  .is-hidden{display:none!important}
+  .tpl-name{display:block;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:24px}.tpl-desc{display:block;font-size:11.5px;color:#536784;margin-top:3px}.star{position:absolute;right:13px;top:11px;font-size:18px;color:#455468}.source{position:absolute;right:11px;bottom:10px;border:1px solid #90a0b8;border-radius:999px;padding:1px 9px;font-size:10px;font-weight:700;color:#334155;background:#fff}
+  .template-card.pinned .star{color:#d08a00}.default-badge{position:absolute;right:90px;bottom:10px;border:1px solid #e1a800;border-radius:999px;padding:1px 8px;font-size:10px;font-weight:800;color:#795900;background:#fff8d5}.bu-badge{position:absolute;right:90px;bottom:10px;border:1px solid #56a8a1;border-radius:999px;padding:1px 8px;font-size:10px;font-weight:800;color:#08645d;background:#e9fbf8}
+  .empty-state{border:1px dashed #9aa7b8;border-radius:7px;background:#f8fafc;padding:16px 12px;margin-bottom:12px;text-align:center;color:#60708b;font-size:11.5px;line-height:1.6}.empty-state strong{display:block;color:#334155;font-size:12.5px;margin-bottom:3px}
+
+  /* 編輯器 */
+  .field{margin-bottom:17px}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}.req{color:#e11d48}.control{width:100%;border:1px solid var(--line);border-radius:5px;padding:7px 12px;background:#fff;color:#111}.control[type=text]{height:36px}.body-input{height:129px;resize:none;line-height:1.6;padding:11px 12px}
+  .param-label{font-size:11.5px;font-weight:700;color:#60708b;margin:7px 0 6px}.params{display:flex;flex-wrap:wrap;gap:6px}.token{border:0;border-radius:4px;background:#edf3fb;color:#1261e8;padding:5px 9px;font-size:11px;font-weight:700}.token::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#1769eb;margin-right:5px;vertical-align:2px}
+  .actions{display:flex;align-items:center;gap:9px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line);position:relative}.action{border:1px solid var(--line);border-radius:5px;background:#fff;padding:9px 16px;font-weight:700}.action.primary{border-color:var(--blue);background:var(--blue);color:#fff}.action.danger{border-color:var(--danger);background:var(--danger);color:#fff}.enable{margin-left:auto;display:flex;align-items:center;gap:8px;color:#60708b}.help{font-size:11.5px;color:#60708b;margin-top:8px}
+
+  /* 預覽 */
+  .sample{font-size:11.5px;color:#536784;border:1px solid var(--line);border-radius:6px;background:#f8fafc;padding:12px;margin-bottom:16px;line-height:1.55}.sample b{color:#111}
+  .phone{background:#f7f9fc;border:1px solid var(--line);border-radius:16px;padding:14px;min-height:218px}.phone-top{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#718096;margin-bottom:10px}.sender{text-align:center;font-size:11px;font-weight:700;color:#596579;margin-bottom:12px}.bubble{border:1px dashed var(--line);border-radius:16px;background:#fff;min-height:96px;padding:14px;font-size:13.5px;line-height:1.7;word-break:break-word}.resolved{color:#1261e8;font-weight:800;background:#edf3ff;padding:0 2px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}.stat{border:1px solid var(--line);border-radius:6px;text-align:center;padding:11px}.stat strong{display:block;font-size:19px}.stat span{font-size:10.5px;color:#60708b;font-weight:700}
+
+  /* 教學動畫 */
+  .tour-focus{z-index:80!important;animation:ring 1.2s ease-in-out infinite;box-shadow:0 0 0 5px rgba(255,193,7,.4),0 0 24px rgba(255,193,7,.65)!important}
+  @keyframes ring{50%{box-shadow:0 0 0 9px rgba(255,193,7,.13),0 0 30px rgba(255,193,7,.8)}}
+  .callout{position:fixed;z-index:100;width:300px;padding:13px 15px;border:2px solid #f0b400;border-radius:8px;background:#fff8d7;color:#6f5200;font-size:13px;font-weight:700;line-height:1.55;box-shadow:0 8px 28px rgba(92,67,0,.25);opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none}
+  .callout.show{opacity:1;transform:translateY(0)}.callout::before{content:"";position:absolute;width:12px;height:12px;background:#fff8d7;border-left:2px solid #f0b400;border-top:2px solid #f0b400;transform:rotate(45deg);top:-8px;left:24px}
+  .callout.above::before{top:auto;bottom:-8px;transform:rotate(225deg)}
+  .callout.left-side::before{left:auto;right:-8px;top:18px;bottom:auto;transform:rotate(135deg)}
+  .typing{border-color:#2196f3!important;background:#eef7ff!important;animation:typingGlow 1s infinite}@keyframes typingGlow{50%{box-shadow:0 0 0 5px rgba(33,150,243,.14)}}
+  .flash{animation:flash .55s ease}@keyframes flash{50%{background:#dff7e8;border-color:#22a05a;transform:scale(1.01)}}
+  .toast{position:fixed;z-index:120;left:50%;top:70px;transform:translate(-50%,-12px);background:#176b3a;color:#fff;border-radius:7px;padding:11px 20px;font-weight:700;box-shadow:0 10px 28px rgba(0,0,0,.22);opacity:0;transition:.25s}.toast.show{opacity:1;transform:translate(-50%,0)}
+
+  .logic-scrim{position:fixed;z-index:105;inset:48px 0 0 48px;background:rgba(15,23,42,.42);display:grid;place-items:center;padding:24px;opacity:0;visibility:hidden;transition:.25s}.logic-scrim.show{opacity:1;visibility:visible}
+  .logic-card{width:min(780px,calc(100vw - 100px));background:#fff;border-radius:12px;border:1px solid #768195;box-shadow:0 24px 70px rgba(0,0,0,.3);padding:22px}.logic-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}.logic-icon{width:38px;height:38px;border-radius:9px;background:#eaf2ff;color:#1769eb;display:grid;place-items:center;font-size:20px;font-weight:900}.logic-head h2{font-size:19px;margin-bottom:3px}.logic-head p{font-size:12px;color:#60708b}
+  .logic-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.logic-case{border:2px solid #d8dee8;border-radius:9px;padding:15px;transition:.25s}.logic-case.active{border-color:#1769eb;background:#f4f8ff;box-shadow:0 0 0 4px rgba(23,105,235,.12)}.logic-case h3{font-size:14px;margin-bottom:10px}.logic-flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:11.5px;font-weight:800}.logic-node{border:1px solid #9aa7b8;background:#fff;border-radius:6px;padding:6px 8px}.logic-node.result{border-color:#1769eb;background:#eaf2ff;color:#0d59c8}.arrow{color:#7a8798}.logic-note{margin-top:12px;border-left:4px solid #d08a00;border-radius:5px;background:#fff8df;padding:10px 12px;font-size:12px;color:#694e00;line-height:1.55}.logic-note b{color:#443400}
+
+  .tour-dock{position:fixed;z-index:110;left:50%;bottom:16px;transform:translateX(-50%);width:min(1260px,calc(100vw - 86px));display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.97);border:1px solid #9aa3af;border-radius:12px;padding:12px 14px;box-shadow:0 12px 36px rgba(15,23,42,.2);backdrop-filter:blur(8px)}
+  .tour-label{font-size:12px;font-weight:800;color:#4a5a72;white-space:nowrap}.steps{display:flex;flex:1;gap:6px;min-width:0}.step{flex:1;border:0;border-radius:7px;background:#f1f3f6;color:#536078;padding:8px 7px;font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.step.active{background:#e7f0ff;color:#0f5fd7;box-shadow:inset 0 0 0 1px #8bb6f7}.step.done{background:#e8f6ed;color:#167342}.step.done::before{content:"✓ ";font-weight:900}
+  .tour-controls{display:flex;gap:7px}.tour-btn{border:1px solid #1769eb;border-radius:7px;background:#fff;color:#1769eb;padding:8px 12px;font-size:12px;font-weight:800;white-space:nowrap}.tour-btn.primary{background:#1769eb;color:#fff}
+
+  @media(max-width:1400px){.main{padding-left:24px;padding-right:24px}.workspace{grid-template-columns:270px minmax(520px,1fr) 330px}.warning{font-size:13px}.top-tools{display:none}}
+  @media(max-width:1120px){body{overflow:auto}.app{height:auto;min-height:100vh}.workspace{grid-template-columns:1fr}.panel{min-height:0}.warning{display:none}.tour-dock{width:calc(100vw - 74px)}.steps{overflow-x:auto}.step{min-width:125px}.main{padding-bottom:125px}}
+  @media(max-width:700px){.app{grid-template-columns:1fr;grid-template-areas:"top" "main"}.rail{display:none}.top{padding:0 10px}.logo{font-size:21px}.product{font-size:16px}.env,.version,.user{display:none}.main{padding:18px 14px 150px}.page-head{display:block;min-height:0;margin-bottom:16px}.global-switches{margin-top:14px}.workspace{grid-template-columns:1fr}.tour-dock{width:calc(100vw - 20px);display:block}.tour-label{display:block;margin-bottom:8px}.tour-controls{justify-content:flex-end;margin-top:8px}.callout{max-width:calc(100vw - 30px)}}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="header-icon">
-                <svg viewBox="0 0 24 24">
-                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
-                </svg>
-            </div>
-            <h1>簡訊設定</h1>
+<div class="app">
+  <aside class="rail" aria-label="NPOS 功能導覽">
+    <div class="clinic">示範<br>診所</div>
+    <button class="rail-btn">▣</button><button class="rail-btn">♧</button><button class="rail-btn">✎</button>
+    <button class="rail-btn">♇</button><button class="rail-btn">▦</button><button class="rail-btn">↶</button>
+    <button class="rail-btn active">✉</button><button class="rail-btn">▤</button><button class="rail-btn">⌂</button><button class="rail-btn">⚙</button>
+    <div class="rail-space"></div><button class="rail-btn">?</button>
+  </aside>
+
+  <header class="top">
+    <button class="menu" aria-label="展開功能選單">≡</button>
+    <span class="logo">NPOS</span><span class="product">簡訊設定</span><span class="env">測試</span><span class="version">v2.51.1</span>
+    <span class="warning">此為測試環境，請勿在此操作正式資料</span><span class="top-space"></span>
+    <div class="user"><div class="avatar"></div><div><div class="user-name">鄭楷錚</div><div class="user-dept">資訊軟體開發課-台灣</div></div></div>
+    <div class="top-tools" aria-hidden="true"><span>☼</span><span class="sep"></span><span>▣</span><span class="sep"></span><span>↪</span></div>
+  </header>
+
+  <main class="main">
+    <section class="page-head">
+      <div><h1>簡訊模板設定</h1><p class="subtitle">維護全系統共用的預約簡訊模板；儲存後可於「預約操作」的發送簡訊彈窗直接套用。</p></div>
+      <div class="global-switches">
+        <div class="global-row" id="sendRow"><span>發送預約簡訊</span><button class="switch" id="sendSwitch" role="switch" aria-checked="false"></button></div>
+        <div class="global-row" id="teleRow"><span>含電訪/銷判斷</span><button class="switch" id="teleSwitch" role="switch" aria-checked="false"></button></div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <article class="panel">
+        <div class="panel-title"><span aria-hidden="true">▭</span> 模板清單</div>
+        <div class="panel-body">
+          <div class="list-tools"><label class="search"><span>⌕</span><input type="search" placeholder="搜尋名稱或用途..."></label><button class="add">＋　新增</button></div>
+          <div class="group">本門市自訂</div>
+          <div class="empty-state" id="emptyCustom"><strong>尚未建立門市自訂模板</strong>可從系統內建模板另存複本，或點擊「新增」從頭建立。</div>
+          <button class="template-card is-hidden" id="customTemplate" data-name="西醫－標準預約提醒(本店版)" data-desc="西醫通用預約確認簡訊">
+            <span class="tpl-name">西醫－標準預約提醒(本店版)</span><span class="star" id="customPin">☆</span><span class="tpl-desc">西醫通用預約確認簡訊</span><span class="default-badge is-hidden" id="defaultBadge">門市預設</span><span class="source">本門市自訂</span>
+          </button>
+          <div class="group">系統內建</div>
+          <button class="template-card selected" id="builtinTemplate" data-name="西醫－標準預約提醒" data-desc="西醫通用預約確認簡訊"><span class="tpl-name">西醫－標準預約提醒</span><span class="tpl-desc">西醫通用預約確認簡訊</span><span class="bu-badge">BU 指定</span><span class="source">系統內建</span></button>
+          <button class="template-card" data-name="西醫－療程提醒" data-desc="西醫預約療程提醒"><span class="tpl-name">西醫－療程提醒</span><span class="tpl-desc">西醫預約療程提醒</span><span class="source">系統內建</span></button>
         </div>
+      </article>
 
-        <div class="content-wrapper">
-            <!-- 左側設定區 -->
-            <div class="settings-panel">
-                <div class="hint-message" id="hint1" style="top: -70px; right: 0;">
-                    <div class="hint-arrow" style="left: auto; right: 20px;"></div>
-                    請先開啟「發送預約簡訊」開關
-                </div>
-
-                <div class="hint-message" id="hint2" style="bottom: -1px; left: 50%; transform: translateX(-50%);">
-                    <div class="hint-arrow" style="border-bottom: 10px solid #ffc107; border-top: none; top: -10px; bottom: auto; left: 50%; transform: translateX(-50%);"></div>
-                    ⚠️ 請記得點擊「儲存」按鈕以套用設定
-                </div>
-
-                <div class="hint-message" id="hint3" style="top: 110px; left: 0;">
-                    <div class="hint-arrow" style="border-bottom: 10px solid #ffc107; border-top: none; top: -10px; bottom: auto;"></div>
-                    💡 簡訊勿寄判斷：系統預設檢查會員維護「標註」欄位關鍵字，若需額外判斷「接受電訪/銷」欄位設定，請開啟此開關
-                </div>
-
-                <div class="edit-template-hint" id="editTemplateHint">
-                    <div class="hint-title">
-                        ✏️ 編輯簡訊模板內容
-                    </div>
-                    <div class="hint-content">
-                        <strong>重要提示：</strong>
-                        <ul class="hint-list">
-                            <li>📝 可自訂「簡訊標題」、「門市資訊」和「簡訊結尾」</li>
-                            <li>👁️ 右側會即時預覽完整簡訊內容</li>
-                            <li>⚠️ 注意字數限制 70 字（含系統自動插入的預約資訊）</li>
-                            <li>💾 編輯完成後務必點擊「儲存」按鈕</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="setting-item">
-                    <div class="setting-label">
-                        <span>發送預約簡訊</span>
-                        <div class="toggle-wrapper">
-                            <div class="toggle-switch" id="toggleSwitch">
-                                <div class="toggle-slider"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="setting-item">
-                    <div class="setting-label">
-                        <span>包含接受電訪/銷</span>
-                        <div class="toggle-wrapper">
-                            <div class="toggle-switch" id="telemarketingToggle">
-                                <div class="toggle-slider"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="setting-item">
-                    <div class="setting-label">
-                        <span>簡訊標題</span>
-                    </div>
-                    <input type="text" class="input-field" id="smsTitle"
-                           placeholder="提醒您有預約："
-                           value="提醒您有預約：">
-                </div>
-
-                <div class="setting-item">
-                    <div class="setting-label">
-                        <span>門市資訊</span>
-                    </div>
-                    <textarea class="input-field" id="storeInfo"
-                              placeholder="請輸入門市聯絡資訊">02-2XXXX1300</textarea>
-                </div>
-
-                <div class="setting-item">
-                    <div class="setting-label">
-                        <span>簡訊結尾</span>
-                    </div>
-                    <textarea class="input-field" id="smsFooter"
-                              placeholder="請記得攜帶健保卡至櫃台報到～">請記得攜帶健保卡至櫃台報到～</textarea>
-                </div>
-
-                <button class="save-button" id="saveButton" disabled>
-                    儲存
-                </button>
-
-                <div class="success-message" id="successMessage">
-                    ✓ 簡訊模板已儲存並生效！
-                </div>
-            </div>
-
-            <!-- 右側預覽區 -->
-            <div class="preview-panel">
-                <div class="preview-title">訊息預覽</div>
-                <div class="preview-box">
-                    <div class="preview-content" id="previewContent">
-提醒您有預約：【示範麗雅保健】12/03(三) 15:49 ,02-2XXXX1300 ,請記得攜帶健保卡至櫃台報到～
-                    </div>
-                    <div class="char-count">
-                        已輸入：<span id="charCount">57</span>字
-                    </div>
-                    <div class="char-count warning">
-                        限制輸入字數：70字
-                    </div>
-                </div>
-
-                <!-- 步驟指示器 -->
-                <div class="step-indicator">
-                    <div class="step-title">教學步驟（點擊可跳轉）</div>
-                    <div class="step-item" id="step1" onclick="jumpToStep(0)">
-                        <div class="step-number">1</div>
-                        <div class="step-text">開啟簡訊發送開關</div>
-                    </div>
-                    <div class="step-item" id="step2" onclick="jumpToStep(1)">
-                        <div class="step-number">2</div>
-                        <div class="step-text">設定「接受電訪/銷」條件（對應會員維護欄位）</div>
-                    </div>
-                    <div class="step-item" id="step3" onclick="jumpToStep(2)">
-                        <div class="step-number">3</div>
-                        <div class="step-text">編輯簡訊模板內容</div>
-                    </div>
-                    <div class="step-item" id="step4" onclick="jumpToStep(3)">
-                        <div class="step-number">4</div>
-                        <div class="step-text">點擊儲存並確認設定已生效</div>
-                    </div>
-                </div>
-            </div>
+      <article class="panel">
+        <div class="panel-title" id="editorTitle">編輯模板（系統內建 · 儲存將另存為自訂）</div>
+        <div class="panel-body">
+          <div class="field"><label>模板名稱 <span class="req">*</span></label><input class="control" id="templateName" type="text" value="西醫－標準預約提醒"></div>
+          <div class="field"><label>用途說明</label><input class="control" id="templateDesc" type="text" value="西醫通用預約確認簡訊"></div>
+          <div class="field"><label>簡訊內容 <span class="req">*</span></label><textarea class="control body-input" id="templateBody">提醒您有預約：「{{門市名稱}}」 {{預約日期}}{{預約時間}}{{門市地址}},更改預約時間請來電{{門市電話}}!謝謝,祝順心</textarea></div>
+          <div class="param-label">點擊插入參數：</div>
+          <div class="params" id="params"></div>
+          <div class="actions">
+            <button class="action primary" id="saveButton">儲存為自訂複本</button><button class="action" id="cancelButton">取消編輯</button><button class="action is-hidden" id="defaultButton">設為門市預設</button><button class="action danger is-hidden" id="deleteButton">刪除</button>
+            <label class="enable">啟用 <button class="switch on" id="enableSwitch" role="switch" aria-checked="true"></button></label>
+          </div>
+          <div class="help">已啟用：可於「預約操作」發送簡訊視窗中選用此模板</div>
         </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-title"><span aria-hidden="true">◉</span> 即時預覽</div>
+        <div class="panel-body">
+          <div class="sample">已套用範例資料：<b>示範診所</b> ／ 08/11(二) 15:00（午診第17號）／ 臉-超越(60分)</div>
+          <div class="phone"><div class="phone-top"><span id="clock">15:12</span><span>NPOS</span></div><div class="sender">示範診所</div><div class="bubble" id="preview"></div></div>
+          <div class="stats"><div class="stat"><strong id="charCount">0</strong><span>字數 / 70</span></div><div class="stat"><strong id="segments">0</strong><span>預估簡訊則數</span></div></div>
+        </div>
+      </article>
+    </section>
+  </main>
+</div>
+
+<div class="callout" id="callout"></div>
+<div class="toast" id="toast">✓ 簡訊模板已儲存並生效！</div>
+
+<div class="logic-scrim" id="logicScrim">
+  <section class="logic-card" role="dialog" aria-labelledby="logicTitle">
+    <div class="logic-head"><div class="logic-icon">↯</div><div><h2 id="logicTitle">開啟發送視窗時的模板套用邏輯</h2><p>由上往下判斷，找到可用模板就停止。</p></div></div>
+    <div class="logic-grid">
+      <div class="logic-case" id="withDefault"><h3>有設定「門市預設」</h3><div class="logic-flow"><span class="logic-node">門市預設存在且已啟用</span><span class="arrow">→</span><span class="logic-node result">直接套用門市預設</span></div></div>
+      <div class="logic-case" id="withoutDefault"><h3>未設定「門市預設」</h3><div class="logic-flow"><span class="logic-node">有效的上次套用</span><span class="arrow">→</span><span class="logic-node">最近釘選的自訂</span><span class="arrow">→</span><span class="logic-node result">最新建立的自訂</span></div></div>
     </div>
+    <div class="logic-note"><b>新門市特例：</b>若完全沒有任何門市自訂模板，不會走「上次／釘選／最新建立」，而是直接套用本門市科別的 <b>BU 指定系統模板</b>。若預設或上次套用的模板已刪除／停用，系統會自動往下回退。</div>
+  </section>
+</div>
 
-    <!-- 編輯模板遮罩層 -->
-    <div class="edit-template-overlay" id="editTemplateOverlay"></div>
+<nav class="tour-dock" aria-label="教學步驟">
+  <span class="tour-label">教學步驟</span>
+  <div class="steps">
+    <button class="step" data-step="0">1 全域設定</button><button class="step" data-step="1">2 新門市起點</button><button class="step" data-step="2">3 建立自訂</button><button class="step" data-step="3">4 編輯內容</button><button class="step" data-step="4">5 釘選</button><button class="step" data-step="5">6 設為預設</button><button class="step" data-step="6">7 有預設套用</button><button class="step" data-step="7">8 未預設套用</button>
+  </div>
+  <div class="tour-controls"><button class="tour-btn" id="restart">重新播放</button><button class="tour-btn primary" id="playPause">暫停</button></div>
+</nav>
 
-    <!-- 控制按鈕 -->
-    <div class="controls">
-        <button class="control-btn" id="restartBtn">重新播放</button>
-        <button class="control-btn playing" id="playPauseBtn">暫停</button>
-    </div>
+<script>
+(() => {
+  "use strict";
+  const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+  const sendSwitch=$("#sendSwitch"),teleSwitch=$("#teleSwitch"),enableSwitch=$("#enableSwitch");
+  const body=$("#templateBody"),nameInput=$("#templateName"),descInput=$("#templateDesc"),saveButton=$("#saveButton");
+  const customTemplate=$("#customTemplate"),builtinTemplate=$("#builtinTemplate"),emptyCustom=$("#emptyCustom"),customPin=$("#customPin");
+  const defaultButton=$("#defaultButton"),deleteButton=$("#deleteButton"),defaultBadge=$("#defaultBadge"),editorTitle=$("#editorTitle");
+  const logicScrim=$("#logicScrim"),withDefault=$("#withDefault"),withoutDefault=$("#withoutDefault");
+  const preview=$("#preview"),charCount=$("#charCount"),segments=$("#segments"),callout=$("#callout"),toast=$("#toast");
+  const playPause=$("#playPause"),stepButtons=$$(".step"),templateCards=$$(".template-card");
+  const initialBody=body.value;
+  const samples={"門市名稱":"示範診所","預約日期":"08/11(二) ","預約時間":"15:00 ","療程":"臉-超越(60分)","診間":"診一","時段":"午診","派號":"17","門市地址":"XX市XX區XX路XX號","門市電話":"02-XXXX-XXXX","叫號機網址":"https://example.com/queue"};
+  const tokens=Object.keys(samples);
+  let timers=[],playing=true,currentStep=0,typingTimer=null,calloutSide="below";
 
-    <script>
-        // 元素引用
-        const toggleSwitch = document.getElementById('toggleSwitch');
-        const telemarketingToggle = document.getElementById('telemarketingToggle');
-        const saveButton = document.getElementById('saveButton');
-        const successMessage = document.getElementById('successMessage');
-        const hint1 = document.getElementById('hint1');
-        const hint2 = document.getElementById('hint2');
-        const hint3 = document.getElementById('hint3');
-        const editTemplateHint = document.getElementById('editTemplateHint');
-        const editTemplateOverlay = document.getElementById('editTemplateOverlay');
-        const inputFields = [
-            document.getElementById('smsTitle'),
-            document.getElementById('storeInfo'),
-            document.getElementById('smsFooter')
-        ];
-        const previewBox = document.querySelector('.preview-box');
-        const previewContent = document.getElementById('previewContent');
-        const charCount = document.getElementById('charCount');
-        const steps = [
-            document.getElementById('step1'),
-            document.getElementById('step2'),
-            document.getElementById('step3'),
-            document.getElementById('step4')
-        ];
-        const restartBtn = document.getElementById('restartBtn');
-        const playPauseBtn = document.getElementById('playPauseBtn');
+  function escapeHtml(v){return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+  function plainText(){return body.value.replace(/\{\{(.+?)\}\}/g,(m,k)=>samples[k]===undefined?m:samples[k])}
+  function updatePreview(){
+    preview.innerHTML=body.value.replace(/\{\{(.+?)\}\}/g,(m,k)=>samples[k]===undefined?escapeHtml(m):'<span class="resolved">'+escapeHtml(samples[k])+'</span>');
+    const n=plainText().length;charCount.textContent=n;segments.textContent=n?Math.ceil(n<=70?1:n/67):0;
+  }
+  function setSwitch(el,on){el.classList.toggle("on",on);el.setAttribute("aria-checked",String(on))}
+  function clearTimers(){timers.forEach(clearTimeout);timers=[];if(typingTimer){clearInterval(typingTimer);typingTimer=null}}
+  function clearFocus(){$$(".tour-focus,.typing").forEach(el=>el.classList.remove("tour-focus","typing"));callout.className="callout"}
+  function positionCallout(target,side){
+    const r=target.getBoundingClientRect(),w=300,g=12;let left=Math.max(12,Math.min(innerWidth-w-12,r.left));let top=r.bottom+g;
+    callout.classList.toggle("above",side==="above");
+    callout.classList.toggle("left-side",side==="left");
+    if(side==="above")top=r.top-callout.offsetHeight-g;
+    if(side==="left"){left=Math.max(12,r.left-w-g);top=Math.max(58,r.top)}
+    callout.style.left=left+"px";callout.style.top=Math.max(54,top)+"px";
+  }
+  function focus(target,message,side="below"){
+    clearFocus();calloutSide=side;target.classList.add("tour-focus");callout.textContent=message;callout.classList.add("show");requestAnimationFrame(()=>positionCallout(target,side));
+  }
+  function setStep(i){currentStep=i;stepButtons.forEach((b,n)=>{b.classList.toggle("active",n===i);b.classList.toggle("done",n<i)})}
+  function selectCard(card){
+    templateCards.forEach(c=>c.classList.remove("selected"));card.classList.add("selected");nameInput.value=card.dataset.name;descInput.value=card.dataset.desc;
+    const custom=card===customTemplate;editorTitle.textContent=custom?"編輯模板（本門市自訂）":"編輯模板（系統內建 · 儲存將另存為自訂）";
+    saveButton.textContent=custom?"儲存模板":"儲存為自訂複本";defaultButton.classList.toggle("is-hidden",!custom);deleteButton.classList.toggle("is-hidden",!custom);
+  }
+  function createCustom(showMessage=false){
+    emptyCustom.classList.add("is-hidden");customTemplate.classList.remove("is-hidden");selectCard(customTemplate);
+    if(showMessage){toast.textContent="✓ 已從系統內建建立本門市自訂複本";toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1500)}
+  }
+  function setPinned(on){customTemplate.classList.toggle("pinned",on);customPin.textContent=on?"★":"☆"}
+  function setDefault(on){defaultBadge.classList.toggle("is-hidden",!on);defaultButton.textContent=on?"✓ 已是門市預設":"設為門市預設";defaultButton.classList.toggle("primary",on)}
+  function showLogic(which){logicScrim.classList.add("show");withDefault.classList.toggle("active",which==="with");withoutDefault.classList.toggle("active",which==="without")}
+  function hideLogic(){logicScrim.classList.remove("show");withDefault.classList.remove("active");withoutDefault.classList.remove("active")}
+  function reset(){
+    clearTimers();clearFocus();hideLogic();toast.classList.remove("show");setSwitch(sendSwitch,false);setSwitch(teleSwitch,false);setSwitch(enableSwitch,true);
+    body.value=initialBody;emptyCustom.classList.remove("is-hidden");customTemplate.classList.add("is-hidden");setPinned(false);setDefault(false);selectCard(builtinTemplate);
+    saveButton.classList.remove("flash");body.classList.remove("typing");updatePreview();setStep(0);
+  }
+  function later(ms,fn){timers.push(setTimeout(()=>{if(playing)fn()},ms))}
+  function start(){
+    reset();playing=true;playPause.textContent="暫停";playPause.classList.add("primary");
+    later(700,()=>focus($("#sendRow"),"先開啟「發送預約簡訊」；「含電訪/銷判斷」則依門市需求選擇。","left"));
+    later(2500,()=>{setSwitch(sendSwitch,true);clearFocus()});
+    later(3200,()=>{setStep(1);focus(emptyCustom,"新門市尚無自訂模板：開啟發送視窗時，系統會直接套用同科別的「BU 指定」系統模板。","below")});
+    later(5900,()=>{setStep(2);focus(saveButton,"可先選一筆合適的系統內建模板，再「儲存為自訂複本」；原始系統模板不會被覆蓋。","above")});
+    later(8000,()=>{clearFocus();createCustom(true)});
+    later(9200,()=>{setStep(3);focus(body,"編輯本店內容，並從右側即時預覽實際套用參數後的簡訊。","above");body.classList.add("typing")});
+    later(10400,()=>{
+      const suffix=" 請提前10分鐘報到。";let i=0;
+      typingTimer=setInterval(()=>{if(!playing||i>=suffix.length){clearInterval(typingTimer);typingTimer=null;return}body.value+=suffix[i++];updatePreview();$(".phone").classList.add("flash");setTimeout(()=>$(".phone").classList.remove("flash"),280)},95);
+    });
+    later(12800,()=>{clearFocus();setStep(4);focus(customPin,"點星號釘選常用模板。釘選會讓它排到管理清單前方，並出現在發送視窗的快速套用區。","below")});
+    later(15000,()=>{setPinned(true);clearFocus()});
+    later(15700,()=>{setStep(5);focus(defaultButton,"「門市預設」的優先度最高；設定後，每次開啟發送視窗都會先套用它。","above")});
+    later(17900,()=>{setDefault(true);clearFocus()});
+    later(18700,()=>{setStep(6);showLogic("with")});
+    later(22200,()=>{setStep(7);setDefault(false);showLogic("without")});
+    later(26900,()=>{hideLogic();toast.textContent="✓ 新門市簡訊模板教學完成";toast.classList.add("show");stepButtons.forEach(b=>{b.classList.remove("active");b.classList.add("done")})});
+    later(30000,start);
+  }
+  function jump(i){
+    reset();playing=false;playPause.textContent="繼續";playPause.classList.remove("primary");setStep(i);if(i>0)setSwitch(sendSwitch,true);
+    if(i>=3)createCustom();if(i>=5)setPinned(true);if(i>=6)setDefault(true);if(i===7)setDefault(false);
+    if(i===0)focus($("#sendRow"),"開啟預約簡訊；電訪/銷判斷可依門市需求開啟。","left");
+    if(i===1)focus(emptyCustom,"沒有門市自訂時，自動套用同科別的 BU 指定模板。");
+    if(i===2)focus(saveButton,"從系統內建模板另存本門市自訂複本。","above");
+    if(i===3){focus(body,"編輯本店內容並查看即時預覽。","above");body.classList.add("typing")}
+    if(i===4)focus(customPin,"釘選後會排在前方，並出現在發送視窗的快速套用區。");
+    if(i===5)focus(defaultButton,"將這筆設為門市預設，成為最高優先套用項。","above");
+    if(i===6)showLogic("with");
+    if(i===7)showLogic("without");
+  }
 
-        // 更新預覽內容
-        function updatePreview() {
-            const title = inputFields[0].value;
-            const storeInfo = inputFields[1].value;
-            const footer = inputFields[2].value;
-            const preview = `${title}【示範麗雅保健】12/03(三) 15:49 ,${storeInfo} ,${footer}`;
-            previewContent.textContent = preview;
-            charCount.textContent = preview.length;
-        }
-
-        // 動畫狀態
-        let animationState = {
-            currentStep: 0,
-            isPlaying: true,
-            timeouts: [],
-            intervals: []
-        };
-
-        // 清除所有計時器
-        function clearAllTimeouts() {
-            animationState.timeouts.forEach(timeout => clearTimeout(timeout));
-            animationState.intervals.forEach(interval => clearInterval(interval));
-            animationState.timeouts = [];
-            animationState.intervals = [];
-        }
-
-        // 設置步驟狀態
-        function setStepState(stepIndex, state) {
-            steps.forEach((step, index) => {
-                step.classList.remove('active', 'completed');
-                if (index < stepIndex) {
-                    step.classList.add('completed');
-                } else if (index === stepIndex) {
-                    step.classList.add('active');
-                }
-            });
-        }
-
-        // 動畫序列
-        function startAnimation() {
-            clearAllTimeouts();
-            animationState.isPlaying = true;
-            playPauseBtn.textContent = '暫停';
-            playPauseBtn.classList.add('playing');
-
-            // 重置狀態
-            toggleSwitch.classList.remove('active');
-            telemarketingToggle.classList.remove('active');
-            saveButton.disabled = true;
-            successMessage.classList.remove('show');
-            hint1.classList.remove('show');
-            hint2.classList.remove('show');
-            hint3.classList.remove('show');
-            editTemplateHint.classList.remove('show');
-            editTemplateOverlay.classList.remove('show');
-            toggleSwitch.classList.remove('highlight', 'glow');
-            telemarketingToggle.classList.remove('highlight', 'glow');
-            saveButton.classList.remove('highlight', 'glow');
-            previewBox.classList.remove('updating');
-            inputFields.forEach(field => field.classList.remove('editing-highlight'));
-            // 重置輸入框內容
-            inputFields[0].value = '提醒您有預約：';
-            inputFields[1].value = '02-2XXXX1300';
-            inputFields[2].value = '請記得攜帶健保卡至櫃台報到～';
-            updatePreview();
-            setStepState(0, 'active');
-
-            // 步驟 1: 顯示提示1 - 開啟開關
-            animationState.timeouts.push(setTimeout(() => {
-                if (!animationState.isPlaying) return;
-                hint1.classList.add('show');
-                toggleSwitch.classList.add('glow');
-                setStepState(0, 'active');
-            }, 1000));
-
-            // 步驟 2: 開啟簡訊發送開關
-            animationState.timeouts.push(setTimeout(() => {
-                if (!animationState.isPlaying) return;
-                toggleSwitch.classList.add('active');
-                toggleSwitch.classList.remove('glow');
-                hint1.classList.remove('show');
-            }, 3000));
-
-            // 步驟 3: 顯示提示3 - 說明電訪/銷開關
-            animationState.timeouts.push(setTimeout(() => {
-                if (!animationState.isPlaying) return;
-                hint3.classList.add('show');
-                telemarketingToggle.classList.add('glow');
-                setStepState(1, 'active');
-            }, 4000));
-
-            // 步驟 4: 隱藏提示3，顯示編輯模板特別說明和遮罩層
-            animationState.timeouts.push(setTimeout(() => {
-                if (!animationState.isPlaying) return;
-                hint3.classList.remove('show');
-                telemarketingToggle.classList.remove('glow');
-                editTemplateOverlay.classList.add('show');
-                editTemplateHint.classList.add('show');
-                setStepState(2, 'active');
-            }, 7000));
-
-            // 步驟 4.5: 高亮第一個輸入框並顯示預覽更新
-            animationState.timeouts.push(setTimeout(() => {
-                if (!animationState.isPlaying) return;
-                inputFields[0].classList.add('editing-highlight');
-                previewBox.classList.add('updating');
-                setTimeout(() => {
-                    previewBox.classList.remove('updating');
-                }, 600);
-            }, 8000));
-
-            // 步驟 4.6: 切換到第二個輸入框（門市資訊）並開始修改
-            animationState.timeouts.push(setTimeout(() => {
-                if (!animationState.isPlaying) return;
-                inputFields[0].classList.remove('editing-highlight');
-                inputFields[1].classList.add('editing-highlight');
-
-                // 模擬打字效果修改門市資訊
-                const newStoreInfo = '02-2XXXX1300，提前30分鐘蒞臨現場報到';
-                let currentText = inputFields[1].value;
-                let targetIndex = 0;
-
-                const typingInterval = setInterval(() => {
-                    if (!animationState.isPlaying || targetIndex >= newStoreInfo.length) {
-                        clearInterval(typingInterval);
-                        return;
-                    }
-                    currentText = newStoreInfo.substring(0, targetIndex + 1);
-                    inputFields[1].value = currentText;
-                    updatePreview();
-                    previewBox.classList.add('updating');
-                    setTimeout(() => {
-                        previewBox.classList.remove('updating');
-                    }, 200);
-                    targetIndex++;
-                }, 100);
-
-                animationState.intervals.push(typingInterval);
-            }, 9500));
-
-            // 步驟 4.7: 切換到第三個輸入框
-            animationState.timeouts.push(setTimeout(() => {
-                if (!animationState.isPlaying) return;
-                inputFields[1].classList.remove('editing-highlight');
-                inputFields[2].classList.add('editing-highlight');
-                previewBox.classList.add('updating');
-                setTimeout(() => {
-                    previewBox.classList.remove('updating');
-                }, 600);
-            }, 12500));
-
-            // 步驟 4.8: 完成編輯，移除所有高亮和遮罩層
-            animationState.timeouts.push(setTimeout(() => {
-                if (!animationState.isPlaying) return;
-                inputFields[2].classList.remove('editing-highlight');
-                editTemplateHint.classList.remove('show');
-                editTemplateOverlay.classList.remove('show');
-            }, 14000));
-
-            // 步驟 5: 顯示提示2 - 記得儲存
-            animationState.timeouts.push(setTimeout(() => {
-                if (!animationState.isPlaying) return;
-                saveButton.disabled = false;
-                hint2.classList.add('show');
-                saveButton.classList.add('glow');
-                setStepState(3, 'active');
-            }, 14500));
-
-            // 步驟 6: 點擊儲存
-            animationState.timeouts.push(setTimeout(() => {
-                if (!animationState.isPlaying) return;
-                saveButton.classList.remove('glow');
-                saveButton.classList.add('highlight');
-                hint2.classList.remove('show');
-            }, 16500));
-
-            // 步驟 7: 顯示成功訊息並完成所有步驟
-            animationState.timeouts.push(setTimeout(() => {
-                if (!animationState.isPlaying) return;
-                saveButton.classList.remove('highlight');
-                successMessage.classList.add('show');
-                // 設置所有步驟為完成狀態
-                steps.forEach(step => {
-                    step.classList.remove('active');
-                    step.classList.add('completed');
-                });
-            }, 17500));
-
-            // 步驟 8: 自動重新播放
-            animationState.timeouts.push(setTimeout(() => {
-                if (!animationState.isPlaying) return;
-                startAnimation();
-            }, 20000));
-        }
-
-        // 暫停/繼續
-        function togglePlayPause() {
-            if (animationState.isPlaying) {
-                animationState.isPlaying = false;
-                clearAllTimeouts();
-                playPauseBtn.textContent = '繼續';
-                playPauseBtn.classList.remove('playing');
-            } else {
-                startAnimation();
-            }
-        }
-
-        // 重新播放
-        function restart() {
-            startAnimation();
-        }
-
-        // 跳轉到指定步驟
-        function jumpToStep(stepIndex) {
-            clearAllTimeouts();
-            animationState.isPlaying = false;
-            playPauseBtn.textContent = '繼續';
-            playPauseBtn.classList.remove('playing');
-
-            // 重置所有狀態
-            toggleSwitch.classList.remove('active', 'highlight', 'glow');
-            telemarketingToggle.classList.remove('active', 'highlight', 'glow');
-            saveButton.classList.remove('highlight', 'glow');
-            saveButton.disabled = true;
-            successMessage.classList.remove('show');
-            hint1.classList.remove('show');
-            hint2.classList.remove('show');
-            hint3.classList.remove('show');
-            editTemplateHint.classList.remove('show');
-            editTemplateOverlay.classList.remove('show');
-            previewBox.classList.remove('updating');
-            inputFields.forEach(field => field.classList.remove('editing-highlight'));
-            inputFields[0].value = '提醒您有預約：';
-            inputFields[1].value = '02-2XXXX1300';
-            inputFields[2].value = '請記得攜帶健保卡至櫃台報到～';
-            updatePreview();
-
-            // 執行到指定步驟
-            if (stepIndex === 0) {
-                // 步驟 1: 開啟簡訊發送開關
-                setStepState(0, 'active');
-                hint1.classList.add('show');
-                toggleSwitch.classList.add('glow');
-            } else if (stepIndex === 1) {
-                // 步驟 2: 設定「接受電訪/銷」條件
-                toggleSwitch.classList.add('active');
-                setStepState(1, 'active');
-                hint3.classList.add('show');
-                telemarketingToggle.classList.add('glow');
-            } else if (stepIndex === 2) {
-                // 步驟 3: 編輯簡訊模板內容
-                toggleSwitch.classList.add('active');
-                setStepState(2, 'active');
-                editTemplateOverlay.classList.add('show');
-                editTemplateHint.classList.add('show');
-                inputFields[0].classList.add('editing-highlight');
-            } else if (stepIndex === 3) {
-                // 步驟 4: 點擊儲存並確認設定已生效
-                toggleSwitch.classList.add('active');
-                inputFields[1].value = '02-2XXXX1300，提前30分鐘蒞臨現場報到';
-                updatePreview();
-                saveButton.disabled = false;
-                setStepState(3, 'active');
-                hint2.classList.add('show');
-                saveButton.classList.add('glow');
-            }
-        }
-
-        // 手動點擊開關
-        toggleSwitch.addEventListener('click', () => {
-            toggleSwitch.classList.toggle('active');
-            saveButton.disabled = !toggleSwitch.classList.contains('active');
-        });
-
-        // 手動點擊電訪/銷開關
-        telemarketingToggle.addEventListener('click', () => {
-            telemarketingToggle.classList.toggle('active');
-        });
-
-        // 手動點擊儲存
-        saveButton.addEventListener('click', () => {
-            if (!saveButton.disabled) {
-                successMessage.classList.add('show');
-                setTimeout(() => {
-                    successMessage.classList.remove('show');
-                }, 3000);
-            }
-        });
-
-        // 控制按鈕事件
-        restartBtn.addEventListener('click', restart);
-        playPauseBtn.addEventListener('click', togglePlayPause);
-
-        // 開始動畫
-        setTimeout(startAnimation, 500);
-    </script>
+  document.getElementById("params").innerHTML=tokens.map(t=>'<button class="token" data-token="{{'+t+'}}">{{'+t+'}}</button>').join("");
+  document.getElementById("params").addEventListener("click",e=>{const b=e.target.closest("[data-token]");if(!b)return;const s=body.selectionStart,v=body.value,t=b.dataset.token;body.value=v.slice(0,s)+t+v.slice(body.selectionEnd);body.focus();body.selectionStart=body.selectionEnd=s+t.length;updatePreview()});
+  body.addEventListener("input",updatePreview);
+  sendSwitch.addEventListener("click",()=>setSwitch(sendSwitch,!sendSwitch.classList.contains("on")));
+  teleSwitch.addEventListener("click",()=>setSwitch(teleSwitch,!teleSwitch.classList.contains("on")));
+  enableSwitch.addEventListener("click",()=>setSwitch(enableSwitch,!enableSwitch.classList.contains("on")));
+  templateCards.forEach(card=>card.addEventListener("click",()=>selectCard(card)));
+  customPin.addEventListener("click",e=>{e.stopPropagation();setPinned(!customTemplate.classList.contains("pinned"))});
+  defaultButton.addEventListener("click",()=>setDefault(defaultBadge.classList.contains("is-hidden")));
+  saveButton.addEventListener("click",()=>{if(customTemplate.classList.contains("is-hidden"))createCustom();toast.textContent="✓ 簡訊模板已儲存並生效！";toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),2200)});
+  stepButtons.forEach(b=>b.addEventListener("click",()=>jump(Number(b.dataset.step))));
+  document.getElementById("restart").addEventListener("click",start);
+  playPause.addEventListener("click",()=>{if(playing){playing=false;clearTimers();playPause.textContent="繼續";playPause.classList.remove("primary")}else start()});
+  logicScrim.addEventListener("click",e=>{if(e.target===logicScrim)hideLogic()});
+  addEventListener("resize",()=>{const target=$(".tour-focus");if(target&&callout.classList.contains("show"))positionCallout(target,calloutSide)});
+  setInterval(()=>{const d=new Date();$("#clock").textContent=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")},1000);
+  updatePreview();setTimeout(start,450);
+})();
+</script>
 </body>
 </html>
