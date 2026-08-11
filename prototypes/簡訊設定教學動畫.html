@@ -68,6 +68,7 @@
   /* 編輯器 */
   .field{margin-bottom:17px}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}.req{color:#e11d48}.control{width:100%;border:1px solid var(--line);border-radius:5px;padding:7px 12px;background:#fff;color:#111}.control[type=text]{height:36px}.body-input{height:129px;resize:none;line-height:1.6;padding:11px 12px}
   .param-label{font-size:11.5px;font-weight:700;color:#60708b;margin:7px 0 6px}.params{display:flex;flex-wrap:wrap;gap:6px}.token{border:0;border-radius:4px;background:#edf3fb;color:#1261e8;padding:5px 9px;font-size:11px;font-weight:700}.token::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#1769eb;margin-right:5px;vertical-align:2px}
+  .contact-hint{margin-top:8px;border-left:3px solid #4c8ce8;border-radius:4px;background:#f3f7fd;padding:7px 9px;color:#52657f;font-size:11px;line-height:1.5}.contact-hint b{color:#174f9f}
   .actions{display:flex;align-items:center;gap:9px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line);position:relative}.action{border:1px solid var(--line);border-radius:5px;background:#fff;padding:9px 16px;font-weight:700}.action.primary{border-color:var(--blue);background:var(--blue);color:#fff}.action.danger{border-color:var(--danger);background:var(--danger);color:#fff}.enable{margin-left:auto;display:flex;align-items:center;gap:8px;color:#60708b}.help{font-size:11.5px;color:#60708b;margin-top:8px}
 
   /* 預覽 */
@@ -150,6 +151,7 @@
           <div class="field"><label>簡訊內容 <span class="req">*</span></label><textarea class="control body-input" id="templateBody">提醒您有預約：「{{門市名稱}}」 {{預約日期}}{{預約時間}}{{門市地址}},更改預約時間請來電{{門市電話}}!謝謝,祝順心</textarea></div>
           <div class="param-label">點擊插入參數：</div>
           <div class="params" id="params"></div>
+          <div class="contact-hint" id="contactHint"><b>門市資訊可自訂：</b>{{門市名稱}}、{{門市地址}}、{{門市電話}}預設帶入門市資料；若此模板需要不同的顯示內容，可刪除對應參數後直接輸入自訂文字。</div>
           <div class="actions">
             <button class="action primary" id="saveButton">儲存為自訂複本</button><button class="action" id="cancelButton">取消編輯</button><button class="action is-hidden" id="defaultButton">設為門市預設</button><button class="action danger is-hidden" id="deleteButton">刪除</button>
             <label class="enable">啟用 <button class="switch on" id="enableSwitch" role="switch" aria-checked="true"></button></label>
@@ -187,7 +189,7 @@
 <nav class="tour-dock" aria-label="教學步驟">
   <span class="tour-label">教學步驟</span>
   <div class="steps">
-    <button class="step" data-step="0">1 全域設定</button><button class="step" data-step="1">2 新門市起點</button><button class="step" data-step="2">3 建立自訂</button><button class="step" data-step="3">4 編輯內容</button><button class="step" data-step="4">5 釘選</button><button class="step" data-step="5">6 設為預設</button><button class="step" data-step="6">7 有預設套用</button><button class="step" data-step="7">8 未預設套用</button>
+    <button class="step" data-step="0">1 全域設定</button><button class="step" data-step="1">2 新門市起點</button><button class="step" data-step="2">3 建立自訂</button><button class="step" data-step="3">4 自訂門市資訊</button><button class="step" data-step="4">5 釘選</button><button class="step" data-step="5">6 設為預設</button><button class="step" data-step="6">7 有預設套用</button><button class="step" data-step="7">8 未預設套用</button>
   </div>
   <div class="tour-controls"><button class="tour-btn" id="restart">重新播放</button><button class="tour-btn primary" id="playPause">暫停</button></div>
 </nav>
@@ -204,6 +206,7 @@
   const preview=$("#preview"),charCount=$("#charCount"),segments=$("#segments"),callout=$("#callout"),toast=$("#toast");
   const playPause=$("#playPause"),stepButtons=$$(".step"),templateCards=$$(".template-card");
   const initialBody=body.value;
+  const customizedBody=initialBody.replace("{{門市名稱}}","示範分院").replace("{{門市地址}}","XX市XX區示範路100號").replace("{{門市電話}}","02-0000-0000");
   const samples={"門市名稱":"示範診所","預約日期":"08/11(二) ","預約時間":"15:00 ","療程":"臉-超越(60分)","診間":"診一","時段":"午診","派號":"17","門市地址":"XX市XX區XX路XX號","門市電話":"02-XXXX-XXXX","叫號機網址":"https://example.com/queue"};
   const tokens=Object.keys(samples);
   let timers=[],playing=true,currentStep=0,typingTimer=null,calloutSide="below";
@@ -255,11 +258,10 @@
     later(3200,()=>{setStep(1);focus(emptyCustom,"新門市尚無自訂模板：開啟發送視窗時，系統會直接套用同科別的「BU 指定」系統模板。","below")});
     later(5900,()=>{setStep(2);focus(saveButton,"可先選一筆合適的系統內建模板，再「儲存為自訂複本」；原始系統模板不會被覆蓋。","above")});
     later(8000,()=>{clearFocus();createCustom(true)});
-    later(9200,()=>{setStep(3);focus(body,"編輯本店內容，並從右側即時預覽實際套用參數後的簡訊。","above");body.classList.add("typing")});
-    later(10400,()=>{
-      const suffix=" 請提前10分鐘報到。";let i=0;
-      typingTimer=setInterval(()=>{if(!playing||i>=suffix.length){clearInterval(typingTimer);typingTimer=null;return}body.value+=suffix[i++];updatePreview();$(".phone").classList.add("flash");setTimeout(()=>$(".phone").classList.remove("flash"),280)},95);
-    });
+    later(9200,()=>{setStep(3);focus(body,"門市名稱、地址或電話若不符合此模板需求，可刪除對應的 {{參數}} 並直接輸入自訂文字；只會改變這份模板的內容。","above");body.classList.add("typing")});
+    later(10300,()=>{body.value=initialBody.replace("{{門市名稱}}","示範分院");updatePreview();$(".phone").classList.add("flash")});
+    later(11100,()=>{body.value=body.value.replace("{{門市地址}}","XX市XX區示範路100號");updatePreview()});
+    later(11900,()=>{body.value=body.value.replace("{{門市電話}}","02-0000-0000");updatePreview();setTimeout(()=>$(".phone").classList.remove("flash"),450)});
     later(12800,()=>{clearFocus();setStep(4);focus(customPin,"點星號釘選常用模板。釘選會讓它排到管理清單前方，並出現在發送視窗的快速套用區。","below")});
     later(15000,()=>{setPinned(true);clearFocus()});
     later(15700,()=>{setStep(5);focus(defaultButton,"「門市預設」的優先度最高；設定後，每次開啟發送視窗都會先套用它。","above")});
@@ -275,7 +277,7 @@
     if(i===0)focus($("#sendRow"),"開啟預約簡訊；電訪/銷判斷可依門市需求開啟。","left");
     if(i===1)focus(emptyCustom,"沒有門市自訂時，自動套用同科別的 BU 指定模板。");
     if(i===2)focus(saveButton,"從系統內建模板另存本門市自訂複本。","above");
-    if(i===3){focus(body,"編輯本店內容並查看即時預覽。","above");body.classList.add("typing")}
+    if(i===3){body.value=customizedBody;updatePreview();focus(body,"若門市名稱、地址或電話不符合需求，可將對應參數改成這份模板專用的自訂文字。","above");body.classList.add("typing")}
     if(i===4)focus(customPin,"釘選後會排在前方，並出現在發送視窗的快速套用區。");
     if(i===5)focus(defaultButton,"將這筆設為門市預設，成為最高優先套用項。","above");
     if(i===6)showLogic("with");
