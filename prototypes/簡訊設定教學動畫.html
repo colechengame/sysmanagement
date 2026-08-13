@@ -246,6 +246,7 @@
   };
   let currentBu="BU1",initialBody=buConfig.BU1.body;
   const samples={"門市名稱":"示範診所","預約日期":"08/11(二) ","預約時間":"15:00 ","療程":"臉-超越(60分)","診間":"診一","時段":"午診","派號":"17","門市地址":"XX市XX區XX路XX號","門市電話":"02-XXXX-XXXX","叫號機網址":"https://example.com/queue"};
+  const AUTO_TIMING_SCALE=1.65;
   let timers=[],playing=true,currentStep=0,typingTimer=null,calloutSide="below";
 
   function escapeHtml(v){return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
@@ -302,7 +303,8 @@
     applyStoreBu(currentBu);emptyCustom.classList.remove("is-hidden");customTemplate.classList.add("is-hidden");setPinned(false);setDefault(false);selectCard(builtinTemplate);
     saveButton.classList.remove("flash");body.classList.remove("typing");updatePreview();setStep(0);
   }
-  function later(ms,fn){timers.push(setTimeout(()=>{if(playing)fn()},ms))}
+  // 自動導覽放慢至約 50 秒一輪，保留足夠時間閱讀文字；手動操作不套用此倍率。
+  function later(ms,fn){timers.push(setTimeout(()=>{if(playing)fn()},ms*AUTO_TIMING_SCALE))}
   function start(){
     reset();playing=true;playPause.textContent="暫停";playPause.classList.add("primary");
     later(700,()=>focus($("#sendRow"),"先開啟「發送預約簡訊」；「含電訪/銷判斷」則依門市需求選擇。","left"));
