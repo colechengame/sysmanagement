@@ -177,11 +177,43 @@
             cursor: default;
             user-select: none;
         }
-        .sms-status-block.clickable {
+        /* 有發送紀錄時，不只顯示狀態；明確告訴使用者這裡可以查看發送詳情 */
+        .sms-detail-btn {
+            min-width: 94px;
+            padding: 5px 9px;
+            border: 1px solid currentColor;
+            border-radius: 5px;
+            font-family: inherit;
             cursor: pointer;
-            transition: filter .15s;
+            text-align: center;
+            white-space: nowrap;
+            transition: filter .15s, box-shadow .15s, transform .15s;
         }
-        .sms-status-block.clickable:hover { filter: brightness(.93); }
+        .sms-detail-btn:hover {
+            filter: brightness(.96);
+            box-shadow: 0 2px 5px rgba(0,0,0,.14);
+        }
+        .sms-detail-btn:active { transform: translateY(1px); }
+        .sms-detail-btn:focus-visible {
+            outline: 3px solid rgba(25,118,210,.28);
+            outline-offset: 2px;
+        }
+        .sms-detail-status {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+        .sms-detail-cta {
+            display: block;
+            margin-top: 3px;
+            padding-top: 3px;
+            border-top: 1px solid currentColor;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.2;
+            opacity: .9;
+        }
 
         .status-none     { background:#e0e0e0; color:#616161; }
         .status-scheduled{ background:#e3f2fd; color:#1976d2; }
@@ -228,6 +260,14 @@
         .name-col { width: 100px; }
         .treatment-col { width: 120px; }
         .staff-col { width: 100px; }
+        .column-hint {
+            display: block;
+            margin-top: 3px;
+            color: #64748b;
+            font-size: 10px;
+            font-weight: 400;
+            line-height: 1.2;
+        }
         
         /* Modal styles */
         .modal {
@@ -667,7 +707,7 @@
     
     <div style="background: #fff3cd; padding: 8px 20px; font-size: 11px; border-left: 4px solid #ffc107; margin-bottom: 1px;">
         <strong>💡 操作提示：</strong>
-        未發送的預約直接點「發送簡訊」；其他狀態點擊狀態色塊可開啟簡訊詳情（排程中可取消、已取消/失敗可重發）
+        未發送的預約直接點「發送簡訊」；有發送紀錄時點「👁 查看詳情」，可查看簡訊內容、發送時間與操作紀錄（排程中可取消、已取消/失敗可重發）
         | <strong>5 大情境：</strong> ①標準發送 ②客人拒收 ③排程衝突 ④複合風險 ⑤自動補位
         | <strong>⚠️ 重要：</strong>一般會員同日多預約時僅最早預約可發送；來源為「99－虛擬會員」的新客不受此限制。
     </div>
@@ -685,7 +725,7 @@
                     <th class="member-col">會員編號</th>
                     <th class="name-col">會員名稱</th>
                     <th class="phone-col">電話</th>
-                    <th style="width: 110px;">簡訊管理</th>
+                    <th style="width: 110px;">簡訊管理<span class="column-hint">可查看發送詳情</span></th>
                     <th style="width: 90px;">取消預約</th>
                     <th class="contact-col">聯絡狀況</th>
                     <th class="time-col">時間</th>
@@ -1126,7 +1166,7 @@
                                smsStatus === 'failed'    ? 'status-failed' :
                                smsStatus === 'scheduled' ? 'status-scheduled' : 'status-expired';
                 if (appointment.smsDetail && smsStatus !== '') {
-                    return '<span class="sms-status-block ' + expClass + ' clickable" onclick="viewSmsDetail(' + appointmentId + ')">' + expiredText + '</span>';
+                    return generateSmsDetailButton(appointmentId, expClass, expiredText);
                 }
                 return '<span class="sms-status-block ' + expClass + '">' + expiredText + '</span>';
             }
@@ -1161,8 +1201,18 @@
                 return '<button class="hover-btn hover-btn-send" onclick="sendSms(' + appointmentId + ')">發送簡訊</button>';
             }
 
-            // 其他狀態：點擊 badge 開詳情
-            return '<span class="sms-status-block ' + sm[0] + ' clickable" onclick="viewSmsDetail(' + appointmentId + ')">' + sm[1] + '</span>';
+            // 其他狀態：顯示明確的「查看詳情」按鈕
+            return generateSmsDetailButton(appointmentId, sm[0], sm[1]);
+        }
+
+        function generateSmsDetailButton(appointmentId, statusClass, statusText) {
+            return '<button type="button" class="sms-detail-btn ' + statusClass + '" ' +
+                'onclick="viewSmsDetail(' + appointmentId + ')" ' +
+                'title="查看簡訊內容、發送時間與操作紀錄" ' +
+                'aria-label="' + statusText + '，查看簡訊發送詳情">' +
+                '<span class="sms-detail-status">' + statusText + '</span>' +
+                '<span class="sms-detail-cta" aria-hidden="true">👁 查看詳情</span>' +
+                '</button>';
         }
 
         // 生成「取消預約」按鈕
