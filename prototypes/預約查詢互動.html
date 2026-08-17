@@ -179,7 +179,9 @@
         }
         /* 有發送紀錄時，不只顯示狀態；明確告訴使用者這裡可以查看發送詳情 */
         .sms-detail-btn {
+            position: relative;
             min-width: 94px;
+            height: 32px;
             padding: 5px 9px;
             border: 1px solid currentColor;
             border-radius: 5px;
@@ -203,17 +205,25 @@
             font-size: 12px;
             font-weight: 700;
             line-height: 1.25;
+            opacity: 1;
+            transition: opacity .15s;
         }
         .sms-detail-cta {
-            display: block;
-            margin-top: 3px;
-            padding-top: 3px;
-            border-top: 1px solid currentColor;
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             line-height: 1.2;
-            opacity: .9;
+            opacity: 0;
+            transition: opacity .15s;
         }
+        .sms-detail-btn:hover .sms-detail-status,
+        .sms-detail-btn:focus-visible .sms-detail-status { opacity: 0; }
+        .sms-detail-btn:hover .sms-detail-cta,
+        .sms-detail-btn:focus-visible .sms-detail-cta { opacity: 1; }
 
         .status-none     { background:#e0e0e0; color:#616161; }
         .status-scheduled{ background:#e3f2fd; color:#1976d2; }
